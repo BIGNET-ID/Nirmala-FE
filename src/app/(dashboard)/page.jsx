@@ -1,18 +1,18 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ThemeProvider, CssBaseline, Box, Button } from '@mui/material';
 import { Icon } from '@iconify/react';
 import GoogleMapWrapper from '@/components/map/GoogleMapWrapper';
 import CanvasHeatmapOverlay from '@/components/map/CanvasOverlay';
 import SensorDotLayer from '@/components/map/SensorDotLayer';
 import MetricLayerSelector from '@/components/dashboard/MetricLayerSelector';
-import TimelinePlayer from '@/components/dashboard/TimelinePlayer';
 import ColorRampLegend from '@/components/dashboard/ColorRampLegend';
 import SensorDetailDrawer from '@/components/dashboard/SensorDetailDrawer';
 import MapControls from '@/components/map/MapControls';
 import { usePlatformData } from '@/hooks/usePlatformData';
 import { nirmalaTheme } from '@/lib/theme';
+import { MAP_CENTER, MAP_ZOOM_DEFAULT } from '@/constants/mapConfig';
 
 export default function NirmalaDashboard() {
   const { sensors: apiSensors, lightning, thunderstorm, loading, error } = usePlatformData();
@@ -22,20 +22,8 @@ export default function NirmalaDashboard() {
 
   const [activeLayer, setActiveLayer] = useState('rain');
   const [showMarkers, setShowMarkers] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [timeStep, setTimeStep] = useState(12);
   const [selectedStation, setSelectedStation] = useState(null);
   const [map, setMap] = useState(null);
-
-  useEffect(() => {
-    let interval;
-    if (isPlaying) {
-      interval = setInterval(() => {
-        setTimeStep((prev) => (prev >= 24 ? 0 : prev + 1));
-      }, 800);
-    }
-    return () => clearInterval(interval);
-  }, [isPlaying]);
 
   const handleZoom = (delta) => {
     if (!map) return;
@@ -45,8 +33,8 @@ export default function NirmalaDashboard() {
 
   const handleReset = () => {
     if (!map) return;
-    map.setCenter({ lat: -6.2088, lng: 106.8456 });
-    map.setZoom(11);
+    map.setCenter(MAP_CENTER);
+    map.setZoom(MAP_ZOOM_DEFAULT);
   };
 
   return (
@@ -207,13 +195,9 @@ export default function NirmalaDashboard() {
           {/* Right: Legend */}
           <ColorRampLegend activeLayer={activeLayer} />
 
-          {/* Bottom: Timeline */}
-          <TimelinePlayer
-            timeStep={timeStep}
-            isPlaying={isPlaying}
-            onTogglePlay={() => setIsPlaying((prev) => !prev)}
-            onTimeChange={setTimeStep}
-          />
+          {/* Timeline forecast: hidden — no national historical snapshots yet
+              (only per-sensor timeseries). Re-enable when the backend exposes
+              historical national snapshots. See spec §3.5 / §7 gaps. */}
 
           {/* Map Controls */}
           <MapControls
