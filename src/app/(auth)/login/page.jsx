@@ -53,8 +53,8 @@ export default function LoginPage() {
     try {
       await signIn(email.trim(), password);
       if (reduced) { router.replace('/'); return; }
-      setLaunching(true);                          // dramatic fly-through the clouds
-      setTimeout(() => router.replace('/'), 1900);
+      setLaunching(true);                          // dramatic charge through the storm
+      setTimeout(() => router.replace('/'), 3100);
     } catch (err) {
       setError(err?.message || 'Login gagal. Periksa email & password.');
       setSubmitting(false);
@@ -97,7 +97,7 @@ export default function LoginPage() {
           animate={launching
             ? { scale: 1.7, opacity: 0, filter: 'blur(14px)' }
             : { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-          transition={{ duration: launching ? 1.05 : 0.6, ease: launching ? [0.5, 0, 0.75, 0] : 'easeOut' }}
+          transition={{ duration: launching ? 1.3 : 0.6, ease: launching ? [0.5, 0, 0.75, 0] : 'easeOut' }}
           sx={{
             width: '100%', maxWidth: 400, p: { xs: 3, sm: 4 },
             bgcolor: 'rgba(10, 16, 36, 0.72)',
@@ -184,7 +184,7 @@ export default function LoginPage() {
         component={motion.div}
         initial={{ opacity: 0 }}
         animate={{ opacity: launching ? 1 : 0 }}
-        transition={{ duration: 0.7, delay: launching ? 1.15 : 0, ease: 'easeIn' }}
+        transition={{ duration: 0.85, delay: launching ? 2.3 : 0, ease: 'easeIn' }}
         sx={{ position: 'absolute', inset: 0, bgcolor: '#eef5ff', pointerEvents: 'none', zIndex: 5 }}
       />
     </Box>

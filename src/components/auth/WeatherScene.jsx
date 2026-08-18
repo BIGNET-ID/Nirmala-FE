@@ -194,7 +194,7 @@ function CloudField() {
 }
 
 // ---- rain (drizzle streaks) ----------------------------------------------
-function Rain({ count = 400 }) {
+function Rain({ count = 400, warp = false }) {
   const geo = useMemo(() => {
     const g = new THREE.BufferGeometry();
     const pos = new Float32Array(count * 6); // 2 verts per streak
@@ -213,9 +213,10 @@ function Rain({ count = 400 }) {
 
   useFrame((_, dt) => {
     const step = Math.min(dt, 0.05);
+    const mult = warp ? 4 : 1; // rain rushes past when charging through
     const p = geo.attributes.position.array;
     for (let i = 0; i < count; i++) {
-      const dy = speeds[i] * step;
+      const dy = speeds[i] * step * mult;
       p[i * 6 + 1] -= dy; p[i * 6 + 4] -= dy;
       if (p[i * 6 + 1] < -14) {
         const ny = 22 + Math.random() * 8;
@@ -236,19 +237,38 @@ function Rain({ count = 400 }) {
   );
 }
 
-// ---- camera fly-through on successful login -------------------------------
+// ---- camera charge through the storm on successful login ------------------
 function CameraRig({ warp }) {
   const start = useRef(null);
   useFrame((state) => {
     if (!warp) return;
     if (start.current === null) start.current = state.clock.elapsedTime;
-    const t = Math.min(1, (state.clock.elapsedTime - start.current) / 1.9);
-    const ease = t * t;                       // accelerate into the clouds
-    state.camera.position.z = 12 - ease * 27; // 12 -> -15, punching through
-    state.camera.fov = 58 + ease * 18;        // widen for a warp/rush feel
+    const T = 2.9;
+    const t = Math.min(1, (state.clock.elapsedTime - start.current) / T);
+    const accel = t * t;                       // charging acceleration
+    const clk = state.clock.elapsedTime;
+    state.camera.position.z = 12 - accel * 40; // dive deep through the clouds
+    // building shake + roll — "menerjang"
+    const shake = t * 0.15;
+    state.camera.position.x = Math.sin(clk * 43) * shake;
+    state.camera.position.y = Math.cos(clk * 37) * shake * 0.8;
+    state.camera.rotation.z = Math.sin(clk * 26) * t * 0.05;
+    state.camera.fov = 58 + accel * 34;        // widen hard for the rush
     state.camera.updateProjectionMatrix();
   });
   return null;
+}
+
+// Strobing lightning while charging through the storm.
+function WarpFX({ warp }) {
+  const amb = useRef();
+  useFrame((state) => {
+    if (!amb.current) return;
+    if (!warp) { amb.current.intensity = 0; return; }
+    const s = Math.pow(Math.abs(Math.sin(state.clock.elapsedTime * 15)), 1.5);
+    amb.current.intensity = (0.3 + 0.9 * s) * 2.6;
+  });
+  return <ambientLight ref={amb} color="#eaf4ff" intensity={0} />;
 }
 
 // ---- scene ----------------------------------------------------------------
@@ -278,9 +298,10 @@ export default function WeatherScene({ warp = false }) {
       <Suspense fallback={null}>
         <CloudField />
       </Suspense>
-      <Rain />
+      <Rain warp={warp} />
       <Storm />
       <Storm />
+      <WarpFX warp={warp} />
       <CameraRig warp={warp} />
     </Canvas>
   );
