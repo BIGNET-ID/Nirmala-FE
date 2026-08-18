@@ -8,6 +8,7 @@ import SensorDotLayer from '@/components/map/SensorDotLayer';
 import OpenWeatherLayer from '@/components/map/OpenWeatherLayer';
 import LightningLayer from '@/components/map/LightningLayer';
 import ThunderstormLayer from '@/components/map/ThunderstormLayer';
+import WindParticleLayer from '@/components/map/WindParticleLayer';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import MetricLayerSelector from '@/components/dashboard/MetricLayerSelector';
 import ColorRampLegend from '@/components/dashboard/ColorRampLegend';
@@ -29,6 +30,7 @@ export default function NirmalaDashboard() {
   const [showCoverage, setShowCoverage] = useState(true);
   const [showLightning, setShowLightning] = useState(false);
   const [showStorms, setShowStorms] = useState(false);
+  const [showWind, setShowWind] = useState(false);
   const [owmLayer, setOwmLayer] = useState(null); // OpenWeather tile layer id or null
   const [selectedStation, setSelectedStation] = useState(null);
   const [map, setMap] = useState(null);
@@ -64,6 +66,7 @@ export default function NirmalaDashboard() {
             <CanvasHeatmapOverlay stations={SENSOR_STATIONS} showCoverage={showCoverage} />
             <ThunderstormLayer storms={thunderstorm} show={showStorms} />
             <LightningLayer strikes={lightning} show={showLightning} />
+            <WindParticleLayer show={showWind} />
             <SensorDotLayer
               stations={SENSOR_STATIONS}
               showMarkers={showMarkers}
@@ -86,6 +89,8 @@ export default function NirmalaDashboard() {
             showStorms={showStorms}
             onToggleStorms={setShowStorms}
             stormCount={thunderstorm?.length || 0}
+            showWind={showWind}
+            onToggleWind={setShowWind}
             owmLayer={owmLayer}
             onOwmChange={setOwmLayer}
           />

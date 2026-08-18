@@ -31,13 +31,13 @@ const OWM_LAYERS = [
   { id: null, label: 'Mati' },
   { id: 'precipitation_new', label: 'Hujan' },
   { id: 'clouds_new', label: 'Awan' },
-  { id: 'wind_new', label: 'Angin' },
 ];
 
 export default function MetricLayerSelector({
   activeLayer, onLayerChange, showMarkers, onToggleMarkers, showCoverage, onToggleCoverage,
   showLightning, onToggleLightning, lightningCount,
   showStorms, onToggleStorms, stormCount,
+  showWind, onToggleWind,
   owmLayer, onOwmChange,
 }) {
   return (
@@ -126,6 +126,9 @@ export default function MetricLayerSelector({
       )}
       {onToggleStorms && (
         <LayerSwitch checked={showStorms} onChange={onToggleStorms} label="Sel Badai" count={stormCount} sx={{ mt: -0.75 }} />
+      )}
+      {onToggleWind && (
+        <LayerSwitch checked={showWind} onChange={onToggleWind} label="Angin (partikel)" sx={{ mt: -0.75 }} />
       )}
       <LayerSwitch checked={showCoverage} onChange={onToggleCoverage} label="Cakupan Sensor" sx={{ mt: -0.75 }} />
       <LayerSwitch checked={showMarkers} onChange={onToggleMarkers} label="Titik Sensor" sx={{ mt: -0.75 }} />
