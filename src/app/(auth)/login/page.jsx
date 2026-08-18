@@ -120,7 +120,7 @@ export default function LoginPage() {
           }}
         >
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-            <Box component="img" src={dark ? '/nirmala-brand-dark.png' : '/nirmala-brand.png'} alt="Nirmala" sx={{ height: 34 }} />
+            <Box component="img" src={dark ? '/nirmala-brand-dark.png' : '/nirmala-brand.png'} alt="Nirmala" sx={{ height: 56 }} />
           </Box>
           <Typography sx={{ ...eyebrowSx, textAlign: 'center', display: 'block' }}>
             Platform Telemetri Cuaca
@@ -173,14 +173,18 @@ export default function LoginPage() {
 
           <Button
             type="submit" fullWidth disabled={submitting}
+            disableElevation
             sx={{
-              height: 46, fontWeight: 700, color: '#04121f',
-              background: 'linear-gradient(90deg, #00e5ff, #38bdf8)',
-              '&:hover': { background: 'linear-gradient(90deg, #22ecff, #4cc4ff)' },
-              '&.Mui-disabled': { background: 'rgba(0,229,255,0.3)', color: 'rgba(4,18,31,0.6)' },
+              height: 46, fontWeight: 700, color: '#ffffff',
+              backgroundColor: '#06b6d4',            // deep cyan — solid, flat (no gradient)
+              boxShadow: 'none',
+              transition: 'background-color var(--duration-fast, 150ms) var(--ease-standard)',
+              '&:hover': { backgroundColor: '#0e7490', boxShadow: 'none' },
+              '&:focus-visible': { outline: '3px solid rgba(6,182,212,0.55)', outlineOffset: '2px' },
+              '&.Mui-disabled': { backgroundColor: 'rgba(6,182,212,0.4)', color: 'rgba(255,255,255,0.7)' },
             }}
           >
-            {submitting ? <CircularProgress size={20} sx={{ color: '#04121f' }} /> : 'Masuk'}
+            {submitting ? <CircularProgress size={20} sx={{ color: '#ffffff' }} /> : 'Masuk'}
           </Button>
 
           <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 2.5, color: 'var(--color-text-muted)', ...{ fontFamily: 'var(--font-family-mono)' } }}>
