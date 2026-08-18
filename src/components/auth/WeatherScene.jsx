@@ -71,8 +71,9 @@ const pulseShape = (dt) => (dt < 0 ? 0 : dt < 0.02 ? dt / 0.02 : dt < 0.11 ? 1 -
 
 function Storm() {
   const [bolt, setBolt] = useState(null);
-  const [flash, setFlash] = useState(0);
-  const [pos, setPos] = useState([0, 3, -2]);
+  const [flash, setFlash] = useState(0);   // only drives bolt-line opacity; updated only when a bolt is shown
+  const lightRef = useRef();
+  const ambientRef = useRef();
 
   useEffect(() => {
     let timer, raf;
@@ -81,7 +82,7 @@ function Storm() {
       const b = Math.random() < 0.22 ? makeBolt() : null;
       setBolt(b);
       const fx = b ? b.x : (Math.random() - 0.5) * 16;
-      setPos([fx, 1.5 + Math.random() * 4, -2 - Math.random() * 4]);
+      if (lightRef.current) lightRef.current.position.set(fx, 1.5 + Math.random() * 4, -2 - Math.random() * 4);
       const peak = 0.5 + Math.random() * 0.5;          // vary flash brightness for realism
       const n = 2 + Math.floor(Math.random() * 3);
       const pulses = [];
@@ -94,10 +95,19 @@ function Storm() {
       const start = performance.now();
       const animate = () => {
         const e = (performance.now() - start) / 1000;
-        if (e >= dur) { setFlash(0); setBolt(null); schedule(); return; }
+        if (e >= dur) {
+          if (lightRef.current) lightRef.current.intensity = 0;
+          if (ambientRef.current) ambientRef.current.intensity = 0;
+          if (b) setFlash(0);
+          setBolt(null); schedule(); return;
+        }
         let v = 0;
         for (const p of pulses) v = Math.max(v, p.a * pulseShape(e - p.t));
-        setFlash(peak * v);
+        const val = peak * v;
+        // Drive the lights by mutating refs (no React re-render each frame).
+        if (lightRef.current) lightRef.current.intensity = val * 560;
+        if (ambientRef.current) ambientRef.current.intensity = val * 1.7;
+        if (b) setFlash(val);   // only re-render (for the bolt lines) when a bolt is on screen
         raf = requestAnimationFrame(animate);
       };
       animate();
@@ -111,8 +121,8 @@ function Storm() {
   return (
     <>
       {/* broad soft glow illuminating the clouds (sheet lightning) */}
-      <pointLight position={pos} color="#eaf4ff" distance={140} decay={1.25} intensity={flash * 560} />
-      <ambientLight intensity={flash * 1.7} color="#dcefff" />
+      <pointLight ref={lightRef} color="#eaf4ff" distance={140} decay={1.25} intensity={0} />
+      <ambientLight ref={ambientRef} color="#dcefff" intensity={0} />
       {bolt?.lines?.map((pts, i) => (
         <group key={i}>
           {/* soft halo (fakes bloom) — kept slim so joins don't dot */}
@@ -184,7 +194,7 @@ function CloudField() {
 }
 
 // ---- rain (drizzle streaks) ----------------------------------------------
-function Rain({ count = 600 }) {
+function Rain({ count = 400 }) {
   const geo = useMemo(() => {
     const g = new THREE.BufferGeometry();
     const pos = new Float32Array(count * 6); // 2 verts per streak
@@ -264,7 +274,7 @@ export default function WeatherScene({ warp = false }) {
       <directionalLight position={[6, 11, 5]} intensity={1.9} color="#dce8fb" />
       <directionalLight position={[-7, 2, -3]} intensity={0.35} color="#5f7ba8" />
 
-      <Stars radius={90} depth={45} count={1400} factor={3.2} saturation={0} fade speed={0.5} />
+      <Stars radius={90} depth={45} count={800} factor={3.2} saturation={0} fade speed={0.5} />
       <Suspense fallback={null}>
         <CloudField />
       </Suspense>
