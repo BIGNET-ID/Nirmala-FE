@@ -9,6 +9,7 @@ import {
 import { Icon } from '@iconify/react';
 import { motion } from 'motion/react';
 import { useAuth } from '@/hooks/useAuth';
+import { useThemeMode } from '@/context/ThemeModeContext';
 import SceneBoundary from '@/components/auth/SceneBoundary';
 import LensRain from '@/components/auth/LensRain';
 
@@ -22,6 +23,8 @@ const eyebrowSx = {
 export default function LoginPage() {
   const router = useRouter();
   const { user, loading, signIn } = useAuth() || {};
+  const { mode } = useThemeMode();
+  const dark = mode !== 'light';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -64,28 +67,32 @@ export default function LoginPage() {
   };
 
   return (
-    <Box sx={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', bgcolor: '#050811' }}>
+    <Box sx={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', bgcolor: dark ? '#050811' : '#e6ecf4' }}>
       {/* Static gradient underlay — always present so the bg is never empty
           (also the reduced-motion / pre-mount / WebGL-failure fallback). */}
       <Box sx={{
         position: 'absolute', inset: 0,
-        background: 'radial-gradient(ellipse at 50% 30%, #0a1a3a 0%, #050811 60%)',
+        background: dark
+          ? 'radial-gradient(ellipse at 50% 30%, #0a1a3a 0%, #050811 60%)'
+          : 'radial-gradient(ellipse at 50% 30%, #f4f7fb 0%, #d9e1ec 65%)',
       }} />
 
       {/* 3D weather backdrop — mounted only after hydration. */}
       {mounted && !reduced && (
         <SceneBoundary>
-          <WeatherScene warp={launching} />
+          <WeatherScene warp={launching} mode={mode} />
         </SceneBoundary>
       )}
 
       {/* Camera-lens raindrops */}
       {mounted && !reduced && <LensRain />}
 
-      {/* Legibility overlay — fades away during the fly-through */}
+      {/* Legibility vignette — subtle; fades away during the fly-through */}
       <Box sx={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
-        background: 'radial-gradient(ellipse at 50% 55%, rgba(5,8,17,0.55) 0%, rgba(5,8,17,0.85) 70%)',
+        background: dark
+          ? 'radial-gradient(ellipse at 50% 55%, rgba(5,8,17,0.55) 0%, rgba(5,8,17,0.85) 70%)'
+          : 'radial-gradient(ellipse at 50% 55%, rgba(230,236,244,0) 0%, rgba(210,220,234,0.5) 75%)',
         opacity: launching ? 0 : 1,
         transition: 'opacity 0.9s var(--ease-out)',
       }} />
@@ -102,11 +109,13 @@ export default function LoginPage() {
           transition={{ duration: launching ? 1.3 : 0.6, ease: launching ? [0.5, 0, 0.75, 0] : 'easeOut' }}
           sx={{
             width: '100%', maxWidth: 400, p: { xs: 3, sm: 4 },
-            bgcolor: 'rgba(10, 16, 36, 0.72)',
+            bgcolor: dark ? 'rgba(10, 16, 36, 0.72)' : 'rgba(255, 255, 255, 0.74)',
             backdropFilter: 'blur(24px)',
             border: '1px solid var(--nirmala-glass-border)',
             borderRadius: 'var(--radius-xl, 16px)',
-            boxShadow: '0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,229,255,0.06)',
+            boxShadow: dark
+              ? '0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,229,255,0.06)'
+              : '0 20px 56px rgba(16,50,95,0.18), 0 0 0 1px rgba(16,50,95,0.05)',
             pointerEvents: launching ? 'none' : 'auto',
           }}
         >

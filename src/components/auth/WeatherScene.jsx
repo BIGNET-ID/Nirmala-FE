@@ -69,7 +69,7 @@ function makeBolt() {
 
 const pulseShape = (dt) => (dt < 0 ? 0 : dt < 0.02 ? dt / 0.02 : dt < 0.11 ? 1 - (dt - 0.02) / 0.09 : 0);
 
-function Storm() {
+function Storm({ haloColor = '#bfefff', haloOpacityMax = 0.45 }) {
   const [bolt, setBolt] = useState(null);
   const [flash, setFlash] = useState(0);   // only drives bolt-line opacity; updated only when a bolt is shown
   const lightRef = useRef();
@@ -125,9 +125,9 @@ function Storm() {
       <ambientLight ref={ambientRef} color="#dcefff" intensity={0} />
       {bolt?.lines?.map((pts, i) => (
         <group key={i}>
-          {/* soft halo (fakes bloom) — kept slim so joins don't dot */}
-          <Line points={pts} color="#bfefff" lineWidth={i === 0 ? 6 : 3.5}
-            transparent opacity={Math.min(0.45, flash * 1.2)} toneMapped={false} />
+          {/* soft halo (fakes bloom / dark outline on light) — slim so joins don't dot */}
+          <Line points={pts} color={haloColor} lineWidth={i === 0 ? 6 : 3.5}
+            transparent opacity={Math.min(haloOpacityMax, flash * 1.2)} toneMapped={false} />
           {/* bright core */}
           <Line points={pts} color="#ffffff" lineWidth={i === 0 ? 2.2 : 1.3}
             transparent opacity={Math.min(1, flash * 3.6)} toneMapped={false} />
@@ -143,21 +143,25 @@ function Storm() {
 const CLOUD_SPRITE = '/cloud-sprite.png';
 
 // Distinct, separated cloud clumps at varied depths & sizes — dramatic billows,
-// not a uniform smoky haze. Tight bounds keep each clump defined; big position
-// gaps + a scale range separate them; high opacity/segments make them read solid.
-const CLUMPS = [
-  { pos: [-7.0, 1.8, -3], scale: 1.5, color: '#dbe4f5', op: 0.96, seg: 46, vol: 6.5 },
-  { pos: [6.6, 2.6, -5], scale: 1.9, color: '#c6d3ea', op: 0.92, seg: 48, vol: 7.5 },
-  { pos: [-1.6, -1.9, -2], scale: 1.25, color: '#e8effc', op: 0.98, seg: 42, vol: 5.5 },
-  { pos: [4.0, -1.4, -4], scale: 1.2, color: '#bccbe6', op: 0.9, seg: 42, vol: 5.5 },
-  { pos: [-9.6, -2.8, -7], scale: 2.2, color: '#a1b2d2', op: 0.74, seg: 50, vol: 8.5 },
-  { pos: [9.6, -2.4, -8], scale: 2.0, color: '#93a5c6', op: 0.7, seg: 50, vol: 8.5 },
-  { pos: [0.6, 4.3, -6], scale: 1.7, color: '#b0c1e2', op: 0.8, seg: 46, vol: 7.5 },
-  { pos: [-4.6, 4.0, -10], scale: 2.5, color: '#7f92b6', op: 0.62, seg: 52, vol: 9.5 },
-  { pos: [0, -5.6, -9], scale: 2.7, color: '#98aacb', op: 0.64, seg: 52, vol: 10 }, // low bank
+// not a uniform smoky haze. Same geometry for both themes; only colours differ.
+// DARK: pale clouds on near-black. LIGHT: darker storm-grey clouds on a pale sky.
+const GEO = [
+  { pos: [-7.0, 1.8, -3], scale: 1.5, op: 0.96, seg: 46, vol: 6.5 },
+  { pos: [6.6, 2.6, -5], scale: 1.9, op: 0.92, seg: 48, vol: 7.5 },
+  { pos: [-1.6, -1.9, -2], scale: 1.25, op: 0.98, seg: 42, vol: 5.5 },
+  { pos: [4.0, -1.4, -4], scale: 1.2, op: 0.9, seg: 42, vol: 5.5 },
+  { pos: [-9.6, -2.8, -7], scale: 2.2, op: 0.74, seg: 50, vol: 8.5 },
+  { pos: [9.6, -2.4, -8], scale: 2.0, op: 0.7, seg: 50, vol: 8.5 },
+  { pos: [0.6, 4.3, -6], scale: 1.7, op: 0.8, seg: 46, vol: 7.5 },
+  { pos: [-4.6, 4.0, -10], scale: 2.5, op: 0.62, seg: 52, vol: 9.5 },
+  { pos: [0, -5.6, -9], scale: 2.7, op: 0.64, seg: 52, vol: 10 }, // low bank
 ];
+const DARK_COLORS = ['#dbe4f5', '#c6d3ea', '#e8effc', '#bccbe6', '#a1b2d2', '#93a5c6', '#b0c1e2', '#7f92b6', '#98aacb'];
+const LIGHT_COLORS = ['#7a8598', '#6b7688', '#828da0', '#606b7e', '#525b6d', '#5c6779', '#727d92', '#4b5367', '#69738a'];
+const CLUMPS_DARK = GEO.map((g, i) => ({ ...g, color: DARK_COLORS[i] }));
+const CLUMPS_LIGHT = GEO.map((g, i) => ({ ...g, color: LIGHT_COLORS[i], op: Math.min(1, g.op + 0.04) }));
 
-function CloudField() {
+function CloudField({ clumps = CLUMPS_DARK }) {
   const group = useRef();
   useFrame((state) => {
     const t = state.clock.elapsedTime;
@@ -171,7 +175,7 @@ function CloudField() {
   return (
     <group ref={group}>
       <Clouds material={THREE.MeshLambertMaterial} limit={2800}>
-        {CLUMPS.map((c, i) => (
+        {clumps.map((c, i) => (
           <Cloud
             key={i}
             seed={i + 1}
@@ -194,7 +198,7 @@ function CloudField() {
 }
 
 // ---- rain (drizzle streaks) ----------------------------------------------
-function Rain({ count = 400, warp = false }) {
+function Rain({ count = 400, warp = false, color = '#c3d8ff', opacity = 0.32 }) {
   const geo = useMemo(() => {
     const g = new THREE.BufferGeometry();
     const pos = new Float32Array(count * 6); // 2 verts per streak
@@ -232,7 +236,7 @@ function Rain({ count = 400, warp = false }) {
 
   return (
     <lineSegments geometry={geo}>
-      <lineBasicMaterial color="#c3d8ff" transparent opacity={0.32} toneMapped={false} />
+      <lineBasicMaterial color={color} transparent opacity={opacity} toneMapped={false} />
     </lineSegments>
   );
 }
@@ -271,8 +275,33 @@ function WarpFX({ warp }) {
   return <ambientLight ref={amb} color="#eaf4ff" intensity={0} />;
 }
 
+// ---- theme palettes -------------------------------------------------------
+const PALETTE = {
+  dark: {
+    bg: '#050811', fogDensity: 0.038,
+    clouds: CLUMPS_DARK,
+    rain: '#c3d8ff', rainOpacity: 0.32,
+    boltHalo: '#bfefff', boltHaloOpacity: 0.45,
+    stars: true,
+    lights: { amb: 0.28, ambC: '#3a5488', hemi: 0.4, hemiC: '#a9c4ff', hemiG: '#0a1220',
+      dir1: 1.9, dir1C: '#dce8fb', dir2: 0.35, dir2C: '#5f7ba8' },
+  },
+  light: {
+    // pale daytime sky; darker storm-grey clouds stay very visible
+    bg: '#e6ecf4', fogDensity: 0.028,
+    clouds: CLUMPS_LIGHT,
+    rain: '#5a6b8a', rainOpacity: 0.42,
+    boltHalo: '#33507f', boltHaloOpacity: 0.6, // dark-blue outline reads on light
+    stars: false,
+    lights: { amb: 0.6, ambC: '#cdd9ec', hemi: 0.6, hemiC: '#eef4fd', hemiG: '#b6c2d4',
+      dir1: 1.55, dir1C: '#ffffff', dir2: 0.3, dir2C: '#9fb0c8' },
+  },
+};
+
 // ---- scene ----------------------------------------------------------------
-export default function WeatherScene({ warp = false }) {
+export default function WeatherScene({ warp = false, mode = 'dark' }) {
+  const P = PALETTE[mode] || PALETTE.dark;
+  const L = P.lights;
   return (
     <Canvas
       dpr={1}
@@ -285,22 +314,24 @@ export default function WeatherScene({ warp = false }) {
       }}
       style={{ position: 'absolute', inset: 0 }}
     >
-      <color attach="background" args={['#050811']} />
-      <fogExp2 attach="fog" args={['#050811', 0.038]} />
+      <color attach="background" args={[P.bg]} />
+      <fogExp2 attach="fog" args={[P.bg, P.fogDensity]} />
 
       {/* high-contrast lighting → bright tops, dark undersides = 3D billows */}
-      <ambientLight intensity={0.28} color="#3a5488" />
-      <hemisphereLight intensity={0.4} color="#a9c4ff" groundColor="#0a1220" />
-      <directionalLight position={[6, 11, 5]} intensity={1.9} color="#dce8fb" />
-      <directionalLight position={[-7, 2, -3]} intensity={0.35} color="#5f7ba8" />
+      <ambientLight intensity={L.amb} color={L.ambC} />
+      <hemisphereLight intensity={L.hemi} color={L.hemiC} groundColor={L.hemiG} />
+      <directionalLight position={[6, 11, 5]} intensity={L.dir1} color={L.dir1C} />
+      <directionalLight position={[-7, 2, -3]} intensity={L.dir2} color={L.dir2C} />
 
-      <Stars radius={90} depth={45} count={800} factor={3.2} saturation={0} fade speed={0.5} />
+      {P.stars && (
+        <Stars radius={90} depth={45} count={800} factor={3.2} saturation={0} fade speed={0.5} />
+      )}
       <Suspense fallback={null}>
-        <CloudField />
+        <CloudField clumps={P.clouds} />
       </Suspense>
-      <Rain warp={warp} />
-      <Storm />
-      <Storm />
+      <Rain warp={warp} color={P.rain} opacity={P.rainOpacity} />
+      <Storm haloColor={P.boltHalo} haloOpacityMax={P.boltHaloOpacity} />
+      <Storm haloColor={P.boltHalo} haloOpacityMax={P.boltHaloOpacity} />
       <WarpFX warp={warp} />
       <CameraRig warp={warp} />
     </Canvas>
