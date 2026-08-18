@@ -9,6 +9,8 @@ import SensorDotLayer from '@/components/map/SensorDotLayer';
 import MetricLayerSelector from '@/components/dashboard/MetricLayerSelector';
 import ColorRampLegend from '@/components/dashboard/ColorRampLegend';
 import SensorDetailDrawer from '@/components/dashboard/SensorDetailDrawer';
+import SensorStatsCard from '@/components/dashboard/SensorStatsCard';
+import MapInfoPill from '@/components/dashboard/MapInfoPill';
 import MapControls from '@/components/map/MapControls';
 import { usePlatformData } from '@/hooks/usePlatformData';
 import { nirmalaTheme } from '@/lib/theme';
@@ -24,6 +26,13 @@ export default function NirmalaDashboard() {
   const [showMarkers, setShowMarkers] = useState(true);
   const [selectedStation, setSelectedStation] = useState(null);
   const [map, setMap] = useState(null);
+
+  const stats = {
+    total: SENSOR_STATIONS.length,
+    active: SENSOR_STATIONS.filter((s) => s.status === 'active').length,
+    raining: SENSOR_STATIONS.filter((s) => s.isRaining).length,
+    blacklist: SENSOR_STATIONS.filter((s) => s.blacklisted || s.status === 'blacklisted').length,
+  };
 
   const handleZoom = (delta) => {
     if (!map) return;
@@ -97,7 +106,7 @@ export default function NirmalaDashboard() {
                   fontWeight: 500,
                 }}
               >
-                <Icon icon={item.icon === 'radar' ? 'solar:radar-bold-duotone' : item.icon === 'sensors' ? 'solar:server-2-bold-duotone' : 'solar:settings-bold-duotone'} width={14} />
+                <Icon icon={item.icon === 'radar' ? 'material-symbols:radar-rounded' : item.icon === 'sensors' ? 'material-symbols:sensors-rounded' : 'material-symbols:settings-rounded'} width={14} />
                 {item.label}
               </Button>
             ))}
@@ -127,8 +136,8 @@ export default function NirmalaDashboard() {
                 '50%': { opacity: 0.5 },
               },
             }} />
-            <Box sx={{ fontSize: '0.65rem', color: '#34d399', fontWeight: 700 }}>
-              LIVE · {SENSOR_STATIONS.filter(s => s.status === 'active').length}/{SENSOR_STATIONS.length}
+            <Box sx={{ fontSize: '0.65rem', color: '#34d399', fontWeight: 700, fontFamily: 'var(--font-family-mono)' }}>
+              LIVE · {stats.active}/{stats.total}
             </Box>
           </Box>
 
@@ -143,9 +152,9 @@ export default function NirmalaDashboard() {
             border: '1px solid rgba(96,165,250,0.3)',
             borderRadius: '999px',
           }}>
-            <Icon icon="solar:water-drop-bold-duotone" width={14} style={{ color: '#60a5fa' }} />
-            <Box sx={{ fontSize: '0.65rem', color: '#60a5fa', fontWeight: 700 }}>
-              {SENSOR_STATIONS.filter(s => s.isRaining).length} Hujan
+            <Icon icon="material-symbols:rainy-rounded" width={14} style={{ color: '#60a5fa' }} />
+            <Box sx={{ fontSize: '0.65rem', color: '#60a5fa', fontWeight: 700, fontFamily: 'var(--font-family-mono)' }}>
+              {stats.raining} Hujan
             </Box>
           </Box>
 
@@ -194,6 +203,12 @@ export default function NirmalaDashboard() {
 
           {/* Right: Legend */}
           <ColorRampLegend activeLayer={activeLayer} />
+
+          {/* Top-center: contextual info pill */}
+          <MapInfoPill raining={stats.raining} total={stats.total} loading={loading && stats.total === 0} />
+
+          {/* Bottom-left: sensor statistics */}
+          <SensorStatsCard stats={stats} />
 
           {/* Timeline forecast: hidden — no national historical snapshots yet
               (only per-sensor timeseries). Re-enable when the backend exposes

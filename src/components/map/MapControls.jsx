@@ -1,63 +1,44 @@
 import { Box, IconButton, Tooltip } from '@mui/material';
 import { Icon } from '@iconify/react';
 
+const btnSx = {
+  width: 38,
+  height: 38,
+  color: 'text.primary',
+  bgcolor: 'var(--nirmala-glass-bg)',
+  border: '1px solid var(--nirmala-glass-border)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: 'var(--radius-md, 8px)',
+  transition: 'background var(--duration-fast, 150ms) var(--ease-standard)',
+  '&:hover': { bgcolor: 'rgba(0,229,255,0.10)', color: '#00e5ff' },
+};
+
 export default function MapControls({ onZoomIn, onZoomOut, onReset }) {
   return (
     <Box
       sx={{
         position: 'absolute',
-        right: 18,
-        top: '50%',
-        transform: 'translateY(-50%)',
-        zIndex: 100,
+        right: 16,
+        top: 72,
+        zIndex: 'var(--z-overlay, 100)',
         display: 'flex',
         flexDirection: 'column',
         gap: 1,
       }}
     >
-      <Tooltip title="Zoom In" placement="left">
-        <IconButton
-          onClick={onZoomIn}
-          sx={{
-            width: 38,
-            height: 38,
-            bgcolor: 'rgba(8, 14, 25, 0.84)',
-            border: '1px solid rgba(148, 163, 184, 0.14)',
-            boxShadow: '0 10px 18px rgba(2, 6, 23, 0.24)',
-            '&:hover': { bgcolor: 'rgba(10, 18, 34, 0.94)' },
-          }}
-        >
-          <Icon icon="solar:add-circle-bold-duotone" />
+      <Tooltip title="Perbesar" placement="left">
+        <IconButton onClick={onZoomIn} sx={btnSx} aria-label="Perbesar">
+          <Icon icon="material-symbols:add-rounded" />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Zoom Out" placement="left">
-        <IconButton
-          onClick={onZoomOut}
-          sx={{
-            width: 38,
-            height: 38,
-            bgcolor: 'rgba(8, 14, 25, 0.84)',
-            border: '1px solid rgba(148, 163, 184, 0.14)',
-            boxShadow: '0 10px 18px rgba(2, 6, 23, 0.24)',
-            '&:hover': { bgcolor: 'rgba(10, 18, 34, 0.94)' },
-          }}
-        >
-          <Icon icon="solar:minus-circle-bold-duotone" />
+      <Tooltip title="Perkecil" placement="left">
+        <IconButton onClick={onZoomOut} sx={btnSx} aria-label="Perkecil">
+          <Icon icon="material-symbols:remove-rounded" />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Reset View" placement="left">
-        <IconButton
-          onClick={onReset}
-          sx={{
-            width: 38,
-            height: 38,
-            bgcolor: 'rgba(8, 14, 25, 0.84)',
-            border: '1px solid rgba(148, 163, 184, 0.14)',
-            boxShadow: '0 10px 18px rgba(2, 6, 23, 0.24)',
-            '&:hover': { bgcolor: 'rgba(10, 18, 34, 0.94)' },
-          }}
-        >
-          <Icon icon="solar:home-bold-duotone" />
+      <Tooltip title="Tampilan Nasional" placement="left">
+        <IconButton onClick={onReset} sx={btnSx} aria-label="Reset tampilan">
+          <Icon icon="material-symbols:my-location-rounded" />
         </IconButton>
       </Tooltip>
     </Box>
