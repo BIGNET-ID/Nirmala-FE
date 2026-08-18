@@ -18,8 +18,10 @@
 export const dynamic = 'force-dynamic';
 
 const KEY = process.env.OPENWEATHER_API_KEY || '';
-const BOUNDS = { north: 6.5, south: -11.5, east: 141.5, west: 94.5 };
-const NX = 8;
+// Wider SE-Asia box so wind isn't limited to Indonesia (covers Philippines/PNG
+// where lightning & storms sit). Grid kept at 9x6 = 54 points (< 60/min limit).
+const BOUNDS = { north: 22, south: -13, east: 145, west: 92 };
+const NX = 9;
 const NY = 6;
 const TTL_MS = 20 * 60 * 1000;
 

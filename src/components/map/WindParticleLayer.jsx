@@ -11,7 +11,7 @@ import { useMap } from '@vis.gl/react-google-maps';
  */
 
 const PARTICLE_COUNT = 2000;
-const VELOCITY_SCALE = 0.18;   // px per (m/s) per frame — visual exaggeration; lower = calmer drift
+const VELOCITY_SCALE = 0.12;   // px per (m/s) per frame — visual exaggeration; lower = calmer drift
 const FADE = 0.93;             // trail persistence (higher = longer trails)
 const MAX_AGE = 110;
 
