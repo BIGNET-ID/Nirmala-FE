@@ -1,0 +1,39 @@
+{
+  "source": "kafka://rainvision (live)",
+  "scraped_at_utc": "2026-08-18T07:06:08Z",
+  "live": true,
+  "account": {
+    "permissions": {
+      "can_view_sensor": true,
+      "can_view_lightning": true,
+      "can_view_radar": true,
+      "can_view_himawari": true
+    },
+    "is_admin": false,
+    "is_indonesia": true,
+    "default_map": {
+      "lat": -2.5,
+      "lng": 118,
+      "zoom": 6.5
+    },
+    "default_layer": "sensor"
+  },
+  "datasets": {
+    "sensors": {
+      "count": 4582
+    },
+    "thunderstorm": {
+      "count": 7
+    },
+    "lightning": {
+      "count": 586
+    },
+    "messages_consumed": {
+      "rainvision.sensors": 672652,
+      "rainvision.lightning": 100792,
+      "rainvision.thunderstorm": 3268,
+      "rainvision.sensor.rain": 1533941176,
+      "rainvision.sensor.signal": 1800730347
+    }
+  }
+}

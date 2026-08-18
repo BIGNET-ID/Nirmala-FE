@@ -1,0 +1,26 @@
+{
+  "connected": true,
+  "uptime_s": 306619.8,
+  "scraped_at_utc": "2026-08-18T07:06:08Z",
+  "messages_consumed": {
+    "rainvision.sensors": 672652,
+    "rainvision.lightning": 100792,
+    "rainvision.thunderstorm": 3268,
+    "rainvision.sensor.rain": 1534362742,
+    "rainvision.sensor.signal": 1801246866
+  },
+  "last_message_epoch": {
+    "rainvision.sensors": 1787036771.1687644,
+    "rainvision.lightning": 1787036780.9408085,
+    "rainvision.thunderstorm": 1787036784.5488892,
+    "rainvision.sensor.rain": 1787037056.6615252,
+    "rainvision.sensor.signal": 1787037056.6786213
+  },
+  "state": {
+    "sensors": 4582,
+    "storms": 7,
+    "lightning": 586,
+    "sensors_with_rain": 4495,
+    "sensors_with_signal": 4582
+  }
+}

@@ -7,13 +7,14 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { nirmalaApiService, normalizeSensors, normalizeLightning, normalizeThunderstorm } from '@/lib/nirmalaApi';
+import { nirmalaApiService, normalizeSensors, normalizeLightning, normalizeThunderstorm, getDefaultMap } from '@/lib/nirmalaApi';
 
 export function usePlatformData() {
   const [sensors, setSensors] = useState([]);
   const [lightning, setLightning] = useState([]);
   const [thunderstorm, setThunderstorm] = useState([]);
   const [manifest, setManifest] = useState(null);
+  const [defaultMap, setDefaultMap] = useState(null);
   const [health, setHealth] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,6 +28,7 @@ export function usePlatformData() {
       try {
         const response = await nirmalaApiService.getManifest();
         setManifest(response);
+        setDefaultMap(getDefaultMap(response));
       } catch (err) {
         console.warn('[usePlatformData] Failed to load manifest:', err);
         // Use defaults if manifest fails
@@ -164,6 +166,7 @@ export function usePlatformData() {
     lightning,
     thunderstorm,
     manifest,
+    defaultMap,
     health,
     loading,
     error,

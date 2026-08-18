@@ -1,0 +1,5279 @@
+{
+  "request_time": "2026-08-12 16:20 (UTC)",
+  "content": [
+    {
+      "long": 120.0742,
+      "lat": 14.3495,
+      "cloud": false,
+      "signalStrengthKA": -16.7,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0745,
+      "lat": 14.3817,
+      "cloud": false,
+      "signalStrengthKA": -25,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0902,
+      "lat": 14.3823,
+      "cloud": false,
+      "signalStrengthKA": -30.6,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.9102,
+      "lat": 11.4295,
+      "cloud": false,
+      "signalStrengthKA": -9.6,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.7738,
+      "lat": 11.8993,
+      "cloud": true,
+      "signalStrengthKA": -6.3,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.721,
+      "lat": 6.377,
+      "cloud": false,
+      "signalStrengthKA": -32.1,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0588,
+      "lat": 6.4919,
+      "cloud": false,
+      "signalStrengthKA": -30.5,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3183,
+      "lat": 12.5225,
+      "cloud": true,
+      "signalStrengthKA": -7.3,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.2231,
+      "lat": 16.2491,
+      "cloud": false,
+      "signalStrengthKA": -47.1,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.184,
+      "lat": 16.2778,
+      "cloud": false,
+      "signalStrengthKA": -24.9,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1763,
+      "lat": 16.2546,
+      "cloud": false,
+      "signalStrengthKA": -7,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.2198,
+      "lat": 14.5173,
+      "cloud": false,
+      "signalStrengthKA": -10.7,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3066,
+      "lat": 14.5343,
+      "cloud": false,
+      "signalStrengthKA": -19.9,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.6883,
+      "lat": 6.3797,
+      "cloud": true,
+      "signalStrengthKA": -7.9,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.709,
+      "lat": 15.7439,
+      "cloud": false,
+      "signalStrengthKA": -23.8,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.1506,
+      "lat": 6.5021,
+      "cloud": true,
+      "signalStrengthKA": 13.1,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.1638,
+      "lat": 6.5414,
+      "cloud": true,
+      "signalStrengthKA": 8.5,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5416,
+      "lat": 18.0603,
+      "cloud": false,
+      "signalStrengthKA": -28.7,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.8992,
+      "lat": 18.0838,
+      "cloud": false,
+      "signalStrengthKA": -15.9,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.2664,
+      "lat": 14.2231,
+      "cloud": false,
+      "signalStrengthKA": -73.9,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.2334,
+      "lat": 14.2224,
+      "cloud": false,
+      "signalStrengthKA": 77.8,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0369,
+      "lat": 14.9147,
+      "cloud": true,
+      "signalStrengthKA": 19.4,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0334,
+      "lat": 14.8862,
+      "cloud": true,
+      "signalStrengthKA": 19.5,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.7536,
+      "lat": 11.9671,
+      "cloud": false,
+      "signalStrengthKA": -9.1,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.9789,
+      "lat": 10.2745,
+      "cloud": true,
+      "signalStrengthKA": 24.4,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.1033,
+      "lat": 6.5153,
+      "cloud": true,
+      "signalStrengthKA": -3.5,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.8149,
+      "lat": 11.9143,
+      "cloud": false,
+      "signalStrengthKA": -31.8,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.2068,
+      "lat": 16.295,
+      "cloud": false,
+      "signalStrengthKA": -17.5,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.2113,
+      "lat": 16.2914,
+      "cloud": false,
+      "signalStrengthKA": -14.8,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.6705,
+      "lat": 14.4078,
+      "cloud": true,
+      "signalStrengthKA": 24.1,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9324,
+      "lat": 6.4589,
+      "cloud": true,
+      "signalStrengthKA": 10.9,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 123.3214,
+      "lat": 19.218,
+      "cloud": true,
+      "signalStrengthKA": 31.5,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.4198,
+      "lat": 12.4749,
+      "cloud": false,
+      "signalStrengthKA": -130.8,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.2552,
+      "lat": 12.5006,
+      "cloud": false,
+      "signalStrengthKA": -31.3,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3254,
+      "lat": 12.4433,
+      "cloud": false,
+      "signalStrengthKA": 55,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3319,
+      "lat": 12.4775,
+      "cloud": false,
+      "signalStrengthKA": -53.4,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3891,
+      "lat": 12.4563,
+      "cloud": true,
+      "signalStrengthKA": 28.7,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3596,
+      "lat": 12.4693,
+      "cloud": false,
+      "signalStrengthKA": -65.5,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3864,
+      "lat": 12.4495,
+      "cloud": false,
+      "signalStrengthKA": -22.4,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.4185,
+      "lat": 12.4976,
+      "cloud": true,
+      "signalStrengthKA": 11.3,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3259,
+      "lat": 12.4671,
+      "cloud": false,
+      "signalStrengthKA": -25,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3646,
+      "lat": 12.4712,
+      "cloud": false,
+      "signalStrengthKA": -27.2,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3466,
+      "lat": 12.4745,
+      "cloud": false,
+      "signalStrengthKA": -23.9,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.4552,
+      "lat": 12.4532,
+      "cloud": false,
+      "signalStrengthKA": -20.4,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.3749,
+      "lat": 11.7575,
+      "cloud": true,
+      "signalStrengthKA": 6.1,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.1541,
+      "lat": 6.5057,
+      "cloud": false,
+      "signalStrengthKA": -13.8,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0985,
+      "lat": 6.5019,
+      "cloud": true,
+      "signalStrengthKA": -5.4,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0542,
+      "lat": 6.5119,
+      "cloud": true,
+      "signalStrengthKA": 4.9,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 124.9988,
+      "lat": 19.8759,
+      "cloud": true,
+      "signalStrengthKA": 18.3,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6336,
+      "lat": 15.8196,
+      "cloud": false,
+      "signalStrengthKA": -43.8,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6645,
+      "lat": 15.8193,
+      "cloud": false,
+      "signalStrengthKA": -18.5,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5005,
+      "lat": 15.8439,
+      "cloud": true,
+      "signalStrengthKA": 11.9,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6674,
+      "lat": 15.8305,
+      "cloud": false,
+      "signalStrengthKA": -18.5,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.7053,
+      "lat": 15.7658,
+      "cloud": false,
+      "signalStrengthKA": 43,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6505,
+      "lat": 15.8371,
+      "cloud": false,
+      "signalStrengthKA": -19.5,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5212,
+      "lat": 15.812,
+      "cloud": false,
+      "signalStrengthKA": -18.4,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.514,
+      "lat": 15.8485,
+      "cloud": false,
+      "signalStrengthKA": -35.8,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5049,
+      "lat": 15.8268,
+      "cloud": false,
+      "signalStrengthKA": -15,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.1522,
+      "lat": 20.2418,
+      "cloud": false,
+      "signalStrengthKA": -118,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.1391,
+      "lat": 20.2395,
+      "cloud": false,
+      "signalStrengthKA": -98,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.1814,
+      "lat": 20.2452,
+      "cloud": false,
+      "signalStrengthKA": -24.7,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0734,
+      "lat": 13.3927,
+      "cloud": false,
+      "signalStrengthKA": -68.4,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0522,
+      "lat": 13.4097,
+      "cloud": false,
+      "signalStrengthKA": -21.3,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1763,
+      "lat": 13.3638,
+      "cloud": true,
+      "signalStrengthKA": 12.4,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0518,
+      "lat": 13.4041,
+      "cloud": true,
+      "signalStrengthKA": -4.7,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0722,
+      "lat": 14.3908,
+      "cloud": false,
+      "signalStrengthKA": -130.3,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.118,
+      "lat": 14.3292,
+      "cloud": false,
+      "signalStrengthKA": -16.7,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.2387,
+      "lat": 14.3473,
+      "cloud": false,
+      "signalStrengthKA": -20.9,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0435,
+      "lat": 14.3807,
+      "cloud": false,
+      "signalStrengthKA": -30.3,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0477,
+      "lat": 14.3763,
+      "cloud": false,
+      "signalStrengthKA": -27.8,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.042,
+      "lat": 14.3864,
+      "cloud": false,
+      "signalStrengthKA": -34.6,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0812,
+      "lat": 14.387,
+      "cloud": false,
+      "signalStrengthKA": -35.9,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.087,
+      "lat": 14.4189,
+      "cloud": true,
+      "signalStrengthKA": 25,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.7278,
+      "lat": 15.7085,
+      "cloud": false,
+      "signalStrengthKA": -18.4,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.2059,
+      "lat": 14.3443,
+      "cloud": false,
+      "signalStrengthKA": -28.7,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.2019,
+      "lat": 14.3068,
+      "cloud": true,
+      "signalStrengthKA": 19.3,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0861,
+      "lat": 6.458,
+      "cloud": true,
+      "signalStrengthKA": 6.3,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9945,
+      "lat": 6.4991,
+      "cloud": false,
+      "signalStrengthKA": -24.6,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0468,
+      "lat": 6.5175,
+      "cloud": true,
+      "signalStrengthKA": -4.9,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0468,
+      "lat": 6.4875,
+      "cloud": true,
+      "signalStrengthKA": -5.2,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0626,
+      "lat": 6.5131,
+      "cloud": true,
+      "signalStrengthKA": -5.4,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9674,
+      "lat": 6.4585,
+      "cloud": false,
+      "signalStrengthKA": 11.4,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.078,
+      "lat": 6.5088,
+      "cloud": true,
+      "signalStrengthKA": 18.3,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0895,
+      "lat": 6.5097,
+      "cloud": true,
+      "signalStrengthKA": 7,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0293,
+      "lat": 6.4448,
+      "cloud": false,
+      "signalStrengthKA": -13.9,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9464,
+      "lat": 6.4473,
+      "cloud": true,
+      "signalStrengthKA": -5.3,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9137,
+      "lat": 6.4427,
+      "cloud": true,
+      "signalStrengthKA": 14.4,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.2353,
+      "lat": 16.2781,
+      "cloud": false,
+      "signalStrengthKA": -11.7,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.2509,
+      "lat": 16.2922,
+      "cloud": false,
+      "signalStrengthKA": -11.3,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.1772,
+      "lat": 6.515,
+      "cloud": true,
+      "signalStrengthKA": 9.1,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.7859,
+      "lat": 18.2564,
+      "cloud": false,
+      "signalStrengthKA": -17.5,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3733,
+      "lat": 12.487,
+      "cloud": false,
+      "signalStrengthKA": -141.7,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3444,
+      "lat": 12.5531,
+      "cloud": false,
+      "signalStrengthKA": -19.8,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3472,
+      "lat": 12.478,
+      "cloud": false,
+      "signalStrengthKA": -51.8,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3527,
+      "lat": 12.4773,
+      "cloud": false,
+      "signalStrengthKA": -69.6,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3633,
+      "lat": 12.4754,
+      "cloud": false,
+      "signalStrengthKA": -83.3,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3903,
+      "lat": 12.4364,
+      "cloud": true,
+      "signalStrengthKA": 10.8,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3336,
+      "lat": 12.486,
+      "cloud": false,
+      "signalStrengthKA": -43.8,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.4209,
+      "lat": 12.4542,
+      "cloud": false,
+      "signalStrengthKA": -29.9,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.3139,
+      "lat": 14.0799,
+      "cloud": false,
+      "signalStrengthKA": -23,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.325,
+      "lat": 12.4447,
+      "cloud": false,
+      "signalStrengthKA": -22.1,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3635,
+      "lat": 12.4835,
+      "cloud": false,
+      "signalStrengthKA": -35.1,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.348,
+      "lat": 12.4749,
+      "cloud": false,
+      "signalStrengthKA": -10.7,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.2532,
+      "lat": 19.9402,
+      "cloud": false,
+      "signalStrengthKA": -57.7,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.172,
+      "lat": 19.9232,
+      "cloud": false,
+      "signalStrengthKA": -31.3,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4362,
+      "lat": 11.7294,
+      "cloud": false,
+      "signalStrengthKA": -18.1,
+      "time": "2026-08-12 16:11 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.549,
+      "lat": 15.8424,
+      "cloud": false,
+      "signalStrengthKA": -86,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5613,
+      "lat": 15.8316,
+      "cloud": false,
+      "signalStrengthKA": -47.1,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6258,
+      "lat": 15.8248,
+      "cloud": true,
+      "signalStrengthKA": 17.2,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5153,
+      "lat": 15.8452,
+      "cloud": false,
+      "signalStrengthKA": -28.7,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.1178,
+      "lat": 17.0333,
+      "cloud": false,
+      "signalStrengthKA": -24.5,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5414,
+      "lat": 15.8497,
+      "cloud": false,
+      "signalStrengthKA": -31.3,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5488,
+      "lat": 15.8425,
+      "cloud": false,
+      "signalStrengthKA": -33.6,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5328,
+      "lat": 15.8415,
+      "cloud": false,
+      "signalStrengthKA": -16.4,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5313,
+      "lat": 15.8692,
+      "cloud": false,
+      "signalStrengthKA": -41.2,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.1544,
+      "lat": 6.4683,
+      "cloud": false,
+      "signalStrengthKA": -11.1,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0481,
+      "lat": 11.4906,
+      "cloud": true,
+      "signalStrengthKA": 19.8,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0908,
+      "lat": 11.4853,
+      "cloud": true,
+      "signalStrengthKA": 6.3,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.06,
+      "lat": 11.4554,
+      "cloud": false,
+      "signalStrengthKA": -13.9,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.9939,
+      "lat": 18.1283,
+      "cloud": true,
+      "signalStrengthKA": 14.2,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.3549,
+      "lat": 11.6577,
+      "cloud": true,
+      "signalStrengthKA": -3.6,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.3623,
+      "lat": 11.6703,
+      "cloud": true,
+      "signalStrengthKA": 11.4,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.8578,
+      "lat": 11.8628,
+      "cloud": true,
+      "signalStrengthKA": 12.9,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9167,
+      "lat": 6.4633,
+      "cloud": true,
+      "signalStrengthKA": 28.5,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9403,
+      "lat": 6.4135,
+      "cloud": true,
+      "signalStrengthKA": -7.8,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.7492,
+      "lat": 6.3371,
+      "cloud": true,
+      "signalStrengthKA": -5.8,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.057,
+      "lat": 6.4335,
+      "cloud": true,
+      "signalStrengthKA": 7.6,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5454,
+      "lat": 15.767,
+      "cloud": true,
+      "signalStrengthKA": -8.5,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5657,
+      "lat": 15.8247,
+      "cloud": true,
+      "signalStrengthKA": 20.9,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 124.9589,
+      "lat": 19.8223,
+      "cloud": false,
+      "signalStrengthKA": -141,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.0987,
+      "lat": 19.8885,
+      "cloud": false,
+      "signalStrengthKA": -16.5,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.0167,
+      "lat": 19.8759,
+      "cloud": false,
+      "signalStrengthKA": -11,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.0996,
+      "lat": 19.8848,
+      "cloud": false,
+      "signalStrengthKA": -17,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.1268,
+      "lat": 19.8812,
+      "cloud": false,
+      "signalStrengthKA": -23.4,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.3799,
+      "lat": 11.7375,
+      "cloud": true,
+      "signalStrengthKA": -6.2,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.2416,
+      "lat": 17.1509,
+      "cloud": false,
+      "signalStrengthKA": -21.9,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.179,
+      "lat": 16.2908,
+      "cloud": false,
+      "signalStrengthKA": -17.9,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1703,
+      "lat": 16.2698,
+      "cloud": false,
+      "signalStrengthKA": -33.5,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.8522,
+      "lat": 6.541,
+      "cloud": true,
+      "signalStrengthKA": -6.4,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9753,
+      "lat": 6.4556,
+      "cloud": true,
+      "signalStrengthKA": -9.8,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.8504,
+      "lat": 6.583,
+      "cloud": true,
+      "signalStrengthKA": -8.6,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.7741,
+      "lat": 11.9968,
+      "cloud": false,
+      "signalStrengthKA": -17,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.7687,
+      "lat": 11.9748,
+      "cloud": true,
+      "signalStrengthKA": 17.7,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9047,
+      "lat": 6.4396,
+      "cloud": true,
+      "signalStrengthKA": 5.7,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0777,
+      "lat": 6.486,
+      "cloud": true,
+      "signalStrengthKA": 10.4,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.085,
+      "lat": 6.469,
+      "cloud": true,
+      "signalStrengthKA": -6.3,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0626,
+      "lat": 6.4997,
+      "cloud": true,
+      "signalStrengthKA": -6.9,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0464,
+      "lat": 14.356,
+      "cloud": false,
+      "signalStrengthKA": -18.7,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.064,
+      "lat": 14.3763,
+      "cloud": false,
+      "signalStrengthKA": -133.7,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0448,
+      "lat": 14.3787,
+      "cloud": false,
+      "signalStrengthKA": -14.8,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.158,
+      "lat": 14.3364,
+      "cloud": false,
+      "signalStrengthKA": -33.7,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.027,
+      "lat": 14.3751,
+      "cloud": false,
+      "signalStrengthKA": -20.3,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0393,
+      "lat": 14.3651,
+      "cloud": false,
+      "signalStrengthKA": -38,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0699,
+      "lat": 14.3629,
+      "cloud": false,
+      "signalStrengthKA": -67.7,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0247,
+      "lat": 14.369,
+      "cloud": false,
+      "signalStrengthKA": -15.6,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0386,
+      "lat": 14.3784,
+      "cloud": false,
+      "signalStrengthKA": -16.5,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0947,
+      "lat": 14.3517,
+      "cloud": true,
+      "signalStrengthKA": 26.2,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.051,
+      "lat": 14.3823,
+      "cloud": false,
+      "signalStrengthKA": -29.3,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5453,
+      "lat": 15.1395,
+      "cloud": true,
+      "signalStrengthKA": 13,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.4756,
+      "lat": 7.0012,
+      "cloud": true,
+      "signalStrengthKA": 11.5,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.5098,
+      "lat": 7.0058,
+      "cloud": true,
+      "signalStrengthKA": 10.3,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.5017,
+      "lat": 6.9431,
+      "cloud": false,
+      "signalStrengthKA": -11.4,
+      "time": "2026-08-12 16:12 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.1145,
+      "lat": 19.9291,
+      "cloud": true,
+      "signalStrengthKA": 20.5,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.1749,
+      "lat": 19.968,
+      "cloud": false,
+      "signalStrengthKA": -40.9,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.121,
+      "lat": 19.9143,
+      "cloud": false,
+      "signalStrengthKA": -38.2,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.6908,
+      "lat": 6.3869,
+      "cloud": false,
+      "signalStrengthKA": -30.3,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5993,
+      "lat": 15.8263,
+      "cloud": false,
+      "signalStrengthKA": -53.5,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6583,
+      "lat": 15.8759,
+      "cloud": false,
+      "signalStrengthKA": -23.3,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6324,
+      "lat": 15.8352,
+      "cloud": false,
+      "signalStrengthKA": -24.5,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.525,
+      "lat": 15.8371,
+      "cloud": false,
+      "signalStrengthKA": -31.4,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.8896,
+      "lat": 6.46,
+      "cloud": true,
+      "signalStrengthKA": -4.6,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.8839,
+      "lat": 6.4308,
+      "cloud": false,
+      "signalStrengthKA": -21.7,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9601,
+      "lat": 6.4116,
+      "cloud": true,
+      "signalStrengthKA": -6.1,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0357,
+      "lat": 6.4614,
+      "cloud": true,
+      "signalStrengthKA": 4.9,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9294,
+      "lat": 6.4635,
+      "cloud": true,
+      "signalStrengthKA": -8.1,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0853,
+      "lat": 13.9394,
+      "cloud": false,
+      "signalStrengthKA": -16.2,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0602,
+      "lat": 13.9466,
+      "cloud": true,
+      "signalStrengthKA": 10.4,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9059,
+      "lat": 6.4897,
+      "cloud": true,
+      "signalStrengthKA": 6.7,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9523,
+      "lat": 6.4852,
+      "cloud": true,
+      "signalStrengthKA": 8.8,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 124.9846,
+      "lat": 19.8917,
+      "cloud": false,
+      "signalStrengthKA": 52,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 124.7165,
+      "lat": 19.6107,
+      "cloud": true,
+      "signalStrengthKA": 18,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1842,
+      "lat": 16.3157,
+      "cloud": false,
+      "signalStrengthKA": -23.4,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3086,
+      "lat": 14.2484,
+      "cloud": false,
+      "signalStrengthKA": -92.6,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3975,
+      "lat": 14.2685,
+      "cloud": false,
+      "signalStrengthKA": -27.7,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.8479,
+      "lat": 16.8962,
+      "cloud": false,
+      "signalStrengthKA": -23,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.1051,
+      "lat": 6.4526,
+      "cloud": false,
+      "signalStrengthKA": -12.6,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.334,
+      "lat": 11.6497,
+      "cloud": false,
+      "signalStrengthKA": -39.8,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.3107,
+      "lat": 11.6564,
+      "cloud": false,
+      "signalStrengthKA": -16.9,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 122.0331,
+      "lat": 11.5443,
+      "cloud": false,
+      "signalStrengthKA": -12.9,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 123.9607,
+      "lat": 19.2076,
+      "cloud": false,
+      "signalStrengthKA": -61.2,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 123.9532,
+      "lat": 19.0916,
+      "cloud": true,
+      "signalStrengthKA": 13.4,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.7945,
+      "lat": 12.013,
+      "cloud": false,
+      "signalStrengthKA": -17.5,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.7747,
+      "lat": 11.9659,
+      "cloud": true,
+      "signalStrengthKA": -4.8,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.7457,
+      "lat": 11.9515,
+      "cloud": true,
+      "signalStrengthKA": 7.2,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.7464,
+      "lat": 12.002,
+      "cloud": false,
+      "signalStrengthKA": -58.2,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3488,
+      "lat": 12.4318,
+      "cloud": true,
+      "signalStrengthKA": 24.5,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.277,
+      "lat": 12.331,
+      "cloud": true,
+      "signalStrengthKA": 12.1,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5778,
+      "lat": 12.481,
+      "cloud": false,
+      "signalStrengthKA": 49.7,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3343,
+      "lat": 12.4194,
+      "cloud": true,
+      "signalStrengthKA": -5,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.1546,
+      "lat": 12.4069,
+      "cloud": true,
+      "signalStrengthKA": 12.9,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 124.7472,
+      "lat": 20.5191,
+      "cloud": true,
+      "signalStrengthKA": 24.3,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.1307,
+      "lat": 6.4765,
+      "cloud": true,
+      "signalStrengthKA": -7.8,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0961,
+      "lat": 6.5225,
+      "cloud": true,
+      "signalStrengthKA": 11.5,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1984,
+      "lat": 16.2721,
+      "cloud": false,
+      "signalStrengthKA": -12.1,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.8138,
+      "lat": 15.2082,
+      "cloud": false,
+      "signalStrengthKA": -91,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.8756,
+      "lat": 15.1951,
+      "cloud": false,
+      "signalStrengthKA": -12.1,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.8286,
+      "lat": 15.1934,
+      "cloud": true,
+      "signalStrengthKA": 16.2,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.8018,
+      "lat": 15.2035,
+      "cloud": false,
+      "signalStrengthKA": -14.5,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.909,
+      "lat": 15.2144,
+      "cloud": false,
+      "signalStrengthKA": -47.5,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.7288,
+      "lat": 15.2719,
+      "cloud": false,
+      "signalStrengthKA": -28.8,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.407,
+      "lat": 11.7201,
+      "cloud": true,
+      "signalStrengthKA": 9.2,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.3029,
+      "lat": 11.7197,
+      "cloud": true,
+      "signalStrengthKA": -6.1,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.1546,
+      "lat": 14.0795,
+      "cloud": false,
+      "signalStrengthKA": -18.4,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9701,
+      "lat": 6.4821,
+      "cloud": true,
+      "signalStrengthKA": 14.1,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9472,
+      "lat": 6.4542,
+      "cloud": true,
+      "signalStrengthKA": 4.3,
+      "time": "2026-08-12 16:13 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.1964,
+      "lat": 19.9605,
+      "cloud": false,
+      "signalStrengthKA": -26.6,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.2094,
+      "lat": 19.9137,
+      "cloud": false,
+      "signalStrengthKA": -120.4,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.1068,
+      "lat": 19.9839,
+      "cloud": false,
+      "signalStrengthKA": -16.2,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.2097,
+      "lat": 19.8899,
+      "cloud": false,
+      "signalStrengthKA": -44.3,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.1406,
+      "lat": 19.8899,
+      "cloud": false,
+      "signalStrengthKA": -34,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.4607,
+      "lat": 12.4685,
+      "cloud": true,
+      "signalStrengthKA": 38.1,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.1368,
+      "lat": 19.8663,
+      "cloud": false,
+      "signalStrengthKA": -38.1,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1548,
+      "lat": 18.1743,
+      "cloud": false,
+      "signalStrengthKA": -18.8,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0023,
+      "lat": 18.2125,
+      "cloud": true,
+      "signalStrengthKA": 12.6,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.1091,
+      "lat": 19.8797,
+      "cloud": false,
+      "signalStrengthKA": -38,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5972,
+      "lat": 15.8585,
+      "cloud": true,
+      "signalStrengthKA": 30.3,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6535,
+      "lat": 15.8511,
+      "cloud": false,
+      "signalStrengthKA": -25.2,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6431,
+      "lat": 15.8329,
+      "cloud": true,
+      "signalStrengthKA": 8.5,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.7275,
+      "lat": 18.2149,
+      "cloud": false,
+      "signalStrengthKA": -85.9,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6935,
+      "lat": 18.2238,
+      "cloud": false,
+      "signalStrengthKA": -20.4,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.7451,
+      "lat": 6.418,
+      "cloud": true,
+      "signalStrengthKA": 18.9,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.4994,
+      "lat": 14.2911,
+      "cloud": false,
+      "signalStrengthKA": -32.8,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.086,
+      "lat": 13.9917,
+      "cloud": false,
+      "signalStrengthKA": -11.9,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0056,
+      "lat": 13.9727,
+      "cloud": true,
+      "signalStrengthKA": 15.1,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0697,
+      "lat": 6.5131,
+      "cloud": true,
+      "signalStrengthKA": 10.3,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0987,
+      "lat": 6.5045,
+      "cloud": false,
+      "signalStrengthKA": -18.2,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4984,
+      "lat": 11.7518,
+      "cloud": true,
+      "signalStrengthKA": -6.8,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.452,
+      "lat": 11.8513,
+      "cloud": true,
+      "signalStrengthKA": 8.2,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.6954,
+      "lat": 11.8417,
+      "cloud": false,
+      "signalStrengthKA": -52.6,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.6429,
+      "lat": 11.8721,
+      "cloud": true,
+      "signalStrengthKA": 27.3,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1045,
+      "lat": 16.2869,
+      "cloud": false,
+      "signalStrengthKA": -16,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.8084,
+      "lat": 11.9647,
+      "cloud": true,
+      "signalStrengthKA": -6.6,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.7159,
+      "lat": 11.9422,
+      "cloud": false,
+      "signalStrengthKA": -12.4,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 123.1985,
+      "lat": 19.2023,
+      "cloud": true,
+      "signalStrengthKA": 17,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 123.2755,
+      "lat": 19.1512,
+      "cloud": false,
+      "signalStrengthKA": 34.8,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.3868,
+      "lat": 11.7536,
+      "cloud": true,
+      "signalStrengthKA": 5.7,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.3621,
+      "lat": 11.7437,
+      "cloud": true,
+      "signalStrengthKA": 9.3,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1964,
+      "lat": 16.2875,
+      "cloud": false,
+      "signalStrengthKA": -21.2,
+      "time": "2026-08-12 16:14 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.2532,
+      "lat": 19.966,
+      "cloud": true,
+      "signalStrengthKA": 8.7,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.2126,
+      "lat": 19.9736,
+      "cloud": false,
+      "signalStrengthKA": -62.9,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.1917,
+      "lat": 19.9579,
+      "cloud": false,
+      "signalStrengthKA": -14.4,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.6022,
+      "lat": 6.3826,
+      "cloud": true,
+      "signalStrengthKA": 5.2,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5095,
+      "lat": 15.8601,
+      "cloud": false,
+      "signalStrengthKA": -36,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6281,
+      "lat": 15.8901,
+      "cloud": false,
+      "signalStrengthKA": -11.7,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.8785,
+      "lat": 11.6219,
+      "cloud": false,
+      "signalStrengthKA": -39.2,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.3708,
+      "lat": 11.7142,
+      "cloud": false,
+      "signalStrengthKA": -19.9,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4193,
+      "lat": 11.7466,
+      "cloud": false,
+      "signalStrengthKA": -31.2,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9467,
+      "lat": 6.4769,
+      "cloud": false,
+      "signalStrengthKA": -15.8,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.5453,
+      "lat": 10.3747,
+      "cloud": false,
+      "signalStrengthKA": -36.9,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.5286,
+      "lat": 10.367,
+      "cloud": false,
+      "signalStrengthKA": -11.9,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3449,
+      "lat": 14.2126,
+      "cloud": true,
+      "signalStrengthKA": 7.8,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.2412,
+      "lat": 14.2335,
+      "cloud": false,
+      "signalStrengthKA": -63.6,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3837,
+      "lat": 14.1921,
+      "cloud": false,
+      "signalStrengthKA": -23.6,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.2419,
+      "lat": 14.2238,
+      "cloud": false,
+      "signalStrengthKA": -37.9,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3653,
+      "lat": 14.2139,
+      "cloud": false,
+      "signalStrengthKA": -27.3,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.0451,
+      "lat": 12.0824,
+      "cloud": false,
+      "signalStrengthKA": -23.6,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.9103,
+      "lat": 12.0698,
+      "cloud": false,
+      "signalStrengthKA": -8.3,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.4707,
+      "lat": 6.9409,
+      "cloud": true,
+      "signalStrengthKA": -5.6,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.5195,
+      "lat": 6.9878,
+      "cloud": true,
+      "signalStrengthKA": 43.5,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.4795,
+      "lat": 6.9462,
+      "cloud": false,
+      "signalStrengthKA": -13.9,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.4907,
+      "lat": 6.9415,
+      "cloud": false,
+      "signalStrengthKA": -13.1,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.5505,
+      "lat": 6.9628,
+      "cloud": true,
+      "signalStrengthKA": 15.5,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.5385,
+      "lat": 10.3582,
+      "cloud": false,
+      "signalStrengthKA": -13.9,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6552,
+      "lat": 18.4763,
+      "cloud": false,
+      "signalStrengthKA": -14.9,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6405,
+      "lat": 18.251,
+      "cloud": false,
+      "signalStrengthKA": -96.1,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.8062,
+      "lat": 18.2707,
+      "cloud": false,
+      "signalStrengthKA": -60.6,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.7036,
+      "lat": 18.2322,
+      "cloud": false,
+      "signalStrengthKA": -34.9,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6716,
+      "lat": 18.2414,
+      "cloud": true,
+      "signalStrengthKA": 13.9,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.3229,
+      "lat": 8.9468,
+      "cloud": false,
+      "signalStrengthKA": -11.8,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.3529,
+      "lat": 8.9163,
+      "cloud": false,
+      "signalStrengthKA": -12,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.696,
+      "lat": 10.3894,
+      "cloud": false,
+      "signalStrengthKA": -19.6,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 123.4399,
+      "lat": 19.2311,
+      "cloud": false,
+      "signalStrengthKA": 60.5,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4148,
+      "lat": 11.7168,
+      "cloud": true,
+      "signalStrengthKA": 10.4,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.208,
+      "lat": 16.2358,
+      "cloud": false,
+      "signalStrengthKA": -18.1,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.7384,
+      "lat": 6.3389,
+      "cloud": true,
+      "signalStrengthKA": 4.8,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.466,
+      "lat": 6.9445,
+      "cloud": true,
+      "signalStrengthKA": -7.3,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.1416,
+      "lat": 6.5468,
+      "cloud": false,
+      "signalStrengthKA": -18.6,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.7997,
+      "lat": 12.0049,
+      "cloud": false,
+      "signalStrengthKA": -19.2,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.1303,
+      "lat": 6.5039,
+      "cloud": false,
+      "signalStrengthKA": -9.9,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6025,
+      "lat": 15.8347,
+      "cloud": false,
+      "signalStrengthKA": -31.1,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.614,
+      "lat": 15.8553,
+      "cloud": true,
+      "signalStrengthKA": 20.3,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.949,
+      "lat": 6.4962,
+      "cloud": false,
+      "signalStrengthKA": -25.4,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9241,
+      "lat": 6.4888,
+      "cloud": true,
+      "signalStrengthKA": 9.4,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9432,
+      "lat": 6.5323,
+      "cloud": true,
+      "signalStrengthKA": 14.6,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0788,
+      "lat": 14.3335,
+      "cloud": false,
+      "signalStrengthKA": -31.1,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1512,
+      "lat": 14.3948,
+      "cloud": false,
+      "signalStrengthKA": -144.4,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0533,
+      "lat": 14.4065,
+      "cloud": false,
+      "signalStrengthKA": -51.4,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0946,
+      "lat": 14.4566,
+      "cloud": false,
+      "signalStrengthKA": -37.2,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.216,
+      "lat": 14.3678,
+      "cloud": true,
+      "signalStrengthKA": 11,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0771,
+      "lat": 14.3798,
+      "cloud": false,
+      "signalStrengthKA": -38.7,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.2003,
+      "lat": 14.3579,
+      "cloud": false,
+      "signalStrengthKA": -9.7,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0849,
+      "lat": 14.3875,
+      "cloud": false,
+      "signalStrengthKA": -20.3,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4332,
+      "lat": 11.778,
+      "cloud": true,
+      "signalStrengthKA": 9.2,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4027,
+      "lat": 11.7801,
+      "cloud": true,
+      "signalStrengthKA": 4.5,
+      "time": "2026-08-12 16:15 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.327,
+      "lat": 11.6684,
+      "cloud": false,
+      "signalStrengthKA": -26.3,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.2349,
+      "lat": 11.7015,
+      "cloud": true,
+      "signalStrengthKA": 17.9,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.4428,
+      "lat": 6.9112,
+      "cloud": true,
+      "signalStrengthKA": -6.1,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.527,
+      "lat": 6.9227,
+      "cloud": true,
+      "signalStrengthKA": -10,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.6923,
+      "lat": 11.8365,
+      "cloud": true,
+      "signalStrengthKA": 10.5,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.6693,
+      "lat": 11.857,
+      "cloud": false,
+      "signalStrengthKA": -58.4,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.6586,
+      "lat": 11.8564,
+      "cloud": false,
+      "signalStrengthKA": -28,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.3591,
+      "lat": 11.8055,
+      "cloud": true,
+      "signalStrengthKA": 9.2,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.707,
+      "lat": 15.7983,
+      "cloud": false,
+      "signalStrengthKA": -10.9,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.7297,
+      "lat": 15.8149,
+      "cloud": true,
+      "signalStrengthKA": 16.1,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1816,
+      "lat": 16.2866,
+      "cloud": false,
+      "signalStrengthKA": -20.2,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1705,
+      "lat": 16.2818,
+      "cloud": false,
+      "signalStrengthKA": -11.5,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1736,
+      "lat": 16.2962,
+      "cloud": false,
+      "signalStrengthKA": -31.7,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5904,
+      "lat": 16.2236,
+      "cloud": false,
+      "signalStrengthKA": -19.3,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.9432,
+      "lat": 11.9597,
+      "cloud": false,
+      "signalStrengthKA": -88,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.4357,
+      "lat": 12.556,
+      "cloud": false,
+      "signalStrengthKA": -115.5,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.4222,
+      "lat": 12.5362,
+      "cloud": false,
+      "signalStrengthKA": -35.8,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.4622,
+      "lat": 12.5462,
+      "cloud": false,
+      "signalStrengthKA": 69.6,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.9458,
+      "lat": 11.9735,
+      "cloud": false,
+      "signalStrengthKA": -92.8,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.8779,
+      "lat": 11.955,
+      "cloud": false,
+      "signalStrengthKA": -28.8,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.4759,
+      "lat": 12.5565,
+      "cloud": true,
+      "signalStrengthKA": 10.2,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.0473,
+      "lat": 19.8513,
+      "cloud": false,
+      "signalStrengthKA": -121.3,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.0712,
+      "lat": 19.8563,
+      "cloud": false,
+      "signalStrengthKA": -23.8,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.1879,
+      "lat": 19.8182,
+      "cloud": false,
+      "signalStrengthKA": -62.1,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 124.9927,
+      "lat": 19.8337,
+      "cloud": false,
+      "signalStrengthKA": -8,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.0374,
+      "lat": 19.851,
+      "cloud": false,
+      "signalStrengthKA": -15.6,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.0027,
+      "lat": 19.8345,
+      "cloud": false,
+      "signalStrengthKA": -9.7,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6886,
+      "lat": 18.2628,
+      "cloud": false,
+      "signalStrengthKA": -59.5,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.8898,
+      "lat": 18.2266,
+      "cloud": false,
+      "signalStrengthKA": -23.5,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.696,
+      "lat": 18.2706,
+      "cloud": false,
+      "signalStrengthKA": -32.8,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.7513,
+      "lat": 18.2369,
+      "cloud": false,
+      "signalStrengthKA": -23.1,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4135,
+      "lat": 11.7461,
+      "cloud": false,
+      "signalStrengthKA": -19.8,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4268,
+      "lat": 11.7468,
+      "cloud": false,
+      "signalStrengthKA": -8.6,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.2684,
+      "lat": 11.698,
+      "cloud": true,
+      "signalStrengthKA": -5.6,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6535,
+      "lat": 15.8322,
+      "cloud": true,
+      "signalStrengthKA": 14.3,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5786,
+      "lat": 15.8294,
+      "cloud": false,
+      "signalStrengthKA": -20.1,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.0575,
+      "lat": 18.3668,
+      "cloud": true,
+      "signalStrengthKA": 22.7,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5953,
+      "lat": 15.777,
+      "cloud": false,
+      "signalStrengthKA": -12,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.9936,
+      "lat": 18.0873,
+      "cloud": false,
+      "signalStrengthKA": -12.7,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.8769,
+      "lat": 18.1302,
+      "cloud": false,
+      "signalStrengthKA": -64.1,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.9589,
+      "lat": 18.1112,
+      "cloud": false,
+      "signalStrengthKA": -93.4,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0804,
+      "lat": 18.0995,
+      "cloud": false,
+      "signalStrengthKA": -48.2,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1038,
+      "lat": 18.0937,
+      "cloud": false,
+      "signalStrengthKA": -25.3,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.7171,
+      "lat": 6.3528,
+      "cloud": true,
+      "signalStrengthKA": -5.1,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0808,
+      "lat": 6.498,
+      "cloud": true,
+      "signalStrengthKA": -6.9,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.4198,
+      "lat": 8.9081,
+      "cloud": false,
+      "signalStrengthKA": -10.6,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.412,
+      "lat": 8.932,
+      "cloud": true,
+      "signalStrengthKA": 27.7,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.4336,
+      "lat": 8.9347,
+      "cloud": false,
+      "signalStrengthKA": -32.1,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.3394,
+      "lat": 8.9359,
+      "cloud": false,
+      "signalStrengthKA": -31.9,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.4771,
+      "lat": 8.9175,
+      "cloud": false,
+      "signalStrengthKA": -23.9,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.422,
+      "lat": 9.0052,
+      "cloud": false,
+      "signalStrengthKA": -19.7,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0007,
+      "lat": 11.4803,
+      "cloud": true,
+      "signalStrengthKA": 11.6,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.064,
+      "lat": 11.5319,
+      "cloud": false,
+      "signalStrengthKA": -84.7,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.8199,
+      "lat": 12.0015,
+      "cloud": false,
+      "signalStrengthKA": -76.2,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.727,
+      "lat": 11.9941,
+      "cloud": false,
+      "signalStrengthKA": -38.9,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.773,
+      "lat": 12.0049,
+      "cloud": true,
+      "signalStrengthKA": 18.3,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.7717,
+      "lat": 11.9444,
+      "cloud": true,
+      "signalStrengthKA": -7.2,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.7998,
+      "lat": 11.9381,
+      "cloud": false,
+      "signalStrengthKA": -94.9,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.7947,
+      "lat": 11.9407,
+      "cloud": false,
+      "signalStrengthKA": -29.2,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.8033,
+      "lat": 11.9598,
+      "cloud": false,
+      "signalStrengthKA": -18.7,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4,
+      "lat": 11.7396,
+      "cloud": false,
+      "signalStrengthKA": -40.6,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.3895,
+      "lat": 11.7523,
+      "cloud": false,
+      "signalStrengthKA": -11.9,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6317,
+      "lat": 15.9447,
+      "cloud": false,
+      "signalStrengthKA": -26.9,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5182,
+      "lat": 15.9531,
+      "cloud": false,
+      "signalStrengthKA": -20.6,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.5235,
+      "lat": 10.364,
+      "cloud": true,
+      "signalStrengthKA": -4.3,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.2086,
+      "lat": 16.2566,
+      "cloud": false,
+      "signalStrengthKA": -7.7,
+      "time": "2026-08-12 16:16 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.5183,
+      "lat": 11.7648,
+      "cloud": false,
+      "signalStrengthKA": -39.1,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4427,
+      "lat": 11.7584,
+      "cloud": true,
+      "signalStrengthKA": -6.4,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.3874,
+      "lat": 11.7774,
+      "cloud": true,
+      "signalStrengthKA": -7.4,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.2098,
+      "lat": 14.8175,
+      "cloud": true,
+      "signalStrengthKA": 20.9,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.4735,
+      "lat": 6.9304,
+      "cloud": true,
+      "signalStrengthKA": -9.2,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.2947,
+      "lat": 6.9722,
+      "cloud": true,
+      "signalStrengthKA": 11.5,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1043,
+      "lat": 14.3992,
+      "cloud": false,
+      "signalStrengthKA": -122.9,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0915,
+      "lat": 14.3931,
+      "cloud": true,
+      "signalStrengthKA": 21.5,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.074,
+      "lat": 14.406,
+      "cloud": false,
+      "signalStrengthKA": -17.4,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.06,
+      "lat": 14.3599,
+      "cloud": true,
+      "signalStrengthKA": 17.3,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0698,
+      "lat": 14.4035,
+      "cloud": false,
+      "signalStrengthKA": -31.6,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1155,
+      "lat": 14.3768,
+      "cloud": false,
+      "signalStrengthKA": -12.8,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1083,
+      "lat": 14.4063,
+      "cloud": false,
+      "signalStrengthKA": -10.2,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0794,
+      "lat": 14.3613,
+      "cloud": true,
+      "signalStrengthKA": 12.6,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 124.8747,
+      "lat": 20.3657,
+      "cloud": true,
+      "signalStrengthKA": 26.5,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.9791,
+      "lat": 11.8983,
+      "cloud": true,
+      "signalStrengthKA": 5.9,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.9609,
+      "lat": 11.9259,
+      "cloud": true,
+      "signalStrengthKA": 6.5,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.4202,
+      "lat": 12.4958,
+      "cloud": true,
+      "signalStrengthKA": 23,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.4849,
+      "lat": 12.5307,
+      "cloud": false,
+      "signalStrengthKA": -9.1,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.4743,
+      "lat": 12.4893,
+      "cloud": false,
+      "signalStrengthKA": -13.5,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.4694,
+      "lat": 12.5004,
+      "cloud": true,
+      "signalStrengthKA": 17,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.5024,
+      "lat": 6.9222,
+      "cloud": true,
+      "signalStrengthKA": -5,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.5287,
+      "lat": 11.7514,
+      "cloud": true,
+      "signalStrengthKA": -6.5,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4266,
+      "lat": 11.8051,
+      "cloud": true,
+      "signalStrengthKA": 16.8,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.6768,
+      "lat": 11.8388,
+      "cloud": true,
+      "signalStrengthKA": 7,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0942,
+      "lat": 14.2078,
+      "cloud": false,
+      "signalStrengthKA": -9.4,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0694,
+      "lat": 14.199,
+      "cloud": true,
+      "signalStrengthKA": 5.9,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0899,
+      "lat": 14.1981,
+      "cloud": true,
+      "signalStrengthKA": 5.3,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1528,
+      "lat": 14.2787,
+      "cloud": true,
+      "signalStrengthKA": 21.7,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9572,
+      "lat": 14.5736,
+      "cloud": true,
+      "signalStrengthKA": 27.2,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.2022,
+      "lat": 16.3209,
+      "cloud": false,
+      "signalStrengthKA": -15,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.234,
+      "lat": 16.2894,
+      "cloud": true,
+      "signalStrengthKA": 26.4,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.1012,
+      "lat": 6.5047,
+      "cloud": true,
+      "signalStrengthKA": 3,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.5056,
+      "lat": 11.7761,
+      "cloud": true,
+      "signalStrengthKA": 9.1,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.5406,
+      "lat": 11.7313,
+      "cloud": true,
+      "signalStrengthKA": -5,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4263,
+      "lat": 11.6875,
+      "cloud": true,
+      "signalStrengthKA": 5.7,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.7039,
+      "lat": 18.266,
+      "cloud": false,
+      "signalStrengthKA": -48.6,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6853,
+      "lat": 18.2811,
+      "cloud": false,
+      "signalStrengthKA": -20.3,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4214,
+      "lat": 11.8178,
+      "cloud": true,
+      "signalStrengthKA": 3.5,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.5363,
+      "lat": 11.764,
+      "cloud": true,
+      "signalStrengthKA": 5.8,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.7025,
+      "lat": 15.8615,
+      "cloud": true,
+      "signalStrengthKA": 22.6,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.7992,
+      "lat": 11.9795,
+      "cloud": false,
+      "signalStrengthKA": -9.4,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.7869,
+      "lat": 12.0139,
+      "cloud": false,
+      "signalStrengthKA": -97.5,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.7872,
+      "lat": 11.9736,
+      "cloud": true,
+      "signalStrengthKA": 6.8,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.8771,
+      "lat": 11.983,
+      "cloud": false,
+      "signalStrengthKA": -40.8,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.8596,
+      "lat": 12.0387,
+      "cloud": false,
+      "signalStrengthKA": -18.8,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.6825,
+      "lat": 11.8732,
+      "cloud": false,
+      "signalStrengthKA": -47.3,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.678,
+      "lat": 11.8367,
+      "cloud": false,
+      "signalStrengthKA": -9.9,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.3185,
+      "lat": 20.0567,
+      "cloud": false,
+      "signalStrengthKA": -73.1,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.236,
+      "lat": 19.9475,
+      "cloud": false,
+      "signalStrengthKA": 104.9,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.1844,
+      "lat": 19.9452,
+      "cloud": false,
+      "signalStrengthKA": -28.5,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.0076,
+      "lat": 19.8254,
+      "cloud": false,
+      "signalStrengthKA": 195.4,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.0714,
+      "lat": 19.8887,
+      "cloud": false,
+      "signalStrengthKA": -23.1,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.5029,
+      "lat": 6.9378,
+      "cloud": false,
+      "signalStrengthKA": -22.7,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.502,
+      "lat": 6.9215,
+      "cloud": false,
+      "signalStrengthKA": -11.2,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.9844,
+      "lat": 14.0543,
+      "cloud": true,
+      "signalStrengthKA": 32.3,
+      "time": "2026-08-12 16:17 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.4801,
+      "lat": 6.9397,
+      "cloud": true,
+      "signalStrengthKA": 12.3,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.4407,
+      "lat": 6.9592,
+      "cloud": true,
+      "signalStrengthKA": 6.3,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.5429,
+      "lat": 6.9361,
+      "cloud": true,
+      "signalStrengthKA": 11.4,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.3327,
+      "lat": 6.909,
+      "cloud": true,
+      "signalStrengthKA": 5.6,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.5254,
+      "lat": 11.756,
+      "cloud": true,
+      "signalStrengthKA": -6.3,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.3746,
+      "lat": 11.7568,
+      "cloud": true,
+      "signalStrengthKA": 12.2,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4167,
+      "lat": 11.7545,
+      "cloud": true,
+      "signalStrengthKA": 8.1,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4049,
+      "lat": 11.7501,
+      "cloud": true,
+      "signalStrengthKA": 19.8,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0413,
+      "lat": 11.5528,
+      "cloud": true,
+      "signalStrengthKA": -6.9,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.9918,
+      "lat": 11.5637,
+      "cloud": true,
+      "signalStrengthKA": 11.3,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1163,
+      "lat": 13.9686,
+      "cloud": false,
+      "signalStrengthKA": -23,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.1229,
+      "lat": 6.4758,
+      "cloud": true,
+      "signalStrengthKA": 10.6,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.378,
+      "lat": 6.6936,
+      "cloud": true,
+      "signalStrengthKA": -9.6,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.3339,
+      "lat": 6.6864,
+      "cloud": true,
+      "signalStrengthKA": -6.2,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5904,
+      "lat": 12.553,
+      "cloud": false,
+      "signalStrengthKA": -21.6,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3905,
+      "lat": 12.5627,
+      "cloud": false,
+      "signalStrengthKA": -187.5,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3917,
+      "lat": 12.5472,
+      "cloud": false,
+      "signalStrengthKA": -65.9,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.4182,
+      "lat": 12.5167,
+      "cloud": true,
+      "signalStrengthKA": 23.6,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3583,
+      "lat": 12.5205,
+      "cloud": false,
+      "signalStrengthKA": -78.3,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.2117,
+      "lat": 12.497,
+      "cloud": false,
+      "signalStrengthKA": -122.5,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3462,
+      "lat": 12.5259,
+      "cloud": false,
+      "signalStrengthKA": -82.5,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.559,
+      "lat": 12.5338,
+      "cloud": false,
+      "signalStrengthKA": -19.1,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3539,
+      "lat": 12.5375,
+      "cloud": false,
+      "signalStrengthKA": -22.5,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4802,
+      "lat": 11.7642,
+      "cloud": true,
+      "signalStrengthKA": -6.7,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.6818,
+      "lat": 11.8003,
+      "cloud": true,
+      "signalStrengthKA": -8.4,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9644,
+      "lat": 6.4899,
+      "cloud": false,
+      "signalStrengthKA": -13.1,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.6837,
+      "lat": 6.3725,
+      "cloud": true,
+      "signalStrengthKA": 24.8,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.7323,
+      "lat": 6.3765,
+      "cloud": true,
+      "signalStrengthKA": -7.7,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.7023,
+      "lat": 6.368,
+      "cloud": true,
+      "signalStrengthKA": 7,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1199,
+      "lat": 14.1641,
+      "cloud": true,
+      "signalStrengthKA": -9,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1575,
+      "lat": 14.2203,
+      "cloud": false,
+      "signalStrengthKA": -11.6,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.334,
+      "lat": 11.6381,
+      "cloud": true,
+      "signalStrengthKA": 20,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.7473,
+      "lat": 15.8208,
+      "cloud": false,
+      "signalStrengthKA": -16.4,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0355,
+      "lat": 6.4381,
+      "cloud": true,
+      "signalStrengthKA": -8.8,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.088,
+      "lat": 6.5213,
+      "cloud": true,
+      "signalStrengthKA": 13.7,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1415,
+      "lat": 14.3808,
+      "cloud": false,
+      "signalStrengthKA": 56.6,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.2313,
+      "lat": 14.4039,
+      "cloud": false,
+      "signalStrengthKA": 211.5,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1103,
+      "lat": 14.3762,
+      "cloud": false,
+      "signalStrengthKA": -32.3,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1302,
+      "lat": 14.4018,
+      "cloud": false,
+      "signalStrengthKA": -42,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1274,
+      "lat": 14.3866,
+      "cloud": false,
+      "signalStrengthKA": -20.8,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 124.0182,
+      "lat": 19.103,
+      "cloud": true,
+      "signalStrengthKA": 23.3,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1142,
+      "lat": 14.4065,
+      "cloud": false,
+      "signalStrengthKA": -8.1,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1371,
+      "lat": 14.4037,
+      "cloud": false,
+      "signalStrengthKA": -42.5,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1076,
+      "lat": 14.4,
+      "cloud": false,
+      "signalStrengthKA": -51.1,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.439,
+      "lat": 8.9546,
+      "cloud": false,
+      "signalStrengthKA": -76,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.4274,
+      "lat": 8.9437,
+      "cloud": false,
+      "signalStrengthKA": -58.9,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4162,
+      "lat": 11.7664,
+      "cloud": false,
+      "signalStrengthKA": -36,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.3662,
+      "lat": 11.7473,
+      "cloud": true,
+      "signalStrengthKA": 16.2,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4244,
+      "lat": 11.7465,
+      "cloud": false,
+      "signalStrengthKA": -14.3,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.6742,
+      "lat": 11.7829,
+      "cloud": true,
+      "signalStrengthKA": 11.8,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.53,
+      "lat": 11.7473,
+      "cloud": false,
+      "signalStrengthKA": -10.9,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.2102,
+      "lat": 13.428,
+      "cloud": false,
+      "signalStrengthKA": -22.9,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.1433,
+      "lat": 20.255,
+      "cloud": true,
+      "signalStrengthKA": 7.9,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.1775,
+      "lat": 20.2675,
+      "cloud": true,
+      "signalStrengthKA": 11.7,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.1419,
+      "lat": 20.2668,
+      "cloud": true,
+      "signalStrengthKA": 5.9,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.3564,
+      "lat": 20.097,
+      "cloud": false,
+      "signalStrengthKA": -35.1,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.4407,
+      "lat": 12.5327,
+      "cloud": false,
+      "signalStrengthKA": -9.1,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.4669,
+      "lat": 12.503,
+      "cloud": false,
+      "signalStrengthKA": -14.9,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5525,
+      "lat": 12.499,
+      "cloud": false,
+      "signalStrengthKA": -16.6,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.4606,
+      "lat": 12.4729,
+      "cloud": false,
+      "signalStrengthKA": -8.5,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3991,
+      "lat": 12.5011,
+      "cloud": true,
+      "signalStrengthKA": -6.2,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.8337,
+      "lat": 12.0069,
+      "cloud": false,
+      "signalStrengthKA": -147.7,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.872,
+      "lat": 11.9784,
+      "cloud": true,
+      "signalStrengthKA": 6.2,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.5484,
+      "lat": 6.9368,
+      "cloud": true,
+      "signalStrengthKA": 4.4,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.2237,
+      "lat": 14.8008,
+      "cloud": true,
+      "signalStrengthKA": 23.8,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.2095,
+      "lat": 14.8222,
+      "cloud": true,
+      "signalStrengthKA": 20.4,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.811,
+      "lat": 18.2356,
+      "cloud": false,
+      "signalStrengthKA": -10.9,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.7903,
+      "lat": 18.2477,
+      "cloud": false,
+      "signalStrengthKA": -86.3,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.8378,
+      "lat": 18.2166,
+      "cloud": true,
+      "signalStrengthKA": 18.4,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.7269,
+      "lat": 18.2626,
+      "cloud": false,
+      "signalStrengthKA": -24.1,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.7672,
+      "lat": 18.2399,
+      "cloud": false,
+      "signalStrengthKA": -23.6,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.7262,
+      "lat": 18.235,
+      "cloud": true,
+      "signalStrengthKA": 15,
+      "time": "2026-08-12 16:18 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.5328,
+      "lat": 6.9282,
+      "cloud": true,
+      "signalStrengthKA": -6.7,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.5812,
+      "lat": 6.9134,
+      "cloud": false,
+      "signalStrengthKA": -11.6,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.398,
+      "lat": 19.8662,
+      "cloud": false,
+      "signalStrengthKA": -63.4,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0995,
+      "lat": 6.477,
+      "cloud": true,
+      "signalStrengthKA": -4.4,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.025,
+      "lat": 6.4716,
+      "cloud": true,
+      "signalStrengthKA": 6.9,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9606,
+      "lat": 6.4577,
+      "cloud": false,
+      "signalStrengthKA": -9.6,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.4406,
+      "lat": 12.527,
+      "cloud": false,
+      "signalStrengthKA": -30.6,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5018,
+      "lat": 12.5291,
+      "cloud": false,
+      "signalStrengthKA": -10.5,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.4486,
+      "lat": 12.5065,
+      "cloud": true,
+      "signalStrengthKA": 7.3,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.4409,
+      "lat": 12.547,
+      "cloud": true,
+      "signalStrengthKA": 10.9,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.1857,
+      "lat": 12.4418,
+      "cloud": true,
+      "signalStrengthKA": 29.9,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.1878,
+      "lat": 12.4278,
+      "cloud": true,
+      "signalStrengthKA": 15.5,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3273,
+      "lat": 12.4602,
+      "cloud": true,
+      "signalStrengthKA": 8.4,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0728,
+      "lat": 6.4898,
+      "cloud": true,
+      "signalStrengthKA": -3.5,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.7036,
+      "lat": 11.8069,
+      "cloud": true,
+      "signalStrengthKA": 7.5,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4002,
+      "lat": 11.7386,
+      "cloud": true,
+      "signalStrengthKA": -6.8,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4542,
+      "lat": 11.8018,
+      "cloud": true,
+      "signalStrengthKA": 8.5,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.6513,
+      "lat": 11.8565,
+      "cloud": true,
+      "signalStrengthKA": 4.9,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.3846,
+      "lat": 11.7745,
+      "cloud": true,
+      "signalStrengthKA": 8.3,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.3872,
+      "lat": 11.7783,
+      "cloud": true,
+      "signalStrengthKA": -4.3,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5423,
+      "lat": 15.9337,
+      "cloud": false,
+      "signalStrengthKA": -53.8,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6746,
+      "lat": 15.9062,
+      "cloud": true,
+      "signalStrengthKA": 8.6,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5773,
+      "lat": 15.9329,
+      "cloud": false,
+      "signalStrengthKA": -42.3,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6555,
+      "lat": 15.9282,
+      "cloud": false,
+      "signalStrengthKA": -37,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.8703,
+      "lat": 16.5115,
+      "cloud": false,
+      "signalStrengthKA": -32.8,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6646,
+      "lat": 15.7504,
+      "cloud": false,
+      "signalStrengthKA": -30.3,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.6245,
+      "lat": 15.8529,
+      "cloud": false,
+      "signalStrengthKA": -12.9,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.7425,
+      "lat": 15.8264,
+      "cloud": false,
+      "signalStrengthKA": -26,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.5603,
+      "lat": 6.9373,
+      "cloud": true,
+      "signalStrengthKA": 6.4,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.4759,
+      "lat": 6.9497,
+      "cloud": true,
+      "signalStrengthKA": -6.8,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0825,
+      "lat": 6.489,
+      "cloud": true,
+      "signalStrengthKA": 15.2,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.5552,
+      "lat": 6.9178,
+      "cloud": true,
+      "signalStrengthKA": -4.4,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3187,
+      "lat": 11.2356,
+      "cloud": false,
+      "signalStrengthKA": 45.8,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3584,
+      "lat": 11.2321,
+      "cloud": true,
+      "signalStrengthKA": 23.6,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3356,
+      "lat": 11.2033,
+      "cloud": true,
+      "signalStrengthKA": -8.6,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.344,
+      "lat": 11.3079,
+      "cloud": false,
+      "signalStrengthKA": -53.6,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3389,
+      "lat": 11.3055,
+      "cloud": false,
+      "signalStrengthKA": -39.3,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.6463,
+      "lat": 11.8216,
+      "cloud": false,
+      "signalStrengthKA": -10.4,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.335,
+      "lat": 11.2999,
+      "cloud": false,
+      "signalStrengthKA": -42.7,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.4608,
+      "lat": 6.9873,
+      "cloud": false,
+      "signalStrengthKA": -9.4,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.5208,
+      "lat": 11.7382,
+      "cloud": false,
+      "signalStrengthKA": -11,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4315,
+      "lat": 11.722,
+      "cloud": false,
+      "signalStrengthKA": -16.9,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.8358,
+      "lat": 15.3027,
+      "cloud": false,
+      "signalStrengthKA": -35.5,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.8166,
+      "lat": 15.2897,
+      "cloud": false,
+      "signalStrengthKA": -26.8,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.9383,
+      "lat": 15.2979,
+      "cloud": false,
+      "signalStrengthKA": -16.7,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.6724,
+      "lat": 11.845,
+      "cloud": false,
+      "signalStrengthKA": -52.9,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.5504,
+      "lat": 11.7308,
+      "cloud": true,
+      "signalStrengthKA": -5.8,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.6853,
+      "lat": 11.8642,
+      "cloud": false,
+      "signalStrengthKA": -6.6,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0136,
+      "lat": 14.1747,
+      "cloud": true,
+      "signalStrengthKA": 14.1,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.1496,
+      "lat": 6.4669,
+      "cloud": true,
+      "signalStrengthKA": -8.9,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.1812,
+      "lat": 6.4601,
+      "cloud": false,
+      "signalStrengthKA": -10.5,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0164,
+      "lat": 6.4966,
+      "cloud": false,
+      "signalStrengthKA": -9.3,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5899,
+      "lat": 15.7335,
+      "cloud": false,
+      "signalStrengthKA": -27.3,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5892,
+      "lat": 15.7432,
+      "cloud": false,
+      "signalStrengthKA": -16.3,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.804,
+      "lat": 11.9946,
+      "cloud": false,
+      "signalStrengthKA": 51.2,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.8304,
+      "lat": 11.9738,
+      "cloud": true,
+      "signalStrengthKA": 51.8,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.8205,
+      "lat": 12.0029,
+      "cloud": false,
+      "signalStrengthKA": 47,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.8199,
+      "lat": 12.006,
+      "cloud": false,
+      "signalStrengthKA": -13.2,
+      "time": "2026-08-12 16:19 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.1242,
+      "lat": 14.362,
+      "cloud": false,
+      "signalStrengthKA": -95.5,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.101,
+      "lat": 14.3174,
+      "cloud": true,
+      "signalStrengthKA": -8.3,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0393,
+      "lat": 14.3903,
+      "cloud": false,
+      "signalStrengthKA": -41.7,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.9988,
+      "lat": 11.4071,
+      "cloud": false,
+      "signalStrengthKA": -46,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.5627,
+      "lat": 6.3443,
+      "cloud": true,
+      "signalStrengthKA": 11.2,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0487,
+      "lat": 6.4755,
+      "cloud": true,
+      "signalStrengthKA": 4.4,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9299,
+      "lat": 6.473,
+      "cloud": true,
+      "signalStrengthKA": -6.3,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9428,
+      "lat": 6.5445,
+      "cloud": true,
+      "signalStrengthKA": 6.4,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.5038,
+      "lat": 6.9566,
+      "cloud": true,
+      "signalStrengthKA": 5.7,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.458,
+      "lat": 6.9528,
+      "cloud": true,
+      "signalStrengthKA": -7.5,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.4545,
+      "lat": 11.7941,
+      "cloud": false,
+      "signalStrengthKA": -24.1,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.0016,
+      "lat": 19.8873,
+      "cloud": true,
+      "signalStrengthKA": 6.4,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.7005,
+      "lat": 15.7456,
+      "cloud": false,
+      "signalStrengthKA": -70.6,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0906,
+      "lat": 6.4944,
+      "cloud": false,
+      "signalStrengthKA": -12.9,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9777,
+      "lat": 6.4668,
+      "cloud": true,
+      "signalStrengthKA": -7.9,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 120.0112,
+      "lat": 14.3936,
+      "cloud": false,
+      "signalStrengthKA": -17.2,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 121.3573,
+      "lat": 11.731,
+      "cloud": false,
+      "signalStrengthKA": -8.4,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0877,
+      "lat": 14.6177,
+      "cloud": false,
+      "signalStrengthKA": -75.4,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0185,
+      "lat": 6.5089,
+      "cloud": true,
+      "signalStrengthKA": -8.1,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3085,
+      "lat": 12.5047,
+      "cloud": false,
+      "signalStrengthKA": -8.2,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.3155,
+      "lat": 12.5162,
+      "cloud": true,
+      "signalStrengthKA": -5.9,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 117.9253,
+      "lat": 6.4624,
+      "cloud": true,
+      "signalStrengthKA": -6.8,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5109,
+      "lat": 15.8609,
+      "cloud": true,
+      "signalStrengthKA": 11.2,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 125.0208,
+      "lat": 19.8789,
+      "cloud": true,
+      "signalStrengthKA": 7.1,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 124.9861,
+      "lat": 19.8991,
+      "cloud": false,
+      "signalStrengthKA": -10.8,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.4664,
+      "lat": 15.7823,
+      "cloud": false,
+      "signalStrengthKA": -25.8,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.7121,
+      "lat": 15.6677,
+      "cloud": false,
+      "signalStrengthKA": -42.8,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5929,
+      "lat": 15.7571,
+      "cloud": false,
+      "signalStrengthKA": -50,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 119.5579,
+      "lat": 15.7549,
+      "cloud": false,
+      "signalStrengthKA": -11.2,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    },
+    {
+      "long": 118.0407,
+      "lat": 6.5151,
+      "cloud": true,
+      "signalStrengthKA": 5.4,
+      "time": "2026-08-12 16:10 (UTC)",
+      "request_time": "2026-08-12 16:20 (UTC)",
+      "_type": "lightning"
+    }
+  ]
+}

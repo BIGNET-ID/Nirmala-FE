@@ -1,0 +1,9 @@
+{
+  "topics": [
+    "rainvision.sensors",
+    "rainvision.lightning",
+    "rainvision.thunderstorm",
+    "rainvision.sensor.rain",
+    "rainvision.sensor.signal"
+  ]
+}

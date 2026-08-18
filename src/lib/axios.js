@@ -4,7 +4,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://172.18.188.
 
 export const nirmalaApi = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 12000, // Increased timeout - API can take up to 300ms + network latency
+  timeout: 6000, // API responds in ~300ms; keep short so dev fixture-fallback is snappy when backend is unreachable
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
