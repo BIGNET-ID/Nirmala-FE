@@ -1,9 +1,14 @@
 'use client';
 
-import { useRef, useMemo, useState, useEffect } from 'react';
+import { Suspense, useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Clouds, Cloud, Stars, Line } from '@react-three/drei';
+import { Clouds, Cloud, Stars, Line, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
+
+// Warm the cloud sprite into drei's texture cache on import, so the first render
+// doesn't suspend (which — without a boundary — errored into the static fallback,
+// making clouds appear only after a client-side re-nav).
+useTexture.preload('/cloud-sprite.png');
 
 /**
  * Realistic weather-themed 3D login backdrop (no post-processing — kept robust).
@@ -196,7 +201,9 @@ export default function WeatherScene() {
       <directionalLight position={[-6, 4, 2]} intensity={0.4} color="#7fa0d8" />
 
       <Stars radius={90} depth={45} count={1400} factor={3.2} saturation={0} fade speed={0.5} />
-      <CloudField />
+      <Suspense fallback={null}>
+        <CloudField />
+      </Suspense>
       <Storm />
       <Storm />
     </Canvas>
