@@ -109,29 +109,12 @@ const LAYERS = [
   { z: -16.0, tint: '#7688a8', op: 0.34, vol: 13 },
 ];
 
-// Soft cloud sprite generated locally (data URI) so drei Cloud never fetches
-// its default texture from the pmndrs CDN (which is unreachable here).
-function useLocalCloudTexture() {
-  return useMemo(() => {
-    const c = document.createElement('canvas');
-    c.width = c.height = 128;
-    const ctx = c.getContext('2d');
-    const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 63);
-    g.addColorStop(0.0, 'rgba(255,255,255,1)');
-    g.addColorStop(0.35, 'rgba(255,255,255,0.85)');
-    g.addColorStop(0.7, 'rgba(255,255,255,0.35)');
-    g.addColorStop(1.0, 'rgba(255,255,255,0)');
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(64, 64, 63, 0, Math.PI * 2);
-    ctx.fill();
-    return c.toDataURL('image/png');
-  }, []);
-}
+// drei Cloud's default sprite lives on the pmndrs CDN (unreachable here);
+// we serve the same sprite locally from /public instead.
+const CLOUD_SPRITE = '/cloud-sprite.png';
 
 function CloudField() {
   const group = useRef();
-  const cloudTex = useLocalCloudTexture();
   useFrame((state) => {
     const t = state.clock.elapsedTime;
     if (group.current) {
@@ -172,7 +155,7 @@ function CloudField() {
           <Cloud
             key={c.seed}
             seed={c.seed}
-            texture={cloudTex}
+            texture={CLOUD_SPRITE}
             position={c.pos}
             bounds={[12, 3.5, 3.5]}
             segments={c.seg}
