@@ -15,7 +15,7 @@ import { useEffect, useRef } from 'react';
  * accelerate (capped) with a gentle meander; sliding drops elongate + leave a
  * short wet trail.
  */
-export default function LensRain({ dropCount = 44, opacity = 0.72 }) {
+export default function LensRain({ dropCount = 26, opacity = 0.72 }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export default function LensRain({ dropCount = 44, opacity = 0.72 }) {
     const canvas = ref.current;
     const ctx = canvas.getContext('2d');
     let raf = 0, W = 0, H = 0;
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.25); // decorative → cap DPR
+    const dpr = 1; // decorative overlay → render at 1x for performance
 
     const resize = () => {
       W = window.innerWidth; H = window.innerHeight;

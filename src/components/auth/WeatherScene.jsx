@@ -255,7 +255,7 @@ function CameraRig({ warp }) {
 export default function WeatherScene({ warp = false }) {
   return (
     <Canvas
-      dpr={[1, 1.6]}
+      dpr={1}
       camera={{ position: [0, 0, 12], fov: 58 }}
       gl={{
         antialias: true,
