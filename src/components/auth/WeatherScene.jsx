@@ -240,6 +240,59 @@ function Rain({ count = 400, warp = false, color = '#c3d8ff', opacity = 0.32 }) 
   );
 }
 
+// ---- 3D glossy teardrops (foreground rain) --------------------------------
+// Mathematical teardrop silhouette spun into 3D (LatheGeometry), instanced and
+// falling near the camera; MeshPhong so they glint under the lights & lightning.
+function Raindrops3D({ count = 70, color = '#3a9bff' }) {
+  const meshRef = useRef();
+
+  const geom = useMemo(() => {
+    const pts = [];
+    const seg = 24;
+    for (let i = 0; i <= seg; i++) {
+      const t = i / seg;
+      const y = t * 1.5;
+      const radius = Math.sin(t * Math.PI) * (1.5 - y);
+      pts.push(new THREE.Vector2(radius, y));
+    }
+    const g = new THREE.LatheGeometry(pts, 16);
+    g.translate(0, -0.75, 0);   // centre on origin
+    g.computeVertexNormals();
+    return g;
+  }, []);
+
+  const mat = useMemo(() => new THREE.MeshPhongMaterial({
+    color, shininess: 100, specular: 0xffffff, transparent: true, opacity: 0.5, depthWrite: false,
+  }), [color]);
+
+  const drops = useMemo(() => Array.from({ length: count }, () => ({
+    x: (Math.random() - 0.5) * 26,
+    y: Math.random() * 22 - 8,
+    z: 2 + Math.random() * 7,
+    s: 0.05 + Math.random() * 0.11,
+    v: 3 + Math.random() * 5,
+  })), [count]);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+
+  useFrame((_, dt) => {
+    if (!meshRef.current) return;
+    const step = Math.min(dt, 0.05);
+    for (let i = 0; i < count; i++) {
+      const d = drops[i];
+      d.y -= d.v * step;
+      if (d.y < -9) { d.y = 12 + Math.random() * 4; d.x = (Math.random() - 0.5) * 26; }
+      dummy.position.set(d.x, d.y, d.z);
+      dummy.scale.set(d.s, d.s * 1.25, d.s);
+      dummy.rotation.set(0, 0, 0);
+      dummy.updateMatrix();
+      meshRef.current.setMatrixAt(i, dummy.matrix);
+    }
+    meshRef.current.instanceMatrix.needsUpdate = true;
+  });
+
+  return <instancedMesh ref={meshRef} args={[geom, mat, count]} frustumCulled={false} />;
+}
+
 // ---- camera charge through the storm on successful login ------------------
 function CameraRig({ warp }) {
   const start = useRef(null);
@@ -329,6 +382,7 @@ export default function WeatherScene({ warp = false, mode = 'dark' }) {
         <CloudField clumps={P.clouds} />
       </Suspense>
       <Rain warp={warp} color={P.rain} opacity={P.rainOpacity} />
+      <Raindrops3D />
       <Storm />
       <Storm />
       <LightningBolt color={P.boltColor} />
