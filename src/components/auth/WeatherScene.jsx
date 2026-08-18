@@ -1,9 +1,10 @@
 'use client';
 
-import { Suspense, useRef, useMemo, useState, useEffect } from 'react';
+import { Suspense, useRef, useMemo, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Clouds, Cloud, Stars, Line, useTexture } from '@react-three/drei';
+import { Clouds, Cloud, Stars, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
+import { LightningStrike } from '@/lib/three/LightningStrike';
 
 // Warm the cloud sprite into drei's texture cache on import, so the first render
 // doesn't suspend (which — without a boundary — errored into the static fallback,
@@ -23,67 +24,21 @@ useTexture.preload('/cloud-sprite.png');
  */
 
 // ---- lightning ------------------------------------------------------------
-// Subdivide a jagged polyline into many short segments. drei <Line> puts a round
-// join at every vertex; with long segments those joins read as circular "nodes".
-// Short segments make the joins overlap into one continuous smooth stroke.
-function densify(pts, sub = 5) {
-  const out = [];
-  for (let i = 0; i < pts.length - 1; i++) {
-    const [x1, y1, z1] = pts[i];
-    const [x2, y2, z2] = pts[i + 1];
-    for (let s = 0; s < sub; s++) {
-      const t = s / sub;
-      out.push([x1 + (x2 - x1) * t, y1 + (y2 - y1) * t, z1 + (z2 - z1) * t]);
-    }
-  }
-  out.push(pts[pts.length - 1]);
-  return out;
-}
-
-function makeBolt() {
-  const x0 = (Math.random() - 0.5) * 16;
-  const main = [];
-  let x = x0, y = 8;
-  while (y > -6) {
-    main.push([x, y, -2]);
-    y -= 0.4 + Math.random() * 0.6;
-    x += (Math.random() - 0.5) * 1.7;
-  }
-  const lines = [main];
-  const branches = 1 + Math.floor(Math.random() * 3);
-  for (let b = 0; b < branches; b++) {
-    const i = 2 + Math.floor(Math.random() * Math.max(1, main.length - 4));
-    let [bx, by] = main[i];
-    const branch = [[bx, by, -2]];
-    const len = 2 + Math.floor(Math.random() * 4);
-    const dir = Math.random() < 0.5 ? -1 : 1;
-    for (let k = 0; k < len; k++) {
-      by -= 0.4 + Math.random() * 0.5;
-      bx += dir * (0.4 + Math.random() * 1.0);
-      branch.push([bx, by, -2]);
-    }
-    lines.push(branch);
-  }
-  return { lines: lines.map((l) => densify(l)), x: x0 };
-}
-
 const pulseShape = (dt) => (dt < 0 ? 0 : dt < 0.02 ? dt / 0.02 : dt < 0.11 ? 1 - (dt - 0.02) / 0.09 : 0);
 
-function Storm({ haloColor = '#bfefff', haloOpacityMax = 0.45 }) {
-  const [bolt, setBolt] = useState(null);
-  const [flash, setFlash] = useState(0);   // only drives bolt-line opacity; updated only when a bolt is shown
+// Frequent cloud-glow flashes only (sheet lightning). No visible bolt — the
+// realistic forked bolt is drawn by <LightningBolt> below. Lights driven by ref
+// mutation (no React re-render per frame).
+function Storm() {
   const lightRef = useRef();
   const ambientRef = useRef();
 
   useEffect(() => {
     let timer, raf;
     const strike = () => {
-      // Most strikes are cloud-glow only (sheet lightning); a visible bolt is rare.
-      const b = Math.random() < 0.22 ? makeBolt() : null;
-      setBolt(b);
-      const fx = b ? b.x : (Math.random() - 0.5) * 16;
+      const fx = (Math.random() - 0.5) * 16;
       if (lightRef.current) lightRef.current.position.set(fx, 1.5 + Math.random() * 4, -2 - Math.random() * 4);
-      const peak = 0.5 + Math.random() * 0.5;          // vary flash brightness for realism
+      const peak = 0.45 + Math.random() * 0.5;
       const n = 2 + Math.floor(Math.random() * 3);
       const pulses = [];
       let tt = 0;
@@ -98,21 +53,17 @@ function Storm({ haloColor = '#bfefff', haloOpacityMax = 0.45 }) {
         if (e >= dur) {
           if (lightRef.current) lightRef.current.intensity = 0;
           if (ambientRef.current) ambientRef.current.intensity = 0;
-          if (b) setFlash(0);
-          setBolt(null); schedule(); return;
+          schedule(); return;
         }
         let v = 0;
         for (const p of pulses) v = Math.max(v, p.a * pulseShape(e - p.t));
         const val = peak * v;
-        // Drive the lights by mutating refs (no React re-render each frame).
         if (lightRef.current) lightRef.current.intensity = val * 560;
         if (ambientRef.current) ambientRef.current.intensity = val * 1.7;
-        if (b) setFlash(val);   // only re-render (for the bolt lines) when a bolt is on screen
         raf = requestAnimationFrame(animate);
       };
       animate();
     };
-    // frequent cloud-glow flashes
     const schedule = () => { timer = setTimeout(strike, 450 + Math.random() * 1200); };
     timer = setTimeout(strike, 150 + Math.random() * 400);
     return () => { clearTimeout(timer); cancelAnimationFrame(raf); };
@@ -120,19 +71,67 @@ function Storm({ haloColor = '#bfefff', haloOpacityMax = 0.45 }) {
 
   return (
     <>
-      {/* broad soft glow illuminating the clouds (sheet lightning) */}
       <pointLight ref={lightRef} color="#eaf4ff" distance={140} decay={1.25} intensity={0} />
       <ambientLight ref={ambientRef} color="#dcefff" intensity={0} />
-      {bolt?.lines?.map((pts, i) => (
-        <group key={i}>
-          {/* soft halo (fakes bloom / dark outline on light) — slim so joins don't dot */}
-          <Line points={pts} color={haloColor} lineWidth={i === 0 ? 6 : 3.5}
-            transparent opacity={Math.min(haloOpacityMax, flash * 1.2)} toneMapped={false} />
-          {/* bright core */}
-          <Line points={pts} color="#ffffff" lineWidth={i === 0 ? 2.2 : 1.3}
-            transparent opacity={Math.min(1, flash * 3.6)} toneMapped={false} />
-        </group>
-      ))}
+    </>
+  );
+}
+
+// Realistic forked bolt via three's LightningStrike geometry (vendored). Strikes
+// occasionally; the eternal ray keeps morphing, we toggle visibility + a flash.
+function LightningBolt({ color = '#cfeeff' }) {
+  const meshRef = useRef();
+  const lightRef = useRef();
+  const s = useRef({ active: false, next: 0.8 + Math.random() * 2.5, t0: 0, dur: 0.3 });
+
+  const strike = useMemo(() => new LightningStrike({
+    sourceOffset: new THREE.Vector3(0, 9, -2),
+    destOffset: new THREE.Vector3(0, -6, -2),
+    radius0: 0.28, radius1: 0.05, minRadius: 0.02,
+    maxIterations: 7, isEternal: true,
+    timeScale: 0.6, propagationTimeFactor: 0.05, vanishingTimeFactor: 0.95,
+    subrayPeriod: 3.0, subrayDutyCycle: 0.6,
+    maxSubrayRecursion: 3, ramification: 5, recursionProbability: 0.5,
+    roughness: 0.85, straightness: 0.6,
+  }), []);
+  const mat = useMemo(() => new THREE.MeshBasicMaterial({
+    color, transparent: true, opacity: 0, side: THREE.DoubleSide, toneMapped: false,
+  }), [color]);
+
+  useFrame((state, dt) => {
+    const clk = state.clock.elapsedTime;
+    strike.update(clk); // keep the eternal ray morphing
+    const st = s.current;
+
+    if (!st.active) {
+      st.next -= dt;
+      if (st.next <= 0) {
+        const x = (Math.random() - 0.5) * 14;
+        strike.rayParameters.sourceOffset.set(x + (Math.random() - 0.5) * 2.5, 9, -2);
+        strike.rayParameters.destOffset.set(x, -6, -2);
+        st.active = true; st.t0 = clk; st.dur = 0.26 + Math.random() * 0.3;
+        if (meshRef.current) meshRef.current.visible = true;
+        if (lightRef.current) lightRef.current.position.set(x, 3, -2);
+      }
+    } else {
+      const life = (clk - st.t0) / st.dur;
+      const flick = 0.55 + 0.45 * Math.abs(Math.sin(clk * 55));
+      const env = Math.max(0, 1 - life) * flick;
+      mat.opacity = Math.min(1, env * 2.2);
+      if (lightRef.current) lightRef.current.intensity = env * 520;
+      if (life >= 1) {
+        st.active = false; st.next = 2.5 + Math.random() * 4;
+        mat.opacity = 0;
+        if (meshRef.current) meshRef.current.visible = false;
+        if (lightRef.current) lightRef.current.intensity = 0;
+      }
+    }
+  });
+
+  return (
+    <>
+      <mesh ref={meshRef} geometry={strike} material={mat} visible={false} />
+      <pointLight ref={lightRef} color="#eaf4ff" distance={120} decay={1.3} intensity={0} />
     </>
   );
 }
@@ -281,7 +280,7 @@ const PALETTE = {
     bg: '#050811', fogDensity: 0.038,
     clouds: CLUMPS_DARK,
     rain: '#c3d8ff', rainOpacity: 0.32,
-    boltHalo: '#bfefff', boltHaloOpacity: 0.45,
+    boltColor: '#dff2ff',
     stars: true,
     lights: { amb: 0.28, ambC: '#3a5488', hemi: 0.4, hemiC: '#a9c4ff', hemiG: '#0a1220',
       dir1: 1.9, dir1C: '#dce8fb', dir2: 0.35, dir2C: '#5f7ba8' },
@@ -291,7 +290,7 @@ const PALETTE = {
     bg: '#e6ecf4', fogDensity: 0.028,
     clouds: CLUMPS_LIGHT,
     rain: '#5a6b8a', rainOpacity: 0.42,
-    boltHalo: '#33507f', boltHaloOpacity: 0.6, // dark-blue outline reads on light
+    boltColor: '#8fb6e8', // brighter blue bolt reads on the pale sky
     stars: false,
     lights: { amb: 0.6, ambC: '#cdd9ec', hemi: 0.6, hemiC: '#eef4fd', hemiG: '#b6c2d4',
       dir1: 1.55, dir1C: '#ffffff', dir2: 0.3, dir2C: '#9fb0c8' },
@@ -330,8 +329,9 @@ export default function WeatherScene({ warp = false, mode = 'dark' }) {
         <CloudField clumps={P.clouds} />
       </Suspense>
       <Rain warp={warp} color={P.rain} opacity={P.rainOpacity} />
-      <Storm haloColor={P.boltHalo} haloOpacityMax={P.boltHaloOpacity} />
-      <Storm haloColor={P.boltHalo} haloOpacityMax={P.boltHaloOpacity} />
+      <Storm />
+      <Storm />
+      <LightningBolt color={P.boltColor} />
       <WarpFX warp={warp} />
       <CameraRig warp={warp} />
     </Canvas>
