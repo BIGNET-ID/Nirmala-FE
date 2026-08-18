@@ -1,11 +1,26 @@
-import { Box, Button, Typography, Divider, FormControlLabel, Switch, Chip } from '@mui/material';
+import { Box, Button, Typography, Divider, FormControlLabel, Switch } from '@mui/material';
 import { Icon } from '@iconify/react';
-import { METRICS, UPCOMING_LAYERS } from '@/constants/metrics';
+import { METRICS } from '@/constants/metrics';
 
 const eyebrowSx = {
   fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
   letterSpacing: '0.1em', color: 'text.secondary',
 };
+
+function LayerSwitch({ checked, onChange, label, count, sx }) {
+  return (
+    <FormControlLabel
+      sx={{ ml: 0, mr: 0, justifyContent: 'space-between', width: '100%', ...sx }}
+      labelPlacement="start"
+      control={<Switch checked={checked} onChange={(e) => onChange(e.target.checked)} size="small" sx={switchSx} />}
+      label={
+        <Typography variant="body2" sx={{ fontSize: '0.82rem', color: 'text.primary' }}>
+          {label}{typeof count === 'number' ? <Box component="span" sx={{ color: 'text.secondary', fontFamily: 'var(--font-family-mono)', ml: 0.5 }}>· {count}</Box> : null}
+        </Typography>
+      }
+    />
+  );
+}
 
 const switchSx = {
   '& .MuiSwitch-switchBase.Mui-checked': { color: '#00e5ff' },
@@ -21,6 +36,8 @@ const OWM_LAYERS = [
 
 export default function MetricLayerSelector({
   activeLayer, onLayerChange, showMarkers, onToggleMarkers, showCoverage, onToggleCoverage,
+  showLightning, onToggleLightning, lightningCount,
+  showStorms, onToggleStorms, stormCount,
   owmLayer, onOwmChange,
 }) {
   return (
@@ -70,29 +87,6 @@ export default function MetricLayerSelector({
             </Button>
           );
         })}
-
-        {UPCOMING_LAYERS.map((m) => (
-          <Button
-            key={m.key}
-            startIcon={<Icon icon={m.icon} />}
-            disabled
-            fullWidth
-            sx={{
-              justifyContent: 'flex-start',
-              height: 40,
-              borderRadius: 'var(--radius-md, 8px)',
-              px: 1.25,
-              color: 'text.secondary',
-              opacity: 0.55,
-              '&.Mui-disabled': { color: 'text.secondary' },
-            }}
-          >
-            {m.label}
-            <Box sx={{ flex: 1 }} />
-            <Chip label="Segera" size="small"
-              sx={{ height: 18, fontSize: 10, fontWeight: 700, bgcolor: 'rgba(255,255,255,0.06)', color: 'text.secondary' }} />
-          </Button>
-        ))}
       </Box>
 
       {onOwmChange && (
@@ -126,17 +120,15 @@ export default function MetricLayerSelector({
       )}
 
       <Divider sx={{ my: 0.25, borderColor: 'var(--nirmala-glass-border)' }} />
-
-      <FormControlLabel
-        sx={{ ml: 0 }}
-        control={<Switch checked={showCoverage} onChange={(e) => onToggleCoverage(e.target.checked)} size="small" sx={switchSx} />}
-        label={<Typography variant="body2" sx={{ fontSize: '0.82rem', color: 'text.primary' }}>Cakupan Sensor</Typography>}
-      />
-      <FormControlLabel
-        sx={{ ml: 0, mt: -1 }}
-        control={<Switch checked={showMarkers} onChange={(e) => onToggleMarkers(e.target.checked)} size="small" sx={switchSx} />}
-        label={<Typography variant="body2" sx={{ fontSize: '0.82rem', color: 'text.primary' }}>Titik Sensor</Typography>}
-      />
+      <Typography sx={eyebrowSx}>Layer Tambahan</Typography>
+      {onToggleLightning && (
+        <LayerSwitch checked={showLightning} onChange={onToggleLightning} label="Petir" count={lightningCount} />
+      )}
+      {onToggleStorms && (
+        <LayerSwitch checked={showStorms} onChange={onToggleStorms} label="Sel Badai" count={stormCount} sx={{ mt: -0.75 }} />
+      )}
+      <LayerSwitch checked={showCoverage} onChange={onToggleCoverage} label="Cakupan Sensor" sx={{ mt: -0.75 }} />
+      <LayerSwitch checked={showMarkers} onChange={onToggleMarkers} label="Titik Sensor" sx={{ mt: -0.75 }} />
     </Box>
   );
 }

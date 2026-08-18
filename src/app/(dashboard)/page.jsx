@@ -6,6 +6,8 @@ import GoogleMapWrapper from '@/components/map/GoogleMapWrapper';
 import CanvasHeatmapOverlay from '@/components/map/CanvasOverlay';
 import SensorDotLayer from '@/components/map/SensorDotLayer';
 import OpenWeatherLayer from '@/components/map/OpenWeatherLayer';
+import LightningLayer from '@/components/map/LightningLayer';
+import ThunderstormLayer from '@/components/map/ThunderstormLayer';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import MetricLayerSelector from '@/components/dashboard/MetricLayerSelector';
 import ColorRampLegend from '@/components/dashboard/ColorRampLegend';
@@ -25,6 +27,8 @@ export default function NirmalaDashboard() {
   const [activeLayer, setActiveLayer] = useState('rain');
   const [showMarkers, setShowMarkers] = useState(true);
   const [showCoverage, setShowCoverage] = useState(true);
+  const [showLightning, setShowLightning] = useState(false);
+  const [showStorms, setShowStorms] = useState(false);
   const [owmLayer, setOwmLayer] = useState(null); // OpenWeather tile layer id or null
   const [selectedStation, setSelectedStation] = useState(null);
   const [map, setMap] = useState(null);
@@ -58,6 +62,8 @@ export default function NirmalaDashboard() {
           <GoogleMapWrapper onMapLoad={setMap}>
             <OpenWeatherLayer layer={owmLayer} />
             <CanvasHeatmapOverlay stations={SENSOR_STATIONS} showCoverage={showCoverage} />
+            <ThunderstormLayer storms={thunderstorm} show={showStorms} />
+            <LightningLayer strikes={lightning} show={showLightning} />
             <SensorDotLayer
               stations={SENSOR_STATIONS}
               showMarkers={showMarkers}
@@ -74,6 +80,12 @@ export default function NirmalaDashboard() {
             onToggleMarkers={setShowMarkers}
             showCoverage={showCoverage}
             onToggleCoverage={setShowCoverage}
+            showLightning={showLightning}
+            onToggleLightning={setShowLightning}
+            lightningCount={lightning?.length || 0}
+            showStorms={showStorms}
+            onToggleStorms={setShowStorms}
+            stormCount={thunderstorm?.length || 0}
             owmLayer={owmLayer}
             onOwmChange={setOwmLayer}
           />
