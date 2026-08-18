@@ -27,8 +27,14 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [reduced, setReduced] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
+  // Mount the WebGL Canvas only AFTER hydration, into an already-laid-out DOM.
+  // On a hard refresh the Canvas otherwise initializes before layout settles and
+  // renders blank (it only appeared after a client-side re-nav); deferring here
+  // makes every load behave like that stable re-nav.
   useEffect(() => {
+    setMounted(true);
     setReduced(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
   }, []);
 
@@ -52,13 +58,15 @@ export default function LoginPage() {
 
   return (
     <Box sx={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', bgcolor: '#050811' }}>
-      {/* 3D weather backdrop (or a static gradient for reduced motion) */}
-      {reduced ? (
-        <Box sx={{
-          position: 'absolute', inset: 0,
-          background: 'radial-gradient(ellipse at 50% 30%, #0a1a3a 0%, #050811 60%)',
-        }} />
-      ) : (
+      {/* Static gradient underlay — always present so the bg is never empty
+          (also the reduced-motion / pre-mount / WebGL-failure fallback). */}
+      <Box sx={{
+        position: 'absolute', inset: 0,
+        background: 'radial-gradient(ellipse at 50% 30%, #0a1a3a 0%, #050811 60%)',
+      }} />
+
+      {/* 3D weather backdrop — mounted only after hydration. */}
+      {mounted && !reduced && (
         <SceneBoundary>
           <WeatherScene />
         </SceneBoundary>
