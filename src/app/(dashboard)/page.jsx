@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Box } from '@mui/material';
+import { motion } from 'motion/react';
 import GoogleMapWrapper from '@/components/map/GoogleMapWrapper';
 import CanvasHeatmapOverlay from '@/components/map/CanvasOverlay';
 import SensorDotLayer from '@/components/map/SensorDotLayer';
@@ -57,6 +58,15 @@ export default function NirmalaDashboard() {
   return (
       <Box sx={{ display: 'flex', flexDirection: 'column', width: '100vw', height: '100vh', bgcolor: 'var(--nirmala-map-bg)', overflow: 'hidden' }}>
         
+        {/* Emerge-from-the-light reveal (continues the login fly-through flash) */}
+        <Box
+          component={motion.div}
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 0 }}
+          transition={{ duration: 0.9, ease: 'easeOut' }}
+          sx={{ position: 'fixed', inset: 0, bgcolor: '#eef5ff', pointerEvents: 'none', zIndex: 3000 }}
+        />
+
         <DashboardHeader stats={stats} />
 
         {/* Map container */}

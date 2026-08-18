@@ -7,6 +7,7 @@ import {
   Box, TextField, Button, Typography, InputAdornment, IconButton, Alert, CircularProgress,
 } from '@mui/material';
 import { Icon } from '@iconify/react';
+import { motion } from 'motion/react';
 import { useAuth } from '@/hooks/useAuth';
 import SceneBoundary from '@/components/auth/SceneBoundary';
 import LensRain from '@/components/auth/LensRain';
@@ -90,8 +91,13 @@ export default function LoginPage() {
       {/* Login card */}
       <Box sx={{ position: 'relative', zIndex: 2, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', px: 2 }}>
         <Box
-          component="form"
+          component={motion.form}
           onSubmit={handleSubmit}
+          initial={{ opacity: 0, y: 16 }}
+          animate={launching
+            ? { scale: 1.7, opacity: 0, filter: 'blur(14px)' }
+            : { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+          transition={{ duration: launching ? 1.05 : 0.6, ease: launching ? [0.5, 0, 0.75, 0] : 'easeOut' }}
           sx={{
             width: '100%', maxWidth: 400, p: { xs: 3, sm: 4 },
             bgcolor: 'rgba(10, 16, 36, 0.72)',
@@ -99,10 +105,6 @@ export default function LoginPage() {
             border: '1px solid var(--nirmala-glass-border)',
             borderRadius: 'var(--radius-xl, 16px)',
             boxShadow: '0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,229,255,0.06)',
-            animation: reduced ? 'none' : 'fade-in 0.5s var(--ease-out) both',
-            opacity: launching ? 0 : 1,
-            transform: launching ? 'scale(0.9) translateY(-18px)' : 'none',
-            transition: 'opacity 0.55s var(--ease-out), transform 0.8s var(--ease-out)',
             pointerEvents: launching ? 'none' : 'auto',
           }}
         >
@@ -175,6 +177,16 @@ export default function LoginPage() {
           </Typography>
         </Box>
       </Box>
+
+      {/* Blinding white flash at the climax of the fly-through — covers the
+          route swap so the dashboard emerges from the light. */}
+      <Box
+        component={motion.div}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: launching ? 1 : 0 }}
+        transition={{ duration: 0.7, delay: launching ? 1.15 : 0, ease: 'easeIn' }}
+        sx={{ position: 'absolute', inset: 0, bgcolor: '#eef5ff', pointerEvents: 'none', zIndex: 5 }}
+      />
     </Box>
   );
 }
