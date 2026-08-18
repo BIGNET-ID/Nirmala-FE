@@ -63,7 +63,7 @@ export default function DashboardHeader({ stats }) {
       {/* Brand */}
       <Box
         component="img"
-        src="/nirmala-brand-dark.png"
+        src={mode === 'dark' ? '/nirmala-brand-dark.png' : '/nirmala-brand.png'}
         alt="Nirmala"
         sx={{ height: 'var(--size-logo-header, 28px)', width: 'auto', display: 'block', flexShrink: 0 }}
       />

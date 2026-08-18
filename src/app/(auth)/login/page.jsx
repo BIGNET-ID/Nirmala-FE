@@ -120,7 +120,7 @@ export default function LoginPage() {
           }}
         >
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-            <Box component="img" src="/nirmala-brand-dark.png" alt="Nirmala" sx={{ height: 34 }} />
+            <Box component="img" src={dark ? '/nirmala-brand-dark.png' : '/nirmala-brand.png'} alt="Nirmala" sx={{ height: 34 }} />
           </Box>
           <Typography sx={{ ...eyebrowSx, textAlign: 'center', display: 'block' }}>
             Platform Telemetri Cuaca
