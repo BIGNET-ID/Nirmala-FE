@@ -72,12 +72,17 @@ const pulseShape = (dt) => (dt < 0 ? 0 : dt < 0.02 ? dt / 0.02 : dt < 0.11 ? 1 -
 function Storm() {
   const [bolt, setBolt] = useState(null);
   const [flash, setFlash] = useState(0);
+  const [pos, setPos] = useState([0, 3, -2]);
 
   useEffect(() => {
     let timer, raf;
     const strike = () => {
-      const distant = Math.random() < 0.3;
-      setBolt(distant ? null : makeBolt());
+      // Most strikes are cloud-glow only (sheet lightning); a visible bolt is rare.
+      const b = Math.random() < 0.22 ? makeBolt() : null;
+      setBolt(b);
+      const fx = b ? b.x : (Math.random() - 0.5) * 16;
+      setPos([fx, 1.5 + Math.random() * 4, -2 - Math.random() * 4]);
+      const peak = 0.5 + Math.random() * 0.5;          // vary flash brightness for realism
       const n = 2 + Math.floor(Math.random() * 3);
       const pulses = [];
       let tt = 0;
@@ -92,21 +97,22 @@ function Storm() {
         if (e >= dur) { setFlash(0); setBolt(null); schedule(); return; }
         let v = 0;
         for (const p of pulses) v = Math.max(v, p.a * pulseShape(e - p.t));
-        setFlash(distant ? v * 0.5 : v);
+        setFlash(peak * v);
         raf = requestAnimationFrame(animate);
       };
       animate();
     };
-    const schedule = () => { timer = setTimeout(strike, 600 + Math.random() * 1700); };
-    // fire the first strike quickly — no long wait after load
-    timer = setTimeout(strike, 150 + Math.random() * 450);
+    // frequent cloud-glow flashes
+    const schedule = () => { timer = setTimeout(strike, 450 + Math.random() * 1200); };
+    timer = setTimeout(strike, 150 + Math.random() * 400);
     return () => { clearTimeout(timer); cancelAnimationFrame(raf); };
   }, []);
 
   return (
     <>
-      <pointLight position={[bolt?.x ?? 0, 3.5, -2]} color="#f2faff" distance={100} decay={1.4} intensity={flash * 620} />
-      <ambientLight intensity={flash * 1.5} color="#dcefff" />
+      {/* broad soft glow illuminating the clouds (sheet lightning) */}
+      <pointLight position={pos} color="#eaf4ff" distance={140} decay={1.25} intensity={flash * 560} />
+      <ambientLight intensity={flash * 1.7} color="#dcefff" />
       {bolt?.lines?.map((pts, i) => (
         <group key={i}>
           {/* soft halo (fakes bloom) — kept slim so joins don't dot */}
