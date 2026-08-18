@@ -81,11 +81,11 @@ export default function LensRain({ dropCount = 26, opacity = 0.72 }) {
         if (d.state === 'cling') {
           if (Math.random() < dt * (0.06 + d.r / 500)) { d.state = 'slide'; d.vy = 10; }
         } else {
-          d.vy = Math.min(260, d.vy + 360 * dt);
+          d.vy = Math.min(115, d.vy + 130 * dt);   // slower, gentler fall
           d.y += d.vy * dt;
-          d.phase += dt * 3;
-          d.x += Math.sin(d.phase) * 10 * dt;
-          elong = 1 + Math.min(0.7, d.vy / 260);
+          d.phase += dt * 2.4;
+          d.x += Math.sin(d.phase) * 8 * dt;
+          elong = 1 + Math.min(0.55, d.vy / 200);
           // short wet trail (cheap rect, no gradient)
           const tlen = Math.min(60, d.vy * 0.25);
           ctx.globalAlpha = opacity * 0.1;
