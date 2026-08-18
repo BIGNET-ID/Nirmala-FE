@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useRef, useMemo, useState, useEffect } from 'react';
+import { Suspense, useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Clouds, Cloud, Stars, Line, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
@@ -105,71 +105,54 @@ function Storm() {
 }
 
 // ---- clouds ---------------------------------------------------------------
-const LAYERS = [
-  { z: -1.5, tint: '#e2eafb', op: 0.74, vol: 8 },
-  { z: -4.0, tint: '#d2ddf4', op: 0.66, vol: 9 },
-  { z: -7.0, tint: '#bccce9', op: 0.58, vol: 10 },
-  { z: -10.0, tint: '#a4b7db', op: 0.50, vol: 11 },
-  { z: -13.0, tint: '#8b9ec3', op: 0.42, vol: 12 },
-  { z: -16.0, tint: '#7688a8', op: 0.34, vol: 13 },
-];
-
 // drei Cloud's default sprite lives on the pmndrs CDN (unreachable here);
 // we serve the same sprite locally from /public instead.
 const CLOUD_SPRITE = '/cloud-sprite.png';
+
+// Distinct, separated cloud clumps at varied depths & sizes — dramatic billows,
+// not a uniform smoky haze. Tight bounds keep each clump defined; big position
+// gaps + a scale range separate them; high opacity/segments make them read solid.
+const CLUMPS = [
+  { pos: [-7.0, 1.8, -3], scale: 1.5, color: '#dbe4f5', op: 0.96, seg: 46, vol: 6.5 },
+  { pos: [6.6, 2.6, -5], scale: 1.9, color: '#c6d3ea', op: 0.92, seg: 48, vol: 7.5 },
+  { pos: [-1.6, -1.9, -2], scale: 1.25, color: '#e8effc', op: 0.98, seg: 42, vol: 5.5 },
+  { pos: [4.0, -1.4, -4], scale: 1.2, color: '#bccbe6', op: 0.9, seg: 42, vol: 5.5 },
+  { pos: [-9.6, -2.8, -7], scale: 2.2, color: '#a1b2d2', op: 0.74, seg: 50, vol: 8.5 },
+  { pos: [9.6, -2.4, -8], scale: 2.0, color: '#93a5c6', op: 0.7, seg: 50, vol: 8.5 },
+  { pos: [0.6, 4.3, -6], scale: 1.7, color: '#b0c1e2', op: 0.8, seg: 46, vol: 7.5 },
+  { pos: [-4.6, 4.0, -10], scale: 2.5, color: '#7f92b6', op: 0.62, seg: 52, vol: 9.5 },
+  { pos: [0, -5.6, -9], scale: 2.7, color: '#98aacb', op: 0.64, seg: 52, vol: 10 }, // low bank
+];
 
 function CloudField() {
   const group = useRef();
   useFrame((state) => {
     const t = state.clock.elapsedTime;
     if (group.current) {
-      group.current.rotation.y = Math.sin(t * 0.035) * 0.14;
-      group.current.position.x = Math.sin(t * 0.045) * 0.9;
-      group.current.position.y = Math.sin(t * 0.028) * 0.35;
+      group.current.rotation.y = Math.sin(t * 0.03) * 0.1;
+      group.current.position.x = Math.sin(t * 0.04) * 0.7;
+      group.current.position.y = Math.sin(t * 0.025) * 0.25;
     }
   });
 
-  const clouds = useMemo(() => {
-    const arr = [];
-    let seed = 1;
-    LAYERS.forEach((d, li) => {
-      const n = 3 + (li % 2);
-      for (let k = 0; k < n; k++) {
-        arr.push({
-          seed: seed++,
-          pos: [
-            (Math.random() - 0.5) * (18 + li * 2.5),
-            (Math.random() - 0.5) * 8,
-            d.z + (Math.random() - 0.5) * 1.4,
-          ],
-          color: d.tint,
-          vol: d.vol + Math.random() * 3,
-          seg: 26 + Math.round(Math.random() * 10),
-          opacity: d.op * (0.85 + Math.random() * 0.35),
-        });
-      }
-    });
-    arr.push({ seed: seed++, pos: [0, -5.6, -9], color: '#a4b7db', vol: 16, seg: 46, opacity: 0.44 });
-    return arr;
-  }, []);
-
   return (
     <group ref={group}>
-      <Clouds material={THREE.MeshLambertMaterial} limit={2200}>
-        {clouds.map((c) => (
+      <Clouds material={THREE.MeshLambertMaterial} limit={2800}>
+        {CLUMPS.map((c, i) => (
           <Cloud
-            key={c.seed}
-            seed={c.seed}
+            key={i}
+            seed={i + 1}
             texture={CLOUD_SPRITE}
             position={c.pos}
-            bounds={[12, 3.5, 3.5]}
+            scale={c.scale}
+            bounds={[5, 4, 4]}
             segments={c.seg}
             volume={c.vol}
             color={c.color}
-            opacity={c.opacity}
-            fade={22}
-            speed={0.13}
-            growth={6}
+            opacity={c.op}
+            fade={18}
+            speed={0.11}
+            growth={4}
           />
         ))}
       </Clouds>
@@ -194,11 +177,11 @@ export default function WeatherScene() {
       <color attach="background" args={['#050811']} />
       <fogExp2 attach="fog" args={['#050811', 0.038]} />
 
-      {/* bright base lighting so cloud texture reads even between strikes */}
-      <ambientLight intensity={0.55} color="#48659a" />
-      <hemisphereLight intensity={0.6} color="#bcd2ff" groundColor="#0a1220" />
-      <directionalLight position={[5, 9, 4]} intensity={1.1} color="#c8daf4" />
-      <directionalLight position={[-6, 4, 2]} intensity={0.4} color="#7fa0d8" />
+      {/* high-contrast lighting → bright tops, dark undersides = 3D billows */}
+      <ambientLight intensity={0.28} color="#3a5488" />
+      <hemisphereLight intensity={0.4} color="#a9c4ff" groundColor="#0a1220" />
+      <directionalLight position={[6, 11, 5]} intensity={1.9} color="#dce8fb" />
+      <directionalLight position={[-7, 2, -3]} intensity={0.35} color="#5f7ba8" />
 
       <Stars radius={90} depth={45} count={1400} factor={3.2} saturation={0} fade speed={0.5} />
       <Suspense fallback={null}>
