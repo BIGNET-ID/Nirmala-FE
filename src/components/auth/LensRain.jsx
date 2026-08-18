@@ -15,7 +15,7 @@ import { useEffect, useRef } from 'react';
  *    fall reads smooth rather than stepped.
  * Purely decorative; pointer-events: none.
  */
-export default function LensRain({ dropCount = 34, opacity = 0.72 }) {
+export default function LensRain({ dropCount = 48, opacity = 0.72 }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export default function LensRain({ dropCount = 34, opacity = 0.72 }) {
     window.addEventListener('resize', resize);
 
     const spawn = (top) => {
-      const r = 6 + Math.random() * 16;
+      const r = 3 + Math.random() * 7;
       return {
         x: Math.random() * W,
         y: top ? -r * 2 : Math.random() * H,
@@ -96,7 +96,7 @@ export default function LensRain({ dropCount = 34, opacity = 0.72 }) {
           d.y += d.vy * dt;
           d.phase += dt * 3;
           d.x += Math.sin(d.phase) * 10 * dt;            // gentle meander
-          elong = 1 + Math.min(1.3, d.vy / 150);         // teardrop stretch with speed
+          elong = 1 + Math.min(0.7, d.vy / 260);         // subtle teardrop stretch
 
           // wet trail behind the drop
           const g = ctx.createLinearGradient(0, d.startY, 0, d.y);
