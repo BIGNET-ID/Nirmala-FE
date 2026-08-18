@@ -1,19 +1,24 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { flashLevel } from './flashBus';
 
 /**
  * Camera-lens raindrops — 2D canvas overlay (no WebGL), optimised.
  *
- * Perf: the drop is rendered ONCE into an offscreen sprite (dark rim + glassy
- * body + bottom refraction + top/secondary highlights); every frame just
- * drawImage()s that sprite (scaled/elongated) instead of allocating ~3 canvas
- * gradients per drop per frame. DPR is capped for this decorative layer. This
- * keeps the fall smooth even alongside the WebGL scene.
+ * Perf: the drop is rendered ONCE into an offscreen sprite (crisp refraction
+ * rim + glassy body + a bright focused caustic at the bottom edge + top/
+ * secondary specular highlights); every frame just drawImage()s that sprite
+ * (scaled/elongated) instead of allocating canvas gradients per drop per
+ * frame. DPR is capped for this decorative layer.
  *
- * Motion: frame-rate-independent (clamped dt); drops cling, then release and
- * accelerate (capped) with a gentle meander; sliding drops elongate + leave a
- * short wet trail.
+ * Shape: sliding drops leave a real teardrop tail — a streak that narrows to
+ * a fine point and fades out quickly toward the top (surface tension pulling
+ * the trail back into the drop), not a flat rectangle.
+ *
+ * Light: when the storm flashes (read from the shared flashBus that the WebGL
+ * scene writes), every drop briefly glints — an additive specular pop — as if
+ * the glass beads catch the lightning.
  */
 export default function LensRain({ dropCount = 26, opacity = 0.72 }) {
   const ref = useRef(null);
@@ -35,28 +40,59 @@ export default function LensRain({ dropCount = 26, opacity = 0.72 }) {
     window.addEventListener('resize', resize);
 
     // --- pre-render one drop sprite (all the expensive gradient work, once) ---
-    const S = 80;
+    // High internal resolution → crisp edges when drawn small.
+    const S = 128;
     const sprite = document.createElement('canvas');
     sprite.width = sprite.height = S;
     const s = sprite.getContext('2d');
     {
       const r = S * 0.42, cx = S / 2, cy = S / 2;
-      let g = s.createRadialGradient(cx, cy, r * 0.72, cx, cy, r);
-      g.addColorStop(0, 'rgba(8,12,24,0)');
-      g.addColorStop(0.82, 'rgba(8,12,24,0.28)');
-      g.addColorStop(1, 'rgba(8,12,24,0)');
+      // soft contact shadow / darkened refraction rim around the bead
+      let g = s.createRadialGradient(cx, cy, r * 0.6, cx, cy, r);
+      g.addColorStop(0, 'rgba(6,10,20,0)');
+      g.addColorStop(0.78, 'rgba(6,10,20,0.34)');
+      g.addColorStop(0.94, 'rgba(6,10,20,0.14)');
+      g.addColorStop(1, 'rgba(6,10,20,0)');
       s.fillStyle = g; s.beginPath(); s.arc(cx, cy, r, 0, Math.PI * 2); s.fill();
-      g = s.createRadialGradient(cx, cy - r * 0.15, 0, cx, cy + r * 0.15, r * 0.95);
-      g.addColorStop(0, 'rgba(222,236,255,0.11)');
-      g.addColorStop(0.7, 'rgba(226,239,255,0.05)');
+      // crisp thin bright rim (total-internal-reflection edge)
+      s.lineWidth = r * 0.06;
+      s.strokeStyle = 'rgba(210,230,255,0.35)';
+      s.beginPath(); s.arc(cx, cy, r * 0.9, 0, Math.PI * 2); s.stroke();
+      // glassy body — cool, subtly tinted, brighter toward the light
+      g = s.createRadialGradient(cx - r * 0.22, cy - r * 0.28, 0, cx, cy, r * 0.94);
+      g.addColorStop(0, 'rgba(228,240,255,0.16)');
+      g.addColorStop(0.6, 'rgba(200,222,255,0.07)');
       g.addColorStop(1, 'rgba(255,255,255,0)');
-      s.fillStyle = g; s.beginPath(); s.arc(cx, cy, r * 0.92, 0, Math.PI * 2); s.fill();
-      s.fillStyle = 'rgba(255,255,255,0.30)';
-      s.beginPath(); s.ellipse(cx, cy + r * 0.34, r * 0.5, r * 0.3, 0, 0, Math.PI * 2); s.fill();
-      s.fillStyle = 'rgba(255,255,255,0.9)';
-      s.beginPath(); s.arc(cx - r * 0.3, cy - r * 0.4, r * 0.16, 0, Math.PI * 2); s.fill();
-      s.fillStyle = 'rgba(255,255,255,0.4)';
-      s.beginPath(); s.arc(cx + r * 0.22, cy - r * 0.08, r * 0.08, 0, Math.PI * 2); s.fill();
+      s.fillStyle = g; s.beginPath(); s.arc(cx, cy, r * 0.9, 0, Math.PI * 2); s.fill();
+      // bright focused caustic at the BOTTOM edge (light bent through the lens)
+      g = s.createRadialGradient(cx, cy + r * 0.42, 0, cx, cy + r * 0.42, r * 0.62);
+      g.addColorStop(0, 'rgba(255,255,255,0.5)');
+      g.addColorStop(0.5, 'rgba(210,232,255,0.22)');
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      s.fillStyle = g;
+      s.beginPath(); s.ellipse(cx, cy + r * 0.4, r * 0.52, r * 0.34, 0, 0, Math.PI * 2); s.fill();
+      // primary specular highlight (sharp, upper-left)
+      g = s.createRadialGradient(cx - r * 0.32, cy - r * 0.42, 0, cx - r * 0.32, cy - r * 0.42, r * 0.3);
+      g.addColorStop(0, 'rgba(255,255,255,0.98)');
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      s.fillStyle = g;
+      s.beginPath(); s.arc(cx - r * 0.32, cy - r * 0.42, r * 0.28, 0, Math.PI * 2); s.fill();
+      // tiny secondary highlight
+      s.fillStyle = 'rgba(255,255,255,0.5)';
+      s.beginPath(); s.arc(cx + r * 0.24, cy - r * 0.06, r * 0.08, 0, Math.PI * 2); s.fill();
+    }
+
+    // --- a small additive glint used only when the storm flashes ---
+    const G = 64;
+    const glint = document.createElement('canvas');
+    glint.width = glint.height = G;
+    {
+      const gg = glint.getContext('2d');
+      const gr = gg.createRadialGradient(G / 2, G / 2, 0, G / 2, G / 2, G / 2);
+      gr.addColorStop(0, 'rgba(255,255,255,1)');
+      gr.addColorStop(0.35, 'rgba(224,240,255,0.55)');
+      gr.addColorStop(1, 'rgba(255,255,255,0)');
+      gg.fillStyle = gr; gg.fillRect(0, 0, G, G);
     }
 
     const spawn = (top) => {
@@ -74,6 +110,8 @@ export default function LensRain({ dropCount = 26, opacity = 0.72 }) {
       ctx.clearRect(0, 0, W, H);
       ctx.globalAlpha = opacity;
 
+      const flash = flashLevel();               // 0..~1 lightning brightness
+
       for (let i = 0; i < drops.length; i++) {
         const d = drops[i];
         let elong = 1;
@@ -86,17 +124,42 @@ export default function LensRain({ dropCount = 26, opacity = 0.72 }) {
           d.phase += dt * 2.4;
           d.x += Math.sin(d.phase) * 8 * dt;
           elong = 1 + Math.min(0.55, d.vy / 200);
-          // short wet trail (cheap rect, no gradient)
-          const tlen = Math.min(60, d.vy * 0.25);
-          ctx.globalAlpha = opacity * 0.1;
-          ctx.fillStyle = '#c8dcff';
-          ctx.fillRect(d.x - d.r * 0.35, d.y - tlen, d.r * 0.7, tlen);
-          ctx.globalAlpha = opacity;
+
+          // teardrop tail: a streak that NARROWS to a point and fades out fast
+          // toward the top (surface tension snapping the trail back).
+          const tlen = Math.min(70, d.vy * 0.32);
+          if (tlen > 2) {
+            const w0 = d.r * 0.72;               // width at the drop
+            const tg = ctx.createLinearGradient(0, d.y - tlen, 0, d.y);
+            tg.addColorStop(0, 'rgba(200,224,255,0)');
+            tg.addColorStop(0.65, `rgba(200,224,255,${0.05 * opacity})`);
+            tg.addColorStop(1, `rgba(214,232,255,${0.16 * opacity})`);
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = tg;
+            ctx.beginPath();
+            ctx.moveTo(d.x, d.y - tlen);          // fine point at the top
+            ctx.lineTo(d.x + w0 / 2, d.y);
+            ctx.quadraticCurveTo(d.x, d.y + w0 * 0.3, d.x - w0 / 2, d.y);
+            ctx.closePath();
+            ctx.fill();
+            ctx.globalAlpha = opacity;
+          }
         }
 
         const w = d.r * 2;
         const h = d.r * 2 * elong;
         ctx.drawImage(sprite, d.x - w / 2, d.y - h / 2, w, h);
+
+        // lightning glint — additive specular pop synced to the storm flash
+        if (flash > 0.03) {
+          ctx.globalCompositeOperation = 'lighter';
+          const gs = d.r * (1.4 + flash * 0.8);
+          ctx.globalAlpha = Math.min(1, opacity * flash * 1.1);
+          // sit the glint on the upper-left specular point
+          ctx.drawImage(glint, d.x - d.r * 0.32 - gs / 2, d.y - d.r * 0.42 - gs / 2, gs, gs);
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.globalAlpha = opacity;
+        }
 
         if (d.y > H + d.r * 3) drops[i] = spawn(true);
       }

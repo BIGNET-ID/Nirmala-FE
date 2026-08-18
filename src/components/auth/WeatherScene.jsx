@@ -5,6 +5,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Clouds, Cloud, Stars, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import { LightningStrike } from '@/lib/three/LightningStrike';
+import { FLASH } from './flashBus';
 
 // Warm the cloud sprite into drei's texture cache on import, so the first render
 // doesn't suspend (which — without a boundary — errored into the static fallback,
@@ -26,11 +27,6 @@ useTexture.preload('/cloud-sprite.png');
 // ---- lightning ------------------------------------------------------------
 const pulseShape = (dt) => (dt < 0 ? 0 : dt < 0.02 ? dt / 0.02 : dt < 0.11 ? 1 - (dt - 0.02) / 0.09 : 0);
 
-// Shared instantaneous lightning brightness (0..~1), written by every flash
-// source (sheet Storm, forked bolt, warp strobe) and read by <Raindrops3D> so
-// the glassy drops glint in sync with the strike — as if catching its light.
-const FLASH = { storm: 0, bolt: 0, warp: 0 };
-const flashLevel = () => Math.max(FLASH.storm, FLASH.bolt, FLASH.warp);
 
 // Frequent cloud-glow flashes only (sheet lightning). No visible bolt — the
 // realistic forked bolt is drawn by <LightningBolt> below. Lights driven by ref
@@ -250,74 +246,6 @@ function Rain({ count = 400, warp = false, color = '#c3d8ff', opacity = 0.32 }) 
   );
 }
 
-// ---- foreground 3D raindrops (glassy teardrops) --------------------------
-// A real falling drop: a fat round bulb low down that tapers to a fine,
-// quickly-vanishing point at the trailing top. Built as a lathe of a hand-
-// tuned profile so the silhouette is a true teardrop, not a blob.
-function teardropGeometry() {
-  const seg = 40, H = 1.9, Rmax = 0.5;
-  const pts = [];
-  for (let i = 0; i <= seg; i++) {
-    const t = i / seg;                       // 0 = bottom pole, 1 = tail tip
-    // sin(...) rounds the bulb; (1-t)^0.75 drives the fast taper to a point
-    const r = Math.sin(Math.PI * Math.pow(t, 0.62)) * Math.pow(1 - t, 0.75);
-    pts.push(new THREE.Vector2(Math.max(r * Rmax, 0.0001), t * H));
-  }
-  const g = new THREE.LatheGeometry(pts, 20);
-  g.translate(0, -H * 0.42, 0);              // centre the mass on the origin
-  g.computeVertexNormals();                  // smooth shading across the curve
-  return g;
-}
-
-function Raindrops3D({ count = 60, color = '#cfe4ff' }) {
-  const meshRef = useRef();
-  const geom = useMemo(teardropGeometry, []);
-  // Water-like glass: low roughness + clearcoat + IOR 1.33 makes each drop
-  // physically reflect the lightning point-lights (real specular glints).
-  const mat = useMemo(() => new THREE.MeshPhysicalMaterial({
-    color,
-    roughness: 0.06, metalness: 0,
-    clearcoat: 1, clearcoatRoughness: 0.04,
-    ior: 1.33, specularIntensity: 1, reflectivity: 0.6,
-    emissive: new THREE.Color('#bfe0ff'), emissiveIntensity: 0,
-    transparent: true, opacity: 0.5, depthWrite: false,
-  }), [color]);
-
-  const drops = useMemo(() => Array.from({ length: count }, () => ({
-    x: (Math.random() - 0.5) * 30,
-    y: Math.random() * 26 - 9,
-    z: 1.5 + Math.random() * 7,
-    s: 0.05 + Math.random() * 0.1,
-    v: 4 + Math.random() * 6,
-    drift: (Math.random() - 0.5) * 0.6,
-    ph: Math.random() * Math.PI * 2,
-  })), [count]);
-  const dummy = useMemo(() => new THREE.Object3D(), []);
-
-  useFrame((state, dt) => {
-    if (!meshRef.current) return;
-    const step = Math.min(dt, 0.05);
-    // Lightning sync: every drop brightens + turns more visible on a strike,
-    // as though catching the flash. Base level keeps them subtly present.
-    const f = flashLevel();
-    mat.emissiveIntensity = 0.04 + f * 1.7;
-    mat.opacity = 0.44 + f * 0.42;
-    for (let i = 0; i < count; i++) {
-      const d = drops[i];
-      d.y -= d.v * step;
-      d.ph += step * 1.6;
-      if (d.y < -11) { d.y = 14 + Math.random() * 5; d.x = (Math.random() - 0.5) * 30; }
-      dummy.position.set(d.x + Math.sin(d.ph) * d.drift, d.y, d.z);
-      dummy.scale.set(d.s, d.s * 1.3, d.s);   // slight vertical stretch = motion
-      dummy.updateMatrix();
-      meshRef.current.setMatrixAt(i, dummy.matrix);
-    }
-    meshRef.current.instanceMatrix.needsUpdate = true;
-  });
-
-  return <instancedMesh ref={meshRef} args={[geom, mat, count]} frustumCulled={false} />;
-}
-
 // ---- camera charge through the storm on successful login ------------------
 function CameraRig({ warp }) {
   const start = useRef(null);
@@ -359,7 +287,6 @@ const PALETTE = {
     bg: '#050811', fogDensity: 0.038,
     clouds: CLUMPS_DARK,
     rain: '#c3d8ff', rainOpacity: 0.32,
-    dropColor: '#cfe4ff',
     boltColor: '#dff2ff',
     stars: true,
     lights: { amb: 0.28, ambC: '#3a5488', hemi: 0.4, hemiC: '#a9c4ff', hemiG: '#0a1220',
@@ -370,7 +297,6 @@ const PALETTE = {
     bg: '#e6ecf4', fogDensity: 0.028,
     clouds: CLUMPS_LIGHT,
     rain: '#5a6b8a', rainOpacity: 0.42,
-    dropColor: '#4d6796', // deeper blue drops read against the pale daytime sky
     boltColor: '#8fb6e8', // brighter blue bolt reads on the pale sky
     stars: false,
     lights: { amb: 0.6, ambC: '#cdd9ec', hemi: 0.6, hemiC: '#eef4fd', hemiG: '#b6c2d4',
@@ -410,7 +336,6 @@ export default function WeatherScene({ warp = false, mode = 'dark' }) {
         <CloudField clumps={P.clouds} />
       </Suspense>
       <Rain warp={warp} color={P.rain} opacity={P.rainOpacity} />
-      <Raindrops3D color={P.dropColor} />
       <Storm />
       <Storm />
       <LightningBolt color={P.boltColor} />
