@@ -6,7 +6,7 @@ const eyebrowSx = {
   letterSpacing: '0.1em', color: 'text.secondary',
 };
 
-export default function ColorRampLegend({ activeLayer }) {
+export default function ColorRampLegend({ activeLayer, showCoverage = false }) {
   const metric = METRICS[activeLayer];
   if (!metric) return null;
 
@@ -36,6 +36,15 @@ export default function ColorRampLegend({ activeLayer }) {
       <Typography variant="caption" sx={{ display: 'block', mt: 1, color: 'text.secondary', fontSize: '0.62rem', lineHeight: 1.4 }}>
         Konsentrasi sensor yang melaporkan hujan.
       </Typography>
+
+      {showCoverage && (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 1, pt: 1, borderTop: '1px solid var(--nirmala-glass-border)' }}>
+          <Box sx={{ width: 12, height: 12, borderRadius: '3px', background: 'linear-gradient(135deg, #14466e, #40b4cd)', flexShrink: 0 }} />
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.62rem', lineHeight: 1.3 }}>
+            Jaringan sensor aktif (tidak hujan)
+          </Typography>
+        </Box>
+      )}
     </Box>
   );
 }

@@ -24,6 +24,7 @@ export default function NirmalaDashboard() {
 
   const [activeLayer, setActiveLayer] = useState('rain');
   const [showMarkers, setShowMarkers] = useState(true);
+  const [showCoverage, setShowCoverage] = useState(true);
   const [selectedStation, setSelectedStation] = useState(null);
   const [map, setMap] = useState(null);
 
@@ -56,7 +57,7 @@ export default function NirmalaDashboard() {
         {/* Map container */}
         <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           <GoogleMapWrapper onMapLoad={setMap}>
-            <CanvasHeatmapOverlay stations={SENSOR_STATIONS} />
+            <CanvasHeatmapOverlay stations={SENSOR_STATIONS} showCoverage={showCoverage} />
             <SensorDotLayer
               stations={SENSOR_STATIONS}
               showMarkers={showMarkers}
@@ -71,10 +72,12 @@ export default function NirmalaDashboard() {
             onLayerChange={setActiveLayer}
             showMarkers={showMarkers}
             onToggleMarkers={setShowMarkers}
+            showCoverage={showCoverage}
+            onToggleCoverage={setShowCoverage}
           />
 
           {/* Right: Legend */}
-          <ColorRampLegend activeLayer={activeLayer} />
+          <ColorRampLegend activeLayer={activeLayer} showCoverage={showCoverage} />
 
           {/* Top-center: contextual info pill */}
           <MapInfoPill raining={stats.raining} total={stats.total} loading={loading && stats.total === 0} />

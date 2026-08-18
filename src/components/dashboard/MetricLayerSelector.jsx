@@ -7,7 +7,14 @@ const eyebrowSx = {
   letterSpacing: '0.1em', color: 'text.secondary',
 };
 
-export default function MetricLayerSelector({ activeLayer, onLayerChange, showMarkers, onToggleMarkers }) {
+const switchSx = {
+  '& .MuiSwitch-switchBase.Mui-checked': { color: '#00e5ff' },
+  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: 'rgba(0, 229, 255, 0.7)' },
+};
+
+export default function MetricLayerSelector({
+  activeLayer, onLayerChange, showMarkers, onToggleMarkers, showCoverage, onToggleCoverage,
+}) {
   return (
     <Box
       sx={{
@@ -83,17 +90,12 @@ export default function MetricLayerSelector({ activeLayer, onLayerChange, showMa
 
       <FormControlLabel
         sx={{ ml: 0 }}
-        control={
-          <Switch
-            checked={showMarkers}
-            onChange={(e) => onToggleMarkers(e.target.checked)}
-            size="small"
-            sx={{
-              '& .MuiSwitch-switchBase.Mui-checked': { color: '#00e5ff' },
-              '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: 'rgba(0, 229, 255, 0.7)' },
-            }}
-          />
-        }
+        control={<Switch checked={showCoverage} onChange={(e) => onToggleCoverage(e.target.checked)} size="small" sx={switchSx} />}
+        label={<Typography variant="body2" sx={{ fontSize: '0.82rem', color: 'text.primary' }}>Cakupan Sensor</Typography>}
+      />
+      <FormControlLabel
+        sx={{ ml: 0, mt: -1 }}
+        control={<Switch checked={showMarkers} onChange={(e) => onToggleMarkers(e.target.checked)} size="small" sx={switchSx} />}
         label={<Typography variant="body2" sx={{ fontSize: '0.82rem', color: 'text.primary' }}>Titik Sensor</Typography>}
       />
     </Box>
