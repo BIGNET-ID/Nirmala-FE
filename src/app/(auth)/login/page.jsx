@@ -9,6 +9,7 @@ import {
 import { Icon } from '@iconify/react';
 import { useAuth } from '@/hooks/useAuth';
 import SceneBoundary from '@/components/auth/SceneBoundary';
+import LensRain from '@/components/auth/LensRain';
 
 const WeatherScene = dynamic(() => import('@/components/auth/WeatherScene'), { ssr: false });
 
@@ -28,6 +29,7 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [reduced, setReduced] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [launching, setLaunching] = useState(false);
 
   // Mount the WebGL Canvas only AFTER hydration, into an already-laid-out DOM.
   // On a hard refresh the Canvas otherwise initializes before layout settles and
@@ -49,7 +51,9 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await signIn(email.trim(), password);
-      router.replace('/');
+      if (reduced) { router.replace('/'); return; }
+      setLaunching(true);                          // dramatic fly-through the clouds
+      setTimeout(() => router.replace('/'), 1900);
     } catch (err) {
       setError(err?.message || 'Login gagal. Periksa email & password.');
       setSubmitting(false);
@@ -68,14 +72,19 @@ export default function LoginPage() {
       {/* 3D weather backdrop — mounted only after hydration. */}
       {mounted && !reduced && (
         <SceneBoundary>
-          <WeatherScene />
+          <WeatherScene warp={launching} />
         </SceneBoundary>
       )}
 
-      {/* Legibility overlay */}
+      {/* Camera-lens raindrops */}
+      {mounted && !reduced && <LensRain />}
+
+      {/* Legibility overlay — fades away during the fly-through */}
       <Box sx={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
         background: 'radial-gradient(ellipse at 50% 55%, rgba(5,8,17,0.55) 0%, rgba(5,8,17,0.85) 70%)',
+        opacity: launching ? 0 : 1,
+        transition: 'opacity 0.9s var(--ease-out)',
       }} />
 
       {/* Login card */}
@@ -91,6 +100,10 @@ export default function LoginPage() {
             borderRadius: 'var(--radius-xl, 16px)',
             boxShadow: '0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,229,255,0.06)',
             animation: reduced ? 'none' : 'fade-in 0.5s var(--ease-out) both',
+            opacity: launching ? 0 : 1,
+            transform: launching ? 'scale(0.9) translateY(-18px)' : 'none',
+            transition: 'opacity 0.55s var(--ease-out), transform 0.8s var(--ease-out)',
+            pointerEvents: launching ? 'none' : 'auto',
           }}
         >
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>

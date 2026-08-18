@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useRef, useState, useEffect } from 'react';
+import { Suspense, useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Clouds, Cloud, Stars, Line, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
@@ -183,8 +183,66 @@ function CloudField() {
   );
 }
 
+// ---- rain (drizzle streaks) ----------------------------------------------
+function Rain({ count = 600 }) {
+  const geo = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    const pos = new Float32Array(count * 6); // 2 verts per streak
+    for (let i = 0; i < count; i++) {
+      const x = (Math.random() - 0.5) * 46;
+      const y = Math.random() * 34 - 6;
+      const z = (Math.random() - 0.5) * 22 - 3;
+      const len = 0.45 + Math.random() * 0.6;
+      pos[i * 6] = x; pos[i * 6 + 1] = y; pos[i * 6 + 2] = z;
+      pos[i * 6 + 3] = x; pos[i * 6 + 4] = y - len; pos[i * 6 + 5] = z;
+    }
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    return g;
+  }, [count]);
+  const speeds = useMemo(() => Array.from({ length: count }, () => 8 + Math.random() * 12), [count]);
+
+  useFrame((_, dt) => {
+    const step = Math.min(dt, 0.05);
+    const p = geo.attributes.position.array;
+    for (let i = 0; i < count; i++) {
+      const dy = speeds[i] * step;
+      p[i * 6 + 1] -= dy; p[i * 6 + 4] -= dy;
+      if (p[i * 6 + 1] < -14) {
+        const ny = 22 + Math.random() * 8;
+        const x = (Math.random() - 0.5) * 46;
+        const z = (Math.random() - 0.5) * 22 - 3;
+        const len = 0.45 + Math.random() * 0.6;
+        p[i * 6] = x; p[i * 6 + 1] = ny; p[i * 6 + 2] = z;
+        p[i * 6 + 3] = x; p[i * 6 + 4] = ny - len; p[i * 6 + 5] = z;
+      }
+    }
+    geo.attributes.position.needsUpdate = true;
+  });
+
+  return (
+    <lineSegments geometry={geo}>
+      <lineBasicMaterial color="#c3d8ff" transparent opacity={0.32} toneMapped={false} />
+    </lineSegments>
+  );
+}
+
+// ---- camera fly-through on successful login -------------------------------
+function CameraRig({ warp }) {
+  const start = useRef(null);
+  useFrame((state) => {
+    if (!warp) return;
+    if (start.current === null) start.current = state.clock.elapsedTime;
+    const t = Math.min(1, (state.clock.elapsedTime - start.current) / 1.9);
+    const ease = t * t;                       // accelerate into the clouds
+    state.camera.position.z = 12 - ease * 27; // 12 -> -15, punching through
+    state.camera.fov = 58 + ease * 18;        // widen for a warp/rush feel
+    state.camera.updateProjectionMatrix();
+  });
+  return null;
+}
+
 // ---- scene ----------------------------------------------------------------
-export default function WeatherScene() {
+export default function WeatherScene({ warp = false }) {
   return (
     <Canvas
       dpr={[1, 1.6]}
@@ -210,8 +268,10 @@ export default function WeatherScene() {
       <Suspense fallback={null}>
         <CloudField />
       </Suspense>
+      <Rain />
       <Storm />
       <Storm />
+      <CameraRig warp={warp} />
     </Canvas>
   );
 }
