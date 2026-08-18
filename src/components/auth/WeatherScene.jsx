@@ -5,7 +5,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Clouds, Cloud, Stars, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import { LightningStrike } from '@/lib/three/LightningStrike';
-import { FLASH } from './flashBus';
+import { FLASH, STRIKE } from './flashBus';
 
 // Warm the cloud sprite into drei's texture cache on import, so the first render
 // doesn't suspend (which — without a boundary — errored into the static fallback,
@@ -113,6 +113,7 @@ function LightningBolt({ color = '#cfeeff' }) {
         const x = (Math.random() - 0.5) * 14;
         strike.rayParameters.sourceOffset.set(x + (Math.random() - 0.5) * 2.5, 9, -2);
         strike.rayParameters.destOffset.set(x, -6, -2);
+        STRIKE.x = x;                          // god-ray shafts spring from here
         st.active = true; st.t0 = clk; st.dur = 0.26 + Math.random() * 0.3;
         if (meshRef.current) meshRef.current.visible = true;
         if (lightRef.current) lightRef.current.position.set(x, 3, -2);
@@ -139,6 +140,70 @@ function LightningBolt({ color = '#cfeeff' }) {
       <mesh ref={meshRef} geometry={strike} material={mat} visible={false} />
       <pointLight ref={lightRef} color="#eaf4ff" distance={120} decay={1.3} intensity={0} />
     </>
+  );
+}
+
+// ---- god rays (volumetric light shafts from the strike) -------------------
+// No post-processing (kept robust): a fan of additive, soft-edged beam planes
+// springing from the strike point, brightening with the bolt flash — reads as
+// light bursting down through the cloud break.
+function godRayTexture() {
+  const c = document.createElement('canvas');
+  c.width = 64; c.height = 256;
+  const g = c.getContext('2d');
+  const lin = g.createLinearGradient(0, 0, 0, 256);   // bright at source, fades down
+  lin.addColorStop(0, 'rgba(255,255,255,0.95)');
+  lin.addColorStop(0.5, 'rgba(255,255,255,0.28)');
+  lin.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = lin; g.fillRect(0, 0, 64, 256);
+  const hor = g.createLinearGradient(0, 0, 64, 0);    // soft horizontal falloff
+  hor.addColorStop(0, 'rgba(0,0,0,1)');
+  hor.addColorStop(0.5, 'rgba(0,0,0,0)');
+  hor.addColorStop(1, 'rgba(0,0,0,1)');
+  g.globalCompositeOperation = 'destination-out';
+  g.fillStyle = hor; g.fillRect(0, 0, 64, 256);
+  return new THREE.CanvasTexture(c);
+}
+
+function LightShafts({ color = '#dff2ff' }) {
+  const group = useRef();
+  const tex = useMemo(godRayTexture, []);
+  // one shared plane whose TOP edge sits at the local origin (the strike point)
+  const geo = useMemo(() => {
+    const g = new THREE.PlaneGeometry(3.4, 22);
+    g.translate(0, -11, 0);
+    return g;
+  }, []);
+  const angles = [-0.3, -0.15, 0, 0.15, 0.3];
+  const cur = useRef(0);
+
+  useFrame((_, dt) => {
+    if (!group.current) return;
+    const f = FLASH.bolt;
+    group.current.visible = f > 0.01;
+    if (f > 0.01) {
+      cur.current += (STRIKE.x - cur.current) * Math.min(1, dt * 18); // ease to strike x
+      group.current.position.x = cur.current;
+    } else {
+      cur.current = STRIKE.x; // snap between strikes so the next burst is in place
+    }
+    for (const m of group.current.children) {
+      if (m.material) m.material.opacity = f * 0.5;
+    }
+  });
+
+  return (
+    <group ref={group} position={[0, 9, -2.5]} visible={false}>
+      {angles.map((a, i) => (
+        <mesh key={i} geometry={geo} rotation={[0, 0, a]}>
+          <meshBasicMaterial
+            map={tex} color={color} transparent opacity={0}
+            depthWrite={false} blending={THREE.AdditiveBlending}
+            toneMapped={false} side={THREE.DoubleSide}
+          />
+        </mesh>
+      ))}
+    </group>
   );
 }
 
@@ -339,6 +404,7 @@ export default function WeatherScene({ warp = false, mode = 'dark' }) {
       <Storm />
       <Storm />
       <LightningBolt color={P.boltColor} />
+      <LightShafts color={P.boltColor} />
       <WarpFX warp={warp} />
       <CameraRig warp={warp} />
     </Canvas>

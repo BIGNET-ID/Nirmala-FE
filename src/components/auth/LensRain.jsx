@@ -95,6 +95,34 @@ export default function LensRain({ dropCount = 26, opacity = 0.72 }) {
       gg.fillStyle = gr; gg.fillRect(0, 0, G, G);
     }
 
+    // --- refraction caustic: thin light rays bent through the bead, drawn
+    // additively inside each drop only while the storm flashes ---
+    const C = 96;
+    const caustic = document.createElement('canvas');
+    caustic.width = caustic.height = C;
+    {
+      const cc = caustic.getContext('2d');
+      cc.translate(C / 2, C / 2);
+      // bright refracted core
+      let cg = cc.createRadialGradient(0, 0, 0, 0, 0, C * 0.5);
+      cg.addColorStop(0, 'rgba(255,255,255,0.85)');
+      cg.addColorStop(0.4, 'rgba(220,238,255,0.22)');
+      cg.addColorStop(1, 'rgba(255,255,255,0)');
+      cc.fillStyle = cg; cc.beginPath(); cc.arc(0, 0, C * 0.5, 0, Math.PI * 2); cc.fill();
+      // a few crossing refraction streaks
+      cc.lineCap = 'round';
+      const rays = 6;
+      for (let i = 0; i < rays; i++) {
+        const ang = (i / rays) * Math.PI * 2 + 0.35;
+        const len = C * 0.46 * (i % 2 ? 1 : 0.62);
+        const lg = cc.createLinearGradient(0, 0, Math.cos(ang) * len, Math.sin(ang) * len);
+        lg.addColorStop(0, 'rgba(255,255,255,0.85)');
+        lg.addColorStop(1, 'rgba(255,255,255,0)');
+        cc.strokeStyle = lg; cc.lineWidth = C * 0.022;
+        cc.beginPath(); cc.moveTo(0, 0); cc.lineTo(Math.cos(ang) * len, Math.sin(ang) * len); cc.stroke();
+      }
+    }
+
     const spawn = (top) => {
       const r = 3 + Math.random() * 7;
       return { x: Math.random() * W, y: top ? -r * 2 : Math.random() * H, r,
@@ -153,9 +181,13 @@ export default function LensRain({ dropCount = 26, opacity = 0.72 }) {
         // lightning glint — additive specular pop synced to the storm flash
         if (flash > 0.03) {
           ctx.globalCompositeOperation = 'lighter';
+          // refraction rays bent through the bead (centred inside the drop)
+          const cs = d.r * 2 * (1.05 + flash * 0.5);
+          ctx.globalAlpha = Math.min(1, opacity * flash * 0.8);
+          ctx.drawImage(caustic, d.x - cs / 2, d.y - cs / 2, cs, cs);
+          // specular glint on the upper-left highlight point
           const gs = d.r * (1.4 + flash * 0.8);
           ctx.globalAlpha = Math.min(1, opacity * flash * 1.1);
-          // sit the glint on the upper-left specular point
           ctx.drawImage(glint, d.x - d.r * 0.32 - gs / 2, d.y - d.r * 0.42 - gs / 2, gs, gs);
           ctx.globalCompositeOperation = 'source-over';
           ctx.globalAlpha = opacity;

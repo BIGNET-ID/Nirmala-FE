@@ -13,3 +13,9 @@
  */
 export const FLASH = { storm: 0, bolt: 0, warp: 0 };
 export const flashLevel = () => Math.max(FLASH.storm, FLASH.bolt, FLASH.warp);
+
+/**
+ * Position (world-x) of the most recent forked-bolt strike, written by the
+ * bolt so the god-ray light shafts can spring from the same spot.
+ */
+export const STRIKE = { x: 0 };
