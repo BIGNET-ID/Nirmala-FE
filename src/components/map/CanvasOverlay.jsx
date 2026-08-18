@@ -3,126 +3,126 @@
 import { useEffect, useRef } from 'react';
 import { useMap } from '@vis.gl/react-google-maps';
 
-// ============================================================
-// IDW Color Functions (inline – no import needed in component)
-// ============================================================
-function rainToRgba(val) {
-  if (val < 5)   return [0, 0, 0, 0];
-  if (val < 25)  return [0, 229, 255, 90];
-  if (val < 50)  return [0, 230, 118, 130];
-  if (val < 75)  return [255, 235, 59, 160];
-  if (val < 100) return [255, 152, 0, 185];
-  return [244, 67, 54, 210];
+/**
+ * Rain-density heatmap (BIGNET DS v19).
+ *
+ * The live /api/sensors feed is BINARY (is_raining true/false) — there is no
+ * numeric intensity to interpolate. So instead of a fake mm/jam IDW field, this
+ * renders an HONEST kernel-density field: every RAINING sensor emits a soft
+ * radial kernel; overlapping kernels accumulate (additive). Isolated rain = a
+ * cool faint blob; a dense cluster of raining sensors = a hot red core. The
+ * accumulated density is mapped through a colour ramp (cool→hot).
+ *
+ * Technique mirrors heatmap.js: draw greyscale alpha kernels, then colourize the
+ * composited alpha channel via a 1×256 gradient lookup table.
+ */
+
+const RADIUS_KM = 35;          // geographic influence radius of one sensor
+const RADIUS_PX_MIN = 14;
+const RADIUS_PX_MAX = 90;
+const POINT_ALPHA = 0.5;       // per-kernel opacity; overlaps build density
+const MAX_OUT_ALPHA = 220;     // cap so the map stays readable underneath
+
+// Density ramp: cool (sparse) → hot (dense). Spec §7.1 rain ramp.
+const RAMP = [
+  [0.00, [96, 165, 250]],   // #60a5fa
+  [0.18, [52, 211, 153]],   // #34d399
+  [0.40, [234, 179, 8]],    // #eab308
+  [0.62, [251, 146, 60]],   // #fb923c
+  [0.82, [239, 68, 68]],    // #ef4444
+  [1.00, [192, 132, 252]],  // #c084fc
+];
+
+/** Build a 256-entry RGB lookup table from the ramp (once). */
+function buildLUT() {
+  const lut = new Uint8ClampedArray(256 * 3);
+  for (let i = 0; i < 256; i++) {
+    const t = i / 255;
+    let a = RAMP[0], b = RAMP[RAMP.length - 1];
+    for (let k = 0; k < RAMP.length - 1; k++) {
+      if (t >= RAMP[k][0] && t <= RAMP[k + 1][0]) { a = RAMP[k]; b = RAMP[k + 1]; break; }
+    }
+    const span = b[0] - a[0] || 1;
+    const f = (t - a[0]) / span;
+    lut[i * 3]     = a[1][0] + (b[1][0] - a[1][0]) * f;
+    lut[i * 3 + 1] = a[1][1] + (b[1][1] - a[1][1]) * f;
+    lut[i * 3 + 2] = a[1][2] + (b[1][2] - a[1][2]) * f;
+  }
+  return lut;
 }
 
-function tempToRgba(val) {
-  const norm = Math.max(0, Math.min(1, (val - 20) / 16));
-  const hue = (1 - norm) * 240;
-  return hslToRgba(hue, 0.85, 0.5, 0.45);
+const LUT = buildLUT();
+
+/** meters-per-pixel at a given latitude & Google zoom. */
+function metersPerPixel(lat, zoom) {
+  return (156543.03392 * Math.cos((lat * Math.PI) / 180)) / Math.pow(2, zoom);
 }
 
-function hslToRgba(h, s, l, a) {
-  const c = (1 - Math.abs(2 * l - 1)) * s;
-  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
-  const m = l - c / 2;
-  let r = 0, g = 0, b = 0;
-  if (h < 60)        { r = c; g = x; b = 0; }
-  else if (h < 120)  { r = x; g = c; b = 0; }
-  else if (h < 180)  { r = 0; g = c; b = x; }
-  else if (h < 240)  { r = 0; g = x; b = c; }
-  else if (h < 300)  { r = x; g = 0; b = c; }
-  else               { r = c; g = 0; b = x; }
-  return [
-    Math.round((r + m) * 255),
-    Math.round((g + m) * 255),
-    Math.round((b + m) * 255),
-    Math.round(a * 255),
-  ];
-}
-
-// ============================================================
-// IDW Interpolation on Canvas
-// ============================================================
-function renderHeatmap(canvas, stations, activeLayer, projection) {
-  const ctx = canvas.getContext('2d');
-  if (!ctx || stations.length === 0) return;
-
+function renderHeatmap(canvas, shadow, stations, projection, map) {
   const W = canvas.width;
   const H = canvas.height;
-  const STEP = 6; // grid resolution (lower = sharper but slower)
-  const POWER = 2;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+  if (!stations.length || !map) return;
 
-  const imageData = ctx.createImageData(W, H);
-  const data = imageData.data;
+  const zoom = map.getZoom();
+  const centerLat = map.getCenter()?.lat() ?? 0;
+  const mpp = metersPerPixel(centerLat, zoom);
+  const radius = Math.max(RADIUS_PX_MIN, Math.min(RADIUS_PX_MAX, (RADIUS_KM * 1000) / mpp));
+  const pad = radius;
 
-  // Project stations to pixel space
-  const pts = stations.map((st) => {
-    const px = projection.fromLatLngToDivPixel(
-      new window.google.maps.LatLng(st.lat, st.lng)
-    );
-    return { px: px.x, py: px.y, val: activeLayer === 'rain' ? st.rain : st.temp };
-  });
+  // Project raining sensors into viewport pixel space (with cull).
+  const pts = [];
+  for (const st of stations) {
+    if (!st.isRaining) continue;
+    const p = projection.fromLatLngToDivPixel(new window.google.maps.LatLng(st.lat, st.lng));
+    // canvas is offset to the viewport's top-left; convert div px → canvas px
+    const x = p.x - canvas._offsetX;
+    const y = p.y - canvas._offsetY;
+    if (x < -pad || x > W + pad || y < -pad || y > H + pad) continue;
+    pts.push([x, y]);
+  }
+  if (!pts.length) return;
 
-  for (let y = 0; y < H; y += STEP) {
-    for (let x = 0; x < W; x += STEP) {
-      let weightSum = 0;
-      let valueSum = 0;
-      let exactVal = null;
-
-      for (const p of pts) {
-        const dx = x - p.px;
-        const dy = y - p.py;
-        const distSq = dx * dx + dy * dy;
-        if (distSq < 1) { exactVal = p.val; break; }
-        const w = 1 / Math.pow(distSq, POWER / 2);
-        weightSum += w;
-        valueSum += w * p.val;
-      }
-
-      const val = exactVal !== null ? exactVal : valueSum / weightSum;
-      const [r, g, b, a] = activeLayer === 'rain' ? rainToRgba(val) : tempToRgba(val);
-
-      // Fill STEP×STEP block
-      for (let sy = 0; sy < STEP && y + sy < H; sy++) {
-        for (let sx = 0; sx < STEP && x + sx < W; sx++) {
-          const idx = ((y + sy) * W + (x + sx)) * 4;
-          data[idx]     = r;
-          data[idx + 1] = g;
-          data[idx + 2] = b;
-          data[idx + 3] = a;
-        }
-      }
-    }
+  // 1) Accumulate greyscale alpha kernels on the shadow canvas.
+  shadow.width = W;
+  shadow.height = H;
+  const sctx = shadow.getContext('2d');
+  sctx.clearRect(0, 0, W, H);
+  for (const [x, y] of pts) {
+    const g = sctx.createRadialGradient(x, y, 0, x, y, radius);
+    g.addColorStop(0, `rgba(0,0,0,${POINT_ALPHA})`);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    sctx.fillStyle = g;
+    sctx.beginPath();
+    sctx.arc(x, y, radius, 0, Math.PI * 2);
+    sctx.fill();
   }
 
-  ctx.clearRect(0, 0, W, H);
-  ctx.putImageData(imageData, 0, 0);
-
-  // Apply Gaussian blur for smooth heatmap look
-  ctx.filter = 'blur(18px)';
-  const tmpCanvas = document.createElement('canvas');
-  tmpCanvas.width = W; tmpCanvas.height = H;
-  const tmpCtx = tmpCanvas.getContext('2d');
-  tmpCtx.filter = 'blur(18px)';
-  tmpCtx.drawImage(canvas, 0, 0);
-  ctx.clearRect(0, 0, W, H);
-  ctx.filter = 'none';
-  ctx.drawImage(tmpCanvas, 0, 0);
+  // 2) Colourize: map composited alpha → density ramp.
+  const img = sctx.getImageData(0, 0, W, H);
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const alpha = d[i + 3];
+    if (alpha === 0) continue;
+    const li = alpha * 3;
+    d[i] = LUT[li];
+    d[i + 1] = LUT[li + 1];
+    d[i + 2] = LUT[li + 2];
+    d[i + 3] = alpha > MAX_OUT_ALPHA ? MAX_OUT_ALPHA : alpha;
+  }
+  ctx.putImageData(img, 0, 0);
 }
 
-// ============================================================
-// React Component (as Google Maps OverlayView)
-// ============================================================
-export default function CanvasHeatmapOverlay({ stations, activeLayer }) {
+export default function CanvasHeatmapOverlay({ stations }) {
   const map = useMap();
   const overlayRef = useRef(null);
   const canvasRef = useRef(null);
+  const shadowRef = useRef(null);
   const stationsRef = useRef(stations);
-  const layerRef = useRef(activeLayer);
+  const rafRef = useRef(0);
 
-  // Keep refs fresh without re-creating overlay
   useEffect(() => { stationsRef.current = stations; }, [stations]);
-  useEffect(() => { layerRef.current = activeLayer; }, [activeLayer]);
 
   useEffect(() => {
     if (!map || !window.google) return;
@@ -132,8 +132,16 @@ export default function CanvasHeatmapOverlay({ stations, activeLayer }) {
     canvas.style.top = '0';
     canvas.style.left = '0';
     canvas.style.pointerEvents = 'none';
-    canvas.style.mixBlendMode = 'normal';
     canvasRef.current = canvas;
+    shadowRef.current = document.createElement('canvas');
+
+    const scheduleDraw = (fn) => {
+      if (rafRef.current) return;
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = 0;
+        fn();
+      });
+    };
 
     class HeatmapOverlay extends window.google.maps.OverlayView {
       onAdd() {
@@ -148,18 +156,23 @@ export default function CanvasHeatmapOverlay({ stations, activeLayer }) {
 
         const sw = projection.fromLatLngToDivPixel(bounds.getSouthWest());
         const ne = projection.fromLatLngToDivPixel(bounds.getNorthEast());
-
+        const left = Math.min(sw.x, ne.x);
+        const top = Math.min(sw.y, ne.y);
         const W = Math.ceil(Math.abs(ne.x - sw.x));
         const H = Math.ceil(Math.abs(sw.y - ne.y));
 
-        canvas.width  = W;
+        canvas.width = W;
         canvas.height = H;
-        canvas.style.width  = `${W}px`;
+        canvas.style.width = `${W}px`;
         canvas.style.height = `${H}px`;
-        canvas.style.left   = `${Math.min(sw.x, ne.x)}px`;
-        canvas.style.top    = `${Math.min(sw.y, ne.y)}px`;
+        canvas.style.left = `${left}px`;
+        canvas.style.top = `${top}px`;
+        canvas._offsetX = left;
+        canvas._offsetY = top;
 
-        renderHeatmap(canvas, stationsRef.current, layerRef.current, projection);
+        scheduleDraw(() =>
+          renderHeatmap(canvas, shadowRef.current, stationsRef.current, projection, map)
+        );
       }
 
       onRemove() {
@@ -172,14 +185,15 @@ export default function CanvasHeatmapOverlay({ stations, activeLayer }) {
     overlayRef.current = overlay;
 
     return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
       overlay.setMap(null);
     };
   }, [map]);
 
-  // Redraw on stations/layer change
+  // Redraw when the sensor set changes (e.g. new poll).
   useEffect(() => {
     overlayRef.current?.draw();
-  }, [stations, activeLayer]);
+  }, [stations]);
 
   return null;
 }
