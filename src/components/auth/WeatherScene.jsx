@@ -86,7 +86,7 @@ function Storm() {
       <pointLight position={[bolt?.x ?? 0, 3.5, -2]} color="#eaf6ff" distance={80} decay={1.5} intensity={flash * 340} />
       {/* brief global brighten so the whole sky reacts */}
       <ambientLight intensity={flash * 1.0} color="#cfe8ff" />
-      {bolt && bolt.lines.map((pts, i) => (
+      {bolt?.lines?.map((pts, i) => (
         <Line
           key={i}
           points={pts}
