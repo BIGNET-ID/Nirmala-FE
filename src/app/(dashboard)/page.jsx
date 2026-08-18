@@ -112,10 +112,10 @@ export default function NirmalaDashboard() {
             ))}
           </Box>
 
-          <Box sx={{ flex: 1 }} />
-
-          {/* Status badges */}
+          {/* Status badges — right-aligned via ml:auto (no empty spacer div), never shrink */}
           <Box sx={{
+            ml: 'auto',
+            flexShrink: 0,
             display: 'flex',
             alignItems: 'center',
             gap: 1,
@@ -143,6 +143,7 @@ export default function NirmalaDashboard() {
 
           {/* Alert badge */}
           <Box sx={{
+            flexShrink: 0,
             display: 'flex',
             alignItems: 'center',
             gap: 0.75,
@@ -159,7 +160,7 @@ export default function NirmalaDashboard() {
           </Box>
 
           {/* DateTime */}
-          <Box sx={{ fontSize: '0.65rem', color: 'rgba(160,160,160,0.6)', fontFamily: 'monospace' }}>
+          <Box sx={{ fontSize: '0.65rem', color: 'rgba(160,160,160,0.6)', fontFamily: 'monospace', flexShrink: 0, whiteSpace: 'nowrap' }}>
             {new Date().toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })} WIB
           </Box>
 
@@ -169,6 +170,7 @@ export default function NirmalaDashboard() {
               width: 34,
               height: 34,
               minWidth: 'auto',
+              flexShrink: 0,
               borderRadius: '50%',
               background: '#0d47a1',
               color: '#fff',
