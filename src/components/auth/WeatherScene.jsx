@@ -87,7 +87,7 @@ function LightningBolt({ color = '#cfeeff' }) {
   const strike = useMemo(() => new LightningStrike({
     sourceOffset: new THREE.Vector3(0, 9, -2),
     destOffset: new THREE.Vector3(0, -6, -2),
-    radius0: 0.28, radius1: 0.05, minRadius: 0.02,
+    radius0: 0.13, radius1: 0.025, minRadius: 0.01,
     maxIterations: 7, isEternal: true,
     timeScale: 0.6, propagationTimeFactor: 0.05, vanishingTimeFactor: 0.95,
     subrayPeriod: 3.0, subrayDutyCycle: 0.6,
