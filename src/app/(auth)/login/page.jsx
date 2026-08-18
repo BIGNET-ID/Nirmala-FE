@@ -11,6 +11,7 @@ import { motion } from 'motion/react';
 import { useAuth } from '@/hooks/useAuth';
 import { useThemeMode } from '@/context/ThemeModeContext';
 import SceneBoundary from '@/components/auth/SceneBoundary';
+import LensRain from '@/components/auth/LensRain';
 
 const WeatherScene = dynamic(() => import('@/components/auth/WeatherScene'), { ssr: false });
 
@@ -82,6 +83,9 @@ export default function LoginPage() {
           <WeatherScene warp={launching} mode={mode} />
         </SceneBoundary>
       )}
+
+      {/* Camera-lens raindrops */}
+      {mounted && !reduced && <LensRain />}
 
       {/* Legibility vignette — subtle; fades away during the fly-through */}
       <Box sx={{
