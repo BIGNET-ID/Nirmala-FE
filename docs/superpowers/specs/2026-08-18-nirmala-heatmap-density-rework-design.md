@@ -119,6 +119,46 @@ Peta nasional hanya menampilkan apa yang benar-benar diukur. Karena data live bi
 
 ---
 
-## 7. Di Luar Cakupan (sub-proyek berikutnya)
+## 7. UI Alignment ke BIGNET Web Design System v19
 
-Wind particle system; integrasi layer lightning & thunderstorm ke peta; timeline historis nasional; IndexedDB tile cache; QuadTree clustering; integrasi auth token penuh; endpoint intensitas bulk.
+Referensi gold-master: `~/Downloads/Design Consistent Web Pages` (Figma Make, "Nirmala" di atas BIGNET DS v19). Spec token otoritatif: `src/imports/bignet-web-design-system.md` di folder itu. Keputusan disetujui: **base map = Google Maps + dark style** (bukan pindah Leaflet); **adopsi brand penuh** (Roboto + Material Symbols + logo asli).
+
+### 7.1 Token (sentralisasi → CSS variables + MUI theme)
+Pindahkan hex hardcode di `page.jsx` ke satu sumber token (CSS vars di `globals`/`theme`), MUI theme memetakan ke token. Token kunci (dark, command-center):
+- Grounds: `--nirmala-map-bg #050811`, `--nirmala-map-bg-2 #0a1628`; surface dark `#121212 / #1e1e1e / #272727`; border `#2e2e2e`.
+- Glass: `background rgba(10,16,36,0.88)` + `backdrop-filter blur(20px)` + `1px solid rgba(255,255,255,0.07)`. Header `rgba(5,8,17,0.96)` blur20; timeline `rgba(10,16,36,0.92)` blur24.
+- Aksen: `--nirmala-cyan #00e5ff` (interaksi/highlight); brand navy `#10325f`/`#0d47a1`; **yellow `#f9a825` aksen ≤15% hard cap, tidak pernah jadi teks di latar terang**.
+- Teks dark: `#e0e0e0` (87%), muted `#a0a0a0` (60%).
+- Rain ramp (heatmap & legend): `#60a5fa → #34d399 → #eab308 → #fb923c → #ef4444 → #c084fc`. (Catatan: legend berlabel "Kerapatan Hujan", lihat §3.5.)
+- Radius: 4/8/12/16/full. Focus ring: `2px var(--color-focus-ring #0d47a1)` offset 4px + input glow `0 0 0 3px rgba(0,229,255,0.12)`. Z-index skala token (dropdown 1000 … tooltip 1600). Shadow hanya di light mode; dark pakai step surface.
+
+### 7.2 Tipografi & ikon (adopsi penuh)
+- Font **Roboto** (400/700) gantikan Inter. **Nilai numerik/teknis** (koordinat, ID, waktu, count, status) pakai **mono**. Skala fluid `clamp()` sesuai DS.
+- **Micro-label pattern**: label seksi/panel = 10–13px, 700, UPPERCASE, `letter-spacing 0.08–0.1em`, muted ("LAYER DATA", "STATISTIK SENSOR", dst).
+- Ikon **Material Symbols Rounded** (via Iconify `material-symbols:*` yang sudah ada, atau variable font). **Buang semua emoji** (🌧/🌡 di marker) — anti-pattern per QA.
+
+### 7.3 Logo & favicon
+Salin aset asli dari reference ke `public/`: logo `NIRMALA-BRAND` (header, ~26–28px) + `NIRMALA-BRAND-DARK`, favicon `nirmala-dark-favicon.png`. Ganti placeholder kotak "N".
+
+### 7.4 Base map dark style
+Terapkan **styled-map JSON Google Maps** near-black navy (air `#050811`, land gelap, label redup) agar peta menyatu dengan panel glass — setara tampilan CartoDB dark reference. Konfigurasi di `GoogleMapWrapper`.
+
+### 7.5 Komponen (restyle ke spec glass)
+Header 56px glass (wordmark · divider · icon tab-nav aktif underline cyan · spacer · LIVE pill hijau pulsing · alert pill biru · datetime mono · avatar). Panel mengambang: layer selector (row aktif tinted `${c}18` + border `${c}44` + dot), **stat mini-cards "STATISTIK SENSOR"** (Total/Aktif/Hujan/Blacklist, angka mono), zoom stack kanan-atas, **info-pill kontekstual atas-tengah**, legend kerapatan kanan-bawah (gradient bar + swatch rows), timeline player (disable dulu, §3.5), drawer kanan (`slide-in-right 0.22s`, icon badge bulat + metric + sparkline). Kartu: radius-lg, hairline border, header+body dipisah border.
+
+### 7.6 Motion & aksesibilitas (QA ui-ux-pro-max)
+Durasi 150–300ms, ease standard; keyframe `pulse-dot`/`slide-in-right`/`fade-in`; **`prefers-reduced-motion` wajib** (kill-switch). Pulse hanya di sensor **terpilih/aktif** (bukan 4.582 dot — perf). `cursor-pointer` di semua elemen klik; hover transisi halus; focus ring terlihat (keyboard nav); kontras teks AA+; responsif turun ke layar kecil (panel bisa collapse).
+
+## 8. Acceptance Criteria UI
+
+9. Semua warna berasal dari token terpusat (tidak ada hex acak di komponen); palet = BIGNET DS v19.
+10. Font Roboto termuat; nilai numerik pakai mono; micro-label UPPERCASE muncul di tiap panel.
+11. Tidak ada emoji sebagai ikon; semua ikon Material Symbols.
+12. Logo & favicon NIRMALA asli terpasang (bukan placeholder).
+13. Base map tampil near-black navy (dark style), menyatu dengan panel glass.
+14. Panel = glass sesuai spec (blur/border/radius); stat mini-cards & info-pill hadir.
+15. `prefers-reduced-motion` dihormati; focus ring terlihat; yellow ≤15% & bukan teks di latar terang.
+
+## 9. Di Luar Cakupan (sub-proyek berikutnya)
+
+Wind particle system; integrasi layer lightning & thunderstorm ke peta; timeline historis nasional; IndexedDB tile cache; QuadTree clustering; integrasi auth token penuh; endpoint intensitas bulk; halaman Settings & Login (reference punya, tapi di luar fokus dashboard sesi ini).

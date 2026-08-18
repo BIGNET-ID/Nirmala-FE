@@ -5,6 +5,21 @@
 
 Prinsip eksekusi: setiap fase kecil, meninggalkan aplikasi tetap bisa dijalankan (`npm run dev`), dan diakhiri pengecekan konkret. Backend (`172.18.188.154:8000`) tidak terjangkau dari dev → verifikasi memakai fixture respons asli.
 
+Dua jalur digabung: **fungsional** (heatmap + data asli, Fase 0–5) dan **UI alignment ke BIGNET DS v19** (Fase A di depan + restyle per-komponen menyatu di tiap fase + polish Fase B). Referensi otoritatif token: `~/Downloads/Design Consistent Web Pages/src/imports/bignet-web-design-system.md`. Spec §7–§8.
+
+---
+
+## Fase A — Design foundation (token, font, ikon, logo, dark map)
+
+Dikerjakan lebih dulu supaya seluruh fase fungsional mewarisi styling yang benar.
+
+1. **Token terpusat:** buat sumber token (CSS variables global + MUI theme yang memetakannya). Pindahkan hex dari `page.jsx`. Nilai dari spec §7.1.
+2. **Font & ikon:** muat Roboto (400/700) + Material Symbols Rounded; set `fontFamily` theme; util mono untuk numerik. Hapus Inter.
+3. **Logo & favicon:** salin aset NIRMALA asli dari reference ke `public/`; pasang di header + `app/layout` favicon.
+4. **Dark map style:** tambah styled-map JSON near-black navy di `GoogleMapWrapper`.
+
+**Cek:** app render dengan ground near-black, panel memakai token, Roboto termuat, favicon/logo asli tampil, tidak ada emoji.
+
 ---
 
 ## Fase 0 — Fondasi data asli (fixtures + wiring)
@@ -74,11 +89,22 @@ Tujuan: heatmap kerapatan hujan dari `isRaining` asli.
 
 ---
 
+Di tiap fase 1–4, komponen yang disentuh langsung di-restyle ke spec glass §7.5 (jangan biarkan style lama): heatmap ramp kerapatan, dot marker (buang emoji, pulse hanya saat terpilih), drawer glass + sparkline, layer selector + stat mini-cards, legend, info-pill.
+
+## Fase B — Polish UI & QA
+
+1. Tambah komponen yang belum ada di repo: **stat mini-cards "STATISTIK SENSOR"** (top-left) & **info-pill kontekstual** (top-center). Header ke spec (LIVE pill, alert pill, datetime mono, avatar).
+2. Micro-label UPPERCASE di semua panel; nilai numerik → mono.
+3. Motion: keyframe terukur + `prefers-reduced-motion`; `cursor-pointer`, hover transisi, focus ring.
+4. Disiplin: yellow ≤15% & bukan teks di latar terang; kontras AA+; panel collapse di layar kecil.
+
+**Cek:** checklist pre-delivery ui-ux-pro-max lolos; tampilan menyamai screenshot reference (`Screenshot_2026-08-18_at_12.06.05.png`).
+
 ## Fase 5 — Verifikasi acceptance criteria
 
-Jalankan `npm run dev`, lalu validasi tiap butir AC di spec §6 (1–8). Catat gap yang masih terbuka (auth token, konektivitas backend, endpoint intensitas bulk, snapshot historis) di README/section catatan.
+Jalankan `npm run dev`, lalu validasi tiap butir AC di spec §6 (fungsional 1–8) **dan §8 (UI 9–15)**. Catat gap yang masih terbuka (auth token, konektivitas backend, endpoint intensitas bulk, snapshot historis).
 
-**Cek akhir:** 8 AC terpenuhi memakai fixture asli; tidak ada angka fabrikasi; pan/zoom responsif.
+**Cek akhir:** 15 AC terpenuhi memakai fixture asli; tidak ada angka fabrikasi; tidak ada emoji; pan/zoom responsif; tampilan selaras BIGNET DS v19.
 
 ---
 
