@@ -14,17 +14,36 @@ import * as THREE from 'three';
  * - Parallax camera/cloud drift + subtle stars. Rendered client-only.
  */
 
+// A forked lightning bolt: main jagged path + a few branches off it.
 function makeBolt() {
-  const x0 = (Math.random() - 0.5) * 14;
-  const pts = [];
+  const x0 = (Math.random() - 0.5) * 16;
+  const main = [];
   let x = x0, y = 8;
   while (y > -6) {
-    pts.push([x, y, -2]);
-    y -= 0.5 + Math.random() * 0.7;
-    x += (Math.random() - 0.5) * 1.5;
+    main.push([x, y, -2]);
+    y -= 0.4 + Math.random() * 0.6;
+    x += (Math.random() - 0.5) * 1.7;
   }
-  return { points: pts, x: x0 };
+  const lines = [main];
+  const branches = 1 + Math.floor(Math.random() * 3);
+  for (let b = 0; b < branches; b++) {
+    const i = 2 + Math.floor(Math.random() * Math.max(1, main.length - 4));
+    let [bx, by] = main[i];
+    const branch = [[bx, by, -2]];
+    const len = 2 + Math.floor(Math.random() * 4);
+    const dir = Math.random() < 0.5 ? -1 : 1;
+    for (let k = 0; k < len; k++) {
+      by -= 0.4 + Math.random() * 0.5;
+      bx += dir * (0.4 + Math.random() * 1.0);
+      branch.push([bx, by, -2]);
+    }
+    lines.push(branch);
+  }
+  return { lines, x: x0 };
 }
+
+// Fast rise (~20ms) then quick fall (~90ms) — one flicker pulse, dt in seconds.
+const pulseShape = (dt) => (dt < 0 ? 0 : dt < 0.02 ? dt / 0.02 : dt < 0.11 ? 1 - (dt - 0.02) / 0.09 : 0);
 
 function Storm() {
   const [bolt, setBolt] = useState(null);
@@ -34,33 +53,50 @@ function Storm() {
     let timer;
     let raf;
     const strike = () => {
-      setBolt(makeBolt());
+      const distant = Math.random() < 0.3;           // some strikes just light the sky
+      setBolt(distant ? null : makeBolt());
+
+      // 2-4 quick flickers per strike (real lightning strobes)
+      const n = 2 + Math.floor(Math.random() * 3);
+      const pulses = [];
+      let tt = 0;
+      for (let i = 0; i < n; i++) {
+        pulses.push({ t: tt, a: i === 0 ? 1 : 0.35 + Math.random() * 0.55 });
+        tt += 0.05 + Math.random() * 0.12;
+      }
+      const dur = tt + 0.15;
       const start = performance.now();
-      const dur = 280;
       const animate = () => {
-        const e = (performance.now() - start) / dur;
-        if (e >= 1) { setFlash(0); setBolt(null); schedule(); return; }
-        const tail = 1 - e;
-        // quick rise + double flicker
-        const f = e < 0.12 ? e / 0.12 : e < 0.28 ? tail * 0.35 : tail;
-        setFlash(f);
+        const e = (performance.now() - start) / 1000; // seconds
+        if (e >= dur) { setFlash(0); setBolt(null); schedule(); return; }
+        let v = 0;
+        for (const p of pulses) v = Math.max(v, p.a * pulseShape(e - p.t));
+        setFlash(distant ? v * 0.5 : v);
         raf = requestAnimationFrame(animate);
       };
       animate();
     };
-    const schedule = () => { timer = setTimeout(strike, 1800 + Math.random() * 2600); };
+    const schedule = () => { timer = setTimeout(strike, 600 + Math.random() * 1700); };
     schedule();
     return () => { clearTimeout(timer); cancelAnimationFrame(raf); };
   }, []);
 
   return (
     <>
-      <pointLight position={[bolt?.x ?? 0, 3.5, -2]} color="#dff6ff" distance={70} decay={1.6} intensity={flash * 300} />
+      <pointLight position={[bolt?.x ?? 0, 3.5, -2]} color="#eaf6ff" distance={80} decay={1.5} intensity={flash * 340} />
       {/* brief global brighten so the whole sky reacts */}
-      <ambientLight intensity={flash * 0.9} color="#bfe6ff" />
-      {bolt && (
-        <Line points={bolt.points} color="#f0ffff" lineWidth={2.2} transparent opacity={Math.min(1, flash * 3)} toneMapped={false} />
-      )}
+      <ambientLight intensity={flash * 1.0} color="#cfe8ff" />
+      {bolt && bolt.lines.map((pts, i) => (
+        <Line
+          key={i}
+          points={pts}
+          color="#f2ffff"
+          lineWidth={i === 0 ? 2.4 : 1.3}
+          transparent
+          opacity={Math.min(1, flash * 3.2)}
+          toneMapped={false}
+        />
+      ))}
     </>
   );
 }
