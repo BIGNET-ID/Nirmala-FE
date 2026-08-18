@@ -14,14 +14,22 @@
 
 export const dynamic = 'force-dynamic';
 
-const TOKEN = process.env.VIONA_API_TOKEN || '';
 const GATEWAYS = [
   process.env.VIONA_API_URL_JYP || 'https://viona-api1.g1g.bignet.host',
   process.env.VIONA_API_URL_MNK || 'https://viona-api1.g1k.bignet.host',
   process.env.VIONA_API_URL_TMK || 'https://viona-api1.g1l.bignet.host',
 ];
 
-export async function GET() {
+function readCookie(request, name) {
+  const raw = request.headers.get('cookie') || '';
+  const m = raw.match(new RegExp(`(?:^|; )${name}=([^;]+)`));
+  return m ? decodeURIComponent(m[1]) : '';
+}
+
+export async function GET(request) {
+  // Prefer the logged-in user's VIONA token (cookie set by /api/auth/login),
+  // fall back to a static env token for headless testing.
+  const TOKEN = readCookie(request, 'viona_token') || process.env.VIONA_API_TOKEN || '';
   if (!TOKEN) {
     return Response.json({ error: 'no_viona_token', sensors: [] }, { status: 502 });
   }

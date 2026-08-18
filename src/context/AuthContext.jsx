@@ -17,8 +17,23 @@ export function AuthProvider({ children }) {
 
   const login = (userData, token) => {
     secureStorage.setItem('nirmala_user', userData);
-    secureStorage.setItem('nirmala_token', token);
+    if (token) secureStorage.setItem('nirmala_token', token);
     setUser(userData);
+  };
+
+  /** Authenticate against the VIONA-4 workflow via the /api/auth/login proxy. */
+  const signIn = async (email, password) => {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data?.token) {
+      throw new Error(data?.message || 'Login gagal.');
+    }
+    login(data.user || { email }, data.token);
+    return data;
   };
 
   const logout = () => {
@@ -28,7 +43,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, signIn, logout }}>
       {children}
     </AuthContext.Provider>
   );
