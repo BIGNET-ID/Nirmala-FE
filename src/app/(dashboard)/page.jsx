@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { ThemeProvider, CssBaseline, Box, Button } from '@mui/material';
-import { AdvancedMarker, InfoWindow } from '@vis.gl/react-google-maps';
 import { Icon } from '@iconify/react';
 import GoogleMapWrapper from '@/components/map/GoogleMapWrapper';
 import CanvasHeatmapOverlay from '@/components/map/CanvasOverlay';
+import SensorDotLayer from '@/components/map/SensorDotLayer';
 import MetricLayerSelector from '@/components/dashboard/MetricLayerSelector';
 import TimelinePlayer from '@/components/dashboard/TimelinePlayer';
 import ColorRampLegend from '@/components/dashboard/ColorRampLegend';
@@ -13,124 +13,6 @@ import SensorDetailDrawer from '@/components/dashboard/SensorDetailDrawer';
 import MapControls from '@/components/map/MapControls';
 import { usePlatformData } from '@/hooks/usePlatformData';
 import { nirmalaTheme } from '@/lib/theme';
-
-function getRainColor(val) {
-  if (val < 5) return '#94a3b8';
-  if (val < 25) return '#00e5ff';
-  if (val < 50) return '#00e676';
-  if (val < 75) return '#ffeb3b';
-  if (val < 100) return '#ff9800';
-  return '#f44336';
-}
-
-function SensorMarkers({ stations, activeLayer, showMarkers, onSelect, selectedStation, onCloseInfo }) {
-  if (!showMarkers) return null;
-
-  return (
-    <>
-      {stations.map((st) => {
-        const value = activeLayer === 'rain' ? st.rain : st.temp;
-        const unit = activeLayer === 'rain' ? 'mm/j' : '°C';
-        const color = activeLayer === 'rain' ? getRainColor(st.rain) : '#00e5ff';
-
-        return (
-          <React.Fragment key={st.id}>
-            <AdvancedMarker
-              position={{ lat: st.lat, lng: st.lng }}
-              onClick={() => onSelect?.(st)}
-            >
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  cursor: 'pointer',
-                  '&:hover .marker-ring': { transform: 'scale(1.15)' },
-                }}
-              >
-                <Box
-                  className="marker-ring"
-                  sx={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: '50%',
-                    border: `2px solid ${color}`,
-                    bgcolor: `${color}22`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: `0 0 16px ${color}88, inset 0 0 8px ${color}22`,
-                    transition: 'transform 0.2s ease',
-                    position: 'relative',
-                    '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      inset: -6,
-                      borderRadius: '50%',
-                      border: `1px solid ${color}33`,
-                      animation: 'pulse-ring 2s ease-out infinite',
-                    },
-                    '@keyframes pulse-ring': {
-                      '0%': { transform: 'scale(0.8)', opacity: 1 },
-                      '100%': { transform: 'scale(1.6)', opacity: 0 },
-                    },
-                  }}
-                >
-                  <Box component="span" sx={{ fontSize: 14 }}>
-                    {activeLayer === 'rain' ? '🌧' : '🌡'}
-                  </Box>
-                </Box>
-                <Box
-                  sx={{
-                    mt: 0.5,
-                    bgcolor: 'rgba(5,8,23,0.9)',
-                    border: `1px solid ${color}55`,
-                    borderRadius: 1,
-                    px: 0.75,
-                    py: 0.25,
-                    backdropFilter: 'blur(8px)',
-                  }}
-                >
-                  <Box sx={{ fontSize: '0.65rem', color, fontWeight: 700, lineHeight: 1.2 }}>
-                    {value} {unit}
-                  </Box>
-                </Box>
-              </Box>
-            </AdvancedMarker>
-
-            {selectedStation?.id === st.id && (
-              <InfoWindow
-                position={{ lat: st.lat, lng: st.lng }}
-                onCloseClick={onCloseInfo}
-                pixelOffset={[0, -60]}
-              >
-                <Box sx={{ p: 1, minWidth: 180, bgcolor: '#0f172a', color: '#f8fafc' }}>
-                  <Box sx={{ color: '#00e5ff', fontWeight: 700, mb: 0.5 }}>{st.name}</Box>
-                  <Box sx={{ color: '#94a3b8', display: 'block', fontSize: '0.7rem' }}>ID: {st.id}</Box>
-                  <Box sx={{ my: 0.75, borderBottom: '1px solid rgba(255,255,255,0.1)' }} />
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
-                    <Box>
-                      <Box sx={{ fontSize: '0.65rem', color: '#94a3b8' }}>Hujan</Box>
-                      <Box sx={{ fontSize: '0.85rem', fontWeight: 700, color: getRainColor(st.rain) }}>
-                        {st.rain} mm/j
-                      </Box>
-                    </Box>
-                    <Box>
-                      <Box sx={{ fontSize: '0.65rem', color: '#94a3b8' }}>Suhu</Box>
-                      <Box sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#00e5ff' }}>
-                        {st.temp} °C
-                      </Box>
-                    </Box>
-                  </Box>
-                </Box>
-              </InfoWindow>
-            )}
-          </React.Fragment>
-        );
-      })}
-    </>
-  );
-}
 
 export default function NirmalaDashboard() {
   const { sensors: apiSensors, lightning, thunderstorm, loading, error } = usePlatformData();
@@ -305,14 +187,12 @@ export default function NirmalaDashboard() {
         {/* Map container */}
         <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           <GoogleMapWrapper onMapLoad={setMap}>
-            <CanvasHeatmapOverlay stations={SENSOR_STATIONS} activeLayer={activeLayer} />
-            <SensorMarkers
+            <CanvasHeatmapOverlay stations={SENSOR_STATIONS} />
+            <SensorDotLayer
               stations={SENSOR_STATIONS}
-              activeLayer={activeLayer}
               showMarkers={showMarkers}
+              selectedId={selectedStation?.id ?? null}
               onSelect={setSelectedStation}
-              selectedStation={selectedStation}
-              onCloseInfo={() => setSelectedStation(null)}
             />
           </GoogleMapWrapper>
 
