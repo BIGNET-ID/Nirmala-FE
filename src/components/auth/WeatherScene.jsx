@@ -2,7 +2,7 @@
 
 import { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { ScreenQuad, Line } from '@react-three/drei';
+import { Line } from '@react-three/drei';
 import * as THREE from 'three';
 
 /**
@@ -85,8 +85,11 @@ function CloudShader({ flashRef }) {
     u.uFlash.value = flashRef.current || 0;
     u.uRes.value.set(s.size.width, s.size.height);
   });
+  // Fullscreen quad in clip space (the vertex shader ignores the camera), so it
+  // fills the screen regardless of camera. planeGeometry [2,2] spans -1..1.
   return (
-    <ScreenQuad renderOrder={-10}>
+    <mesh frustumCulled={false} renderOrder={-10}>
+      <planeGeometry args={[2, 2]} />
       <shaderMaterial
         ref={mat}
         vertexShader={VERT}
@@ -96,7 +99,7 @@ function CloudShader({ flashRef }) {
         depthWrite={false}
         toneMapped={false}
       />
-    </ScreenQuad>
+    </mesh>
   );
 }
 
