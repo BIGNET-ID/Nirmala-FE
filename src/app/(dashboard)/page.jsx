@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
-import { ThemeProvider, CssBaseline, Box, Button } from '@mui/material';
-import { Icon } from '@iconify/react';
+import { useState } from 'react';
+import { ThemeProvider, CssBaseline, Box } from '@mui/material';
 import GoogleMapWrapper from '@/components/map/GoogleMapWrapper';
 import CanvasHeatmapOverlay from '@/components/map/CanvasOverlay';
 import SensorDotLayer from '@/components/map/SensorDotLayer';
+import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import MetricLayerSelector from '@/components/dashboard/MetricLayerSelector';
 import ColorRampLegend from '@/components/dashboard/ColorRampLegend';
 import SensorDetailDrawer from '@/components/dashboard/SensorDetailDrawer';
@@ -49,139 +49,9 @@ export default function NirmalaDashboard() {
   return (
     <ThemeProvider theme={nirmalaTheme}>
       <CssBaseline />
-      <Box sx={{ display: 'flex', flexDirection: 'column', width: '100vw', height: '100vh', bgcolor: '#050811', overflow: 'hidden' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', width: '100vw', height: '100vh', bgcolor: 'var(--nirmala-map-bg)', overflow: 'hidden' }}>
         
-        {/* Header */}
-        <Box sx={{
-          height: '56px',
-          flexShrink: 0,
-          background: 'rgba(5,8,17,0.96)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
-          display: 'flex',
-          alignItems: 'center',
-          px: 2,
-          gap: 1.5,
-          zIndex: 1000,
-        }}>
-          
-          {/* Nirmala brand */}
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Box
-              component="img"
-              src="/nirmala-brand-dark.png"
-              alt="Nirmala"
-              sx={{ height: 'var(--size-logo-header, 28px)', width: 'auto', display: 'block' }}
-            />
-          </Box>
-
-          <Box sx={{ width: 1, height: 20, background: 'rgba(255,255,255,0.1)' }} />
-
-          {/* Navigation tabs */}
-          <Box sx={{ display: 'flex', gap: 0.25 }}>
-            {[
-              { label: 'Peta Radar', id: 'dashboard', icon: 'radar' },
-              { label: 'Sensor', id: 'sensors', icon: 'sensors' },
-              { label: 'Pengaturan', id: 'settings', icon: 'settings' },
-            ].map((item) => (
-              <Button key={item.id}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.75,
-                  px: 1.5,
-                  py: 0.75,
-                  background: item.id === 'dashboard' ? 'rgba(0,229,255,0.1)' : 'transparent',
-                  border: 'none',
-                  borderBottom: item.id === 'dashboard' ? '2px solid #00e5ff' : '2px solid transparent',
-                  borderRadius: '4px 4px 0 0',
-                  color: item.id === 'dashboard' ? '#00e5ff' : 'rgba(160,160,160,0.8)',
-                  fontSize: '0.75rem',
-                  fontFamily: 'inherit',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  transition: 'all 0.15s ease',
-                  '&:hover': item.id !== 'dashboard' ? { color: '#f8fafc' } : {},
-                  textTransform: 'none',
-                  fontWeight: 500,
-                }}
-              >
-                <Icon icon={item.icon === 'radar' ? 'material-symbols:radar-rounded' : item.icon === 'sensors' ? 'material-symbols:sensors-rounded' : 'material-symbols:settings-rounded'} width={14} />
-                {item.label}
-              </Button>
-            ))}
-          </Box>
-
-          {/* Status badges — right-aligned via ml:auto (no empty spacer div), never shrink */}
-          <Box sx={{
-            ml: 'auto',
-            flexShrink: 0,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            px: 1.5,
-            py: 0.5,
-            background: 'rgba(52,211,153,0.1)',
-            border: '1px solid rgba(52,211,153,0.3)',
-            borderRadius: '999px',
-          }}>
-            <Box sx={{
-              width: 6,
-              height: 6,
-              borderRadius: '50%',
-              background: '#34d399',
-              animation: 'pulse 2s infinite',
-              '@keyframes pulse': {
-                '0%, 100%': { opacity: 1 },
-                '50%': { opacity: 0.5 },
-              },
-            }} />
-            <Box sx={{ fontSize: '0.65rem', color: '#34d399', fontWeight: 700, fontFamily: 'var(--font-family-mono)' }}>
-              LIVE · {stats.active}/{stats.total}
-            </Box>
-          </Box>
-
-          {/* Alert badge */}
-          <Box sx={{
-            flexShrink: 0,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0.75,
-            px: 1.5,
-            py: 0.5,
-            background: 'rgba(96,165,250,0.1)',
-            border: '1px solid rgba(96,165,250,0.3)',
-            borderRadius: '999px',
-          }}>
-            <Icon icon="material-symbols:rainy-rounded" width={14} style={{ color: '#60a5fa' }} />
-            <Box sx={{ fontSize: '0.65rem', color: '#60a5fa', fontWeight: 700, fontFamily: 'var(--font-family-mono)' }}>
-              {stats.raining} Hujan
-            </Box>
-          </Box>
-
-          {/* DateTime */}
-          <Box sx={{ fontSize: '0.65rem', color: 'rgba(160,160,160,0.6)', fontFamily: 'monospace', flexShrink: 0, whiteSpace: 'nowrap' }}>
-            {new Date().toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })} WIB
-          </Box>
-
-          {/* User menu button */}
-          <Button
-            sx={{
-              width: 34,
-              height: 34,
-              minWidth: 'auto',
-              flexShrink: 0,
-              borderRadius: '50%',
-              background: '#0d47a1',
-              color: '#fff',
-              fontSize: '0.7rem',
-              fontWeight: 700,
-              '&:hover': { background: '#1565c0' },
-            }}
-          >
-            OP
-          </Button>
-        </Box>
+        <DashboardHeader stats={stats} />
 
         {/* Map container */}
         <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
