@@ -34,16 +34,27 @@ export async function GET(request) {
     return Response.json({ error: 'no_viona_token', sensors: [] }, { status: 502 });
   }
 
+  // Per-gateway diagnostics so a silent partial failure (one regional gateway
+  // down → a whole region vanishes from the map) is visible, not swallowed.
+  const diag = [];
   const lists = await Promise.all(GATEWAYS.map(async (base) => {
+    const host = (() => { try { return new URL(base).host; } catch { return base; } })();
     try {
       const r = await fetch(`${base}/api/v1/terminal/latlong`, {
         headers: { Authorization: `Bearer ${TOKEN}`, Accept: 'application/json' },
         cache: 'no-store',
       });
-      if (!r.ok) return [];
+      if (!r.ok) { diag.push({ host, ok: false, httpStatus: r.status, count: 0 }); return []; }
       const json = await r.json();
-      return Array.isArray(json?.data) ? json.data : [];
-    } catch {
+      const arr = Array.isArray(json?.data) ? json.data : [];
+      const lngs = arr.map((t) => parseFloat(t.longitude)).filter(Number.isFinite);
+      diag.push({
+        host, ok: true, count: arr.length,
+        lngRange: lngs.length ? [Math.min(...lngs), Math.max(...lngs)] : null,
+      });
+      return arr;
+    } catch (e) {
+      diag.push({ host, ok: false, error: String(e?.message || e), count: 0 });
       return [];
     }
   }));
@@ -73,10 +84,22 @@ export async function GET(request) {
     }
   }
 
+  // Longitude histogram (5° buckets) + active-vs-total east of 134°E (Papua),
+  // so we can tell "no Papua data" from "Papua data present but inactive".
+  const lngHist = {};
+  let papuaTotal = 0, papuaActive = 0;
+  for (const s of sensors) {
+    if (!Number.isFinite(s.longitude)) continue;
+    const k = Math.floor(s.longitude / 5) * 5;
+    lngHist[k] = (lngHist[k] || 0) + 1;
+    if (s.longitude > 134) { papuaTotal++; if (s.status === 'active') papuaActive++; }
+  }
+
   return Response.json({
     source: 'viona-terminals',
     total_items: sensors.length,
     alert: `Live (VIONA terminals): ${sensors.length} site · ${sensors.filter((s) => s.status === 'active').length} online`,
+    _diag: { gateways: diag, lngHistogram_5deg: lngHist, papua_lng_gt_134: { total: papuaTotal, active: papuaActive } },
     sensors,
   });
 }
