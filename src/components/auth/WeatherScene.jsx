@@ -23,6 +23,23 @@ useTexture.preload('/cloud-sprite.png');
  */
 
 // ---- lightning ------------------------------------------------------------
+// Subdivide a jagged polyline into many short segments. drei <Line> puts a round
+// join at every vertex; with long segments those joins read as circular "nodes".
+// Short segments make the joins overlap into one continuous smooth stroke.
+function densify(pts, sub = 5) {
+  const out = [];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [x1, y1, z1] = pts[i];
+    const [x2, y2, z2] = pts[i + 1];
+    for (let s = 0; s < sub; s++) {
+      const t = s / sub;
+      out.push([x1 + (x2 - x1) * t, y1 + (y2 - y1) * t, z1 + (z2 - z1) * t]);
+    }
+  }
+  out.push(pts[pts.length - 1]);
+  return out;
+}
+
 function makeBolt() {
   const x0 = (Math.random() - 0.5) * 16;
   const main = [];
@@ -47,7 +64,7 @@ function makeBolt() {
     }
     lines.push(branch);
   }
-  return { lines, x: x0 };
+  return { lines: lines.map((l) => densify(l)), x: x0 };
 }
 
 const pulseShape = (dt) => (dt < 0 ? 0 : dt < 0.02 ? dt / 0.02 : dt < 0.11 ? 1 - (dt - 0.02) / 0.09 : 0);
@@ -92,11 +109,11 @@ function Storm() {
       <ambientLight intensity={flash * 1.5} color="#dcefff" />
       {bolt?.lines?.map((pts, i) => (
         <group key={i}>
-          {/* fat soft halo (fakes bloom) */}
-          <Line points={pts} color="#bfefff" lineWidth={i === 0 ? 11 : 6}
-            transparent opacity={Math.min(0.55, flash * 1.3)} toneMapped={false} />
+          {/* soft halo (fakes bloom) — kept slim so joins don't dot */}
+          <Line points={pts} color="#bfefff" lineWidth={i === 0 ? 6 : 3.5}
+            transparent opacity={Math.min(0.45, flash * 1.2)} toneMapped={false} />
           {/* bright core */}
-          <Line points={pts} color="#ffffff" lineWidth={i === 0 ? 3.4 : 1.9}
+          <Line points={pts} color="#ffffff" lineWidth={i === 0 ? 2.2 : 1.3}
             transparent opacity={Math.min(1, flash * 3.6)} toneMapped={false} />
         </group>
       ))}
