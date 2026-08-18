@@ -2,20 +2,19 @@
 
 import { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Clouds, Cloud, Stars, Line, Environment, Lightformer } from '@react-three/drei';
-import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
+import { Clouds, Cloud, Stars, Line } from '@react-three/drei';
 import * as THREE from 'three';
 
 /**
- * Realistic weather-themed 3D login backdrop.
- *   shading/material : PBR MeshStandardMaterial on drei volumetric Clouds
- *   light            : Environment IBL (softbox Lightformers) + key/hemi/ambient
- *                      + dynamic lightning flash lights
- *   geometry/geo     : clouds distributed over depth layers with atmospheric
- *                      perspective (far = cooler, paler, larger, more transparent)
- *   math             : exponential fog (fogExp2) for real distance haze;
- *                      multi-flicker lightning envelope; forked bolt geometry
- *   post             : ACES filmic tone-mapping + Bloom (glow) + Vignette
+ * Realistic weather-themed 3D login backdrop (no post-processing — kept robust).
+ *   material/shading : lit MeshLambert volumetric clouds; strong key light so
+ *                      the puffy texture reads even between strikes
+ *   light            : bright ambient/hemi/directional + dynamic lightning
+ *   geography        : depth layers with atmospheric perspective (far = paler,
+ *                      cooler, larger, more transparent) + a low horizon bank
+ *   math             : exponential fog (fogExp2); multi-flicker lightning; forked
+ *                      bolt geometry; a fat additive-looking halo fakes bloom glow
+ *   post             : ACES filmic tone-mapping on the renderer
  */
 
 // ---- lightning ------------------------------------------------------------
@@ -77,33 +76,37 @@ function Storm() {
       animate();
     };
     const schedule = () => { timer = setTimeout(strike, 600 + Math.random() * 1700); };
-    // fire the first strike quickly so there's no long wait after load
+    // fire the first strike quickly — no long wait after load
     timer = setTimeout(strike, 150 + Math.random() * 450);
     return () => { clearTimeout(timer); cancelAnimationFrame(raf); };
   }, []);
 
   return (
     <>
-      <pointLight position={[bolt?.x ?? 0, 3.5, -2]} color="#f2faff" distance={95} decay={1.4} intensity={flash * 560} />
-      <ambientLight intensity={flash * 1.4} color="#dcefff" />
+      <pointLight position={[bolt?.x ?? 0, 3.5, -2]} color="#f2faff" distance={100} decay={1.4} intensity={flash * 620} />
+      <ambientLight intensity={flash * 1.5} color="#dcefff" />
       {bolt?.lines?.map((pts, i) => (
-        <Line key={i} points={pts} color="#ffffff" lineWidth={i === 0 ? 3.4 : 1.9}
-          transparent opacity={Math.min(1, flash * 3.6)} toneMapped={false} />
+        <group key={i}>
+          {/* fat soft halo (fakes bloom) */}
+          <Line points={pts} color="#bfefff" lineWidth={i === 0 ? 11 : 6}
+            transparent opacity={Math.min(0.55, flash * 1.3)} toneMapped={false} />
+          {/* bright core */}
+          <Line points={pts} color="#ffffff" lineWidth={i === 0 ? 3.4 : 1.9}
+            transparent opacity={Math.min(1, flash * 3.6)} toneMapped={false} />
+        </group>
       ))}
     </>
   );
 }
 
 // ---- clouds ---------------------------------------------------------------
-// Depth layers: far layers are paler, cooler, larger, more transparent
-// (atmospheric perspective).
 const LAYERS = [
-  { z: -1.5, tint: '#e2eafb', op: 0.72, vol: 8 },
-  { z: -4.0, tint: '#d2ddf4', op: 0.64, vol: 9 },
-  { z: -7.0, tint: '#bccce9', op: 0.56, vol: 10 },
-  { z: -10.0, tint: '#a4b7db', op: 0.48, vol: 11 },
-  { z: -13.0, tint: '#8b9ec3', op: 0.40, vol: 12 },
-  { z: -16.0, tint: '#7688a8', op: 0.32, vol: 13 },
+  { z: -1.5, tint: '#e2eafb', op: 0.74, vol: 8 },
+  { z: -4.0, tint: '#d2ddf4', op: 0.66, vol: 9 },
+  { z: -7.0, tint: '#bccce9', op: 0.58, vol: 10 },
+  { z: -10.0, tint: '#a4b7db', op: 0.50, vol: 11 },
+  { z: -13.0, tint: '#8b9ec3', op: 0.42, vol: 12 },
+  { z: -16.0, tint: '#7688a8', op: 0.34, vol: 13 },
 ];
 
 function CloudField() {
@@ -137,14 +140,13 @@ function CloudField() {
         });
       }
     });
-    // low horizon cloud bank
-    arr.push({ seed: seed++, pos: [0, -5.6, -9], color: '#8ea3c8', vol: 16, seg: 46, opacity: 0.42 });
+    arr.push({ seed: seed++, pos: [0, -5.6, -9], color: '#a4b7db', vol: 16, seg: 46, opacity: 0.44 });
     return arr;
   }, []);
 
   return (
     <group ref={group}>
-      <Clouds material={THREE.MeshStandardMaterial} limit={2200}>
+      <Clouds material={THREE.MeshLambertMaterial} limit={2200}>
         {clouds.map((c) => (
           <Cloud
             key={c.seed}
@@ -175,33 +177,23 @@ export default function WeatherScene() {
         antialias: true,
         alpha: false,
         toneMapping: THREE.ACESFilmicToneMapping,
-        toneMappingExposure: 1.18,
+        toneMappingExposure: 1.2,
       }}
       style={{ position: 'absolute', inset: 0 }}
     >
       <color attach="background" args={['#050811']} />
       <fogExp2 attach="fog" args={['#050811', 0.038]} />
 
-      {/* base + image-based lighting — bright enough that cloud texture reads
-          even between strikes */}
-      <ambientLight intensity={0.5} color="#43608f" />
-      <hemisphereLight intensity={0.55} color="#b3ccff" groundColor="#0a1220" />
-      <directionalLight position={[5, 9, 4]} intensity={0.95} color="#c2d6f2" />
-      <Environment resolution={256} frames={1}>
-        <Lightformer form="rect" intensity={1.4} color="#bcd2ff" position={[0, 7, -3]} scale={[14, 7, 1]} />
-        <Lightformer form="rect" intensity={0.3} color="#22344f" position={[0, -7, -3]} scale={[14, 7, 1]} />
-        <Lightformer form="circle" intensity={0.7} color="#e7f0ff" position={[-6, 3, 2]} scale={[4, 4, 1]} />
-      </Environment>
+      {/* bright base lighting so cloud texture reads even between strikes */}
+      <ambientLight intensity={0.55} color="#48659a" />
+      <hemisphereLight intensity={0.6} color="#bcd2ff" groundColor="#0a1220" />
+      <directionalLight position={[5, 9, 4]} intensity={1.1} color="#c8daf4" />
+      <directionalLight position={[-6, 4, 2]} intensity={0.4} color="#7fa0d8" />
 
       <Stars radius={90} depth={45} count={1400} factor={3.2} saturation={0} fade speed={0.5} />
       <CloudField />
       <Storm />
       <Storm />
-
-      <EffectComposer disableNormalPass>
-        <Bloom mipmapBlur luminanceThreshold={0.28} luminanceSmoothing={0.32} intensity={1.7} radius={0.92} />
-        <Vignette eskil={false} offset={0.25} darkness={0.72} />
-      </EffectComposer>
     </Canvas>
   );
 }
