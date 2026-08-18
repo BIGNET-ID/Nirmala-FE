@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Box, Button, IconButton, Menu, MenuItem, Divider, Typography } from '@mui/material';
+import { Box, Button, IconButton, Menu, MenuItem, Divider, Typography, Tooltip } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { useAuth } from '@/hooks/useAuth';
+import { useThemeMode } from '@/context/ThemeModeContext';
 
 const NAV = [
   { label: 'Peta Radar', href: '/', icon: 'material-symbols:radar-rounded', exact: true },
@@ -24,6 +25,7 @@ export default function DashboardHeader({ stats }) {
   const pathname = usePathname() || '/';
   const router = useRouter();
   const { user, logout } = useAuth() || {};
+  const { mode, toggle } = useThemeMode();
 
   const [now, setNow] = useState(null); // set after mount → no hydration mismatch
   useEffect(() => {
@@ -139,6 +141,22 @@ export default function DashboardHeader({ stats }) {
             ? `${now.toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })} WIB`
             : '—'}
         </Box>
+
+        {/* Theme toggle */}
+        <Tooltip title={mode === 'dark' ? 'Mode Terang' : 'Mode Gelap'} placement="bottom">
+          <IconButton
+            onClick={toggle}
+            aria-label={mode === 'dark' ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'}
+            sx={{
+              width: 34, height: 34, color: 'var(--color-text-muted)',
+              border: '1px solid var(--nirmala-glass-border)', borderRadius: 'var(--radius-md,8px)',
+              transition: 'color var(--duration-fast,150ms) var(--ease-standard)',
+              '&:hover': { color: 'var(--nirmala-cyan)' },
+            }}
+          >
+            <Icon icon={mode === 'dark' ? 'material-symbols:light-mode-rounded' : 'material-symbols:dark-mode-rounded'} width={18} />
+          </IconButton>
+        </Tooltip>
 
         {/* Avatar + dropdown */}
         <IconButton

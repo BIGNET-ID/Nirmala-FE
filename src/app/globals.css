@@ -135,20 +135,20 @@
   --elevation-1: none; --elevation-2: none; --elevation-3: none;
 }
 
-/* ── Nirmala Command-Center Tokens ── */
+/* ── Nirmala Command-Center Tokens — LIGHT (default) ── */
 :root {
-  --nirmala-map-bg: #050811;
-  --nirmala-map-bg-2: #0a1628;
-  --nirmala-glass-bg: rgba(10, 16, 36, 0.88);
-  --nirmala-glass-bg-header: rgba(5, 8, 17, 0.96);
-  --nirmala-glass-bg-timeline: rgba(10, 16, 36, 0.92);
-  --nirmala-glass-border: rgba(255, 255, 255, 0.07);
+  --nirmala-map-bg: #e9eef5;
+  --nirmala-map-bg-2: #dbe3ee;
+  --nirmala-glass-bg: rgba(255, 255, 255, 0.82);
+  --nirmala-glass-bg-header: rgba(255, 255, 255, 0.9);
+  --nirmala-glass-bg-timeline: rgba(255, 255, 255, 0.85);
+  --nirmala-glass-border: rgba(16, 50, 95, 0.12);
   --nirmala-glass-blur: 20px;
-  --nirmala-cyan: #00e5ff;
-  --nirmala-cyan-dim: rgba(0, 229, 255, 0.15);
-  --nirmala-focus-glow: 0 0 0 3px rgba(0, 229, 255, 0.12);
+  --nirmala-cyan: #0e7490;                 /* deeper cyan — readable on light */
+  --nirmala-cyan-dim: rgba(14, 116, 144, 0.12);
+  --nirmala-focus-glow: 0 0 0 3px rgba(14, 116, 144, 0.15);
 
-  /* Rain density ramp (heatmap + legend) */
+  /* Rain density ramp (heatmap + legend) — shared both modes */
   --rain-1: #60a5fa;
   --rain-2: #34d399;
   --rain-3: #eab308;
@@ -161,6 +161,19 @@
   --status-raining: #60a5fa;
   --status-inactive: #4b5563;
   --status-blacklisted: #ef4444;
+}
+
+/* ── Nirmala Command-Center Tokens — DARK override ── */
+:root[data-theme="dark"] {
+  --nirmala-map-bg: #050811;
+  --nirmala-map-bg-2: #0a1628;
+  --nirmala-glass-bg: rgba(10, 16, 36, 0.88);
+  --nirmala-glass-bg-header: rgba(5, 8, 17, 0.96);
+  --nirmala-glass-bg-timeline: rgba(10, 16, 36, 0.92);
+  --nirmala-glass-border: rgba(255, 255, 255, 0.07);
+  --nirmala-cyan: #00e5ff;
+  --nirmala-cyan-dim: rgba(0, 229, 255, 0.15);
+  --nirmala-focus-glow: 0 0 0 3px rgba(0, 229, 255, 0.12);
 }
 
 /* ── Global Reset & Base ── */

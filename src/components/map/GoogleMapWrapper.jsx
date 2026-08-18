@@ -3,6 +3,7 @@
 import React from 'react';
 import { APIProvider, Map } from '@vis.gl/react-google-maps';
 import { MAP_CENTER, MAP_ZOOM_DEFAULT } from '@/constants/mapConfig';
+import { useThemeMode } from '@/context/ThemeModeContext';
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
@@ -13,7 +14,23 @@ const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
  * (AdvancedMarker requires a mapId; sensor points move to a canvas dot layer in
  * a later phase, so no mapId is needed here.)
  */
-const MAP_STYLE = [
+// Clean, muted light basemap for light mode.
+const MAP_STYLE_LIGHT = [
+  { elementType: 'geometry', stylers: [{ color: '#eef2f7' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#5f6368' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#ffffff' }] },
+  { elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
+  { featureType: 'administrative', elementType: 'geometry', stylers: [{ color: '#c7d2e0' }] },
+  { featureType: 'administrative.land_parcel', stylers: [{ visibility: 'off' }] },
+  { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#ffffff' }] },
+  { featureType: 'road', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+  { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#cdd9e8' }] },
+  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#8ea3c2' }] },
+];
+
+const MAP_STYLE_DARK = [
   { elementType: 'geometry', stylers: [{ color: '#0a1120' }] },
   { elementType: 'labels.text.fill', stylers: [{ color: '#4a5a72' }] },
   { elementType: 'labels.text.stroke', stylers: [{ color: '#050811' }] },
@@ -34,12 +51,13 @@ const MAP_STYLE = [
 ];
 
 export default function GoogleMapWrapper({ children, onMapLoad }) {
+  const { mode } = useThemeMode();
   return (
     <APIProvider apiKey={API_KEY}>
       <Map
         defaultCenter={MAP_CENTER}
         defaultZoom={MAP_ZOOM_DEFAULT}
-        styles={MAP_STYLE}
+        styles={mode === 'dark' ? MAP_STYLE_DARK : MAP_STYLE_LIGHT}
         disableDefaultUI={true}
         gestureHandling="greedy"
         onIdle={(e) => onMapLoad?.(e.map)}

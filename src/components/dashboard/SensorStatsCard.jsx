@@ -41,7 +41,7 @@ export default function SensorStatsCard({ stats }) {
       }}
     >
       <Typography sx={{ ...eyebrowSx, mb: 0.25 }}>Statistik Sensor</Typography>
-      <Row icon="material-symbols:sensors-rounded" color="#e0e0e0" label="Total" value={stats.total} />
+      <Row icon="material-symbols:sensors-rounded" color="var(--color-text)" label="Total" value={stats.total} />
       <Row icon="material-symbols:check-circle-rounded" color="#34d399" label="Aktif" value={stats.active} />
       <Row icon="material-symbols:rainy-rounded" color="#60a5fa" label="Hujan" value={stats.raining} />
       <Row icon="material-symbols:block-rounded" color="#ef4444" label="Blacklist" value={stats.blacklist} />

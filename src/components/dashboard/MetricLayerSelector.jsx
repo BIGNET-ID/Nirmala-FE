@@ -50,11 +50,12 @@ export default function MetricLayerSelector({
                 height: 40,
                 borderRadius: 'var(--radius-md, 8px)',
                 px: 1.25,
-                color: active ? '#00e5ff' : 'text.secondary',
+                color: active ? 'var(--nirmala-cyan)' : 'text.secondary',
                 fontWeight: 700,
-                border: `1px solid ${active ? 'rgba(0,229,255,0.44)' : 'transparent'}`,
-                background: active ? 'rgba(0,229,255,0.10)' : 'transparent',
-                '&:hover': { background: active ? 'rgba(0,229,255,0.14)' : 'rgba(255,255,255,0.04)' },
+                border: `1px solid ${active ? 'var(--nirmala-cyan)' : 'transparent'}`,
+                borderColor: active ? 'var(--nirmala-cyan-dim)' : 'transparent',
+                background: active ? 'var(--nirmala-cyan-dim)' : 'transparent',
+                '&:hover': { background: 'var(--nirmala-cyan-dim)' },
               }}
             >
               {m.label}

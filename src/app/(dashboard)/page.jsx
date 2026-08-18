@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ThemeProvider, CssBaseline, Box } from '@mui/material';
+import { Box } from '@mui/material';
 import GoogleMapWrapper from '@/components/map/GoogleMapWrapper';
 import CanvasHeatmapOverlay from '@/components/map/CanvasOverlay';
 import SensorDotLayer from '@/components/map/SensorDotLayer';
@@ -13,7 +13,6 @@ import SensorStatsCard from '@/components/dashboard/SensorStatsCard';
 import MapInfoPill from '@/components/dashboard/MapInfoPill';
 import MapControls from '@/components/map/MapControls';
 import { usePlatformData } from '@/hooks/usePlatformData';
-import { nirmalaTheme } from '@/lib/theme';
 import { MAP_CENTER, MAP_ZOOM_DEFAULT } from '@/constants/mapConfig';
 
 export default function NirmalaDashboard() {
@@ -48,8 +47,6 @@ export default function NirmalaDashboard() {
   };
 
   return (
-    <ThemeProvider theme={nirmalaTheme}>
-      <CssBaseline />
       <Box sx={{ display: 'flex', flexDirection: 'column', width: '100vw', height: '100vh', bgcolor: 'var(--nirmala-map-bg)', overflow: 'hidden' }}>
         
         <DashboardHeader stats={stats} />
@@ -104,6 +101,5 @@ export default function NirmalaDashboard() {
           />
         </Box>
       </Box>
-    </ThemeProvider>
   );
 }

@@ -1,14 +1,12 @@
 'use client';
 
-import { ThemeProvider, CssBaseline } from '@mui/material';
+import { ThemeModeProvider } from '@/context/ThemeModeContext';
 import { AuthProvider } from '@/context/AuthContext';
-import { nirmalaTheme } from '@/lib/theme';
 
 export default function Providers({ children }) {
   return (
-    <ThemeProvider theme={nirmalaTheme}>
-      <CssBaseline />
+    <ThemeModeProvider>
       <AuthProvider>{children}</AuthProvider>
-    </ThemeProvider>
+    </ThemeModeProvider>
   );
 }
