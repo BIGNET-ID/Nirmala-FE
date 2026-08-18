@@ -52,6 +52,7 @@ export default function SensorDotLayer({ stations, showMarkers = true, selectedI
     canvas.style.top = '0';
     canvas.style.left = '0';
     canvas.style.pointerEvents = 'none';
+    canvas.style.display = showRef.current ? '' : 'none';
     canvasRef.current = canvas;
 
     let pulseT = 0;
@@ -196,7 +197,15 @@ export default function SensorDotLayer({ stations, showMarkers = true, selectedI
     else o._stopPulse?.();
   }, [selectedId]);
 
-  useEffect(() => { overlayRef.current?._repaint?.(); }, [stations, showMarkers]);
+  // Bulletproof show/hide: toggle the canvas element itself, independent of the
+  // paint pipeline, then repaint so re-enabling reflects the latest data.
+  useEffect(() => {
+    const c = canvasRef.current;
+    if (c) c.style.display = showMarkers ? '' : 'none';
+    overlayRef.current?._repaint?.();
+  }, [showMarkers]);
+
+  useEffect(() => { overlayRef.current?._repaint?.(); }, [stations]);
 
   return null;
 }
