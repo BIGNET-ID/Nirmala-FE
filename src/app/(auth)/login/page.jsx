@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import {
@@ -31,6 +31,7 @@ export default function LoginPage() {
   const [reduced, setReduced] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [launching, setLaunching] = useState(false);
+  const launchingRef = useRef(false); // synchronous guard so the auto-redirect doesn't skip the cinematic
 
   // Mount the WebGL Canvas only AFTER hydration, into an already-laid-out DOM.
   // On a hard refresh the Canvas otherwise initializes before layout settles and
@@ -41,9 +42,9 @@ export default function LoginPage() {
     setReduced(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
   }, []);
 
-  // Already authenticated → go to dashboard.
+  // Already authenticated → go to dashboard (but don't cut off the login cinematic).
   useEffect(() => {
-    if (!loading && user) router.replace('/');
+    if (!loading && user && !launchingRef.current) router.replace('/');
   }, [loading, user, router]);
 
   const handleSubmit = async (e) => {
@@ -52,6 +53,7 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await signIn(email.trim(), password);
+      launchingRef.current = true;                 // block the auto-redirect effect first
       if (reduced) { router.replace('/'); return; }
       setLaunching(true);                          // dramatic charge through the storm
       setTimeout(() => router.replace('/'), 3100);
