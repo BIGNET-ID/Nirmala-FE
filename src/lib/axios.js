@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://172.18.188.154:8000';
+// Same-origin: the browser calls /api/* which the Next proxy route
+// (app/api/[...path]) forwards to the real backend, keeping CORS + token
+// server-side. Override with NEXT_PUBLIC_API_BASE_URL only to bypass the proxy.
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
 export const nirmalaApi = axios.create({
   baseURL: API_BASE_URL,
