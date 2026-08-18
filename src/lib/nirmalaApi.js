@@ -26,12 +26,17 @@ async function loadFixture(name) {
 }
 
 export const nirmalaApiService = {
-  /** GET /api/sensors — 4.500+ stasiun (koordinat, status, is_raining). Refresh ~30s. */
+  /**
+   * Sensor source. TEMPORARY: pointed at VIONA terminals (/api/terminals proxy)
+   * while the real Nirmala sensor API is unreachable. Swap back to /api/sensors
+   * once the BE is ready.
+   */
   async getSensors() {
     try {
-      return await nirmalaApi.get('/api/sensors');
+      // return await nirmalaApi.get('/api/sensors'); // ← restore when BE sensor API is live
+      return await nirmalaApi.get('/api/terminals');   // TEMP: VIONA terminal/latlong
     } catch (error) {
-      console.warn('[Nirmala API] /api/sensors unavailable, using real-response fixture:', error.message);
+      console.warn('[Nirmala API] sensor source unavailable, using real-response fixture:', error.message);
       return (await loadFixture('sensors')) || { sensors: [] };
     }
   },
