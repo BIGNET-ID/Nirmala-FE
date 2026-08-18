@@ -65,41 +65,60 @@ function Storm() {
   );
 }
 
+// Paler, faded blue-grey palette (softer than the dark-mode navy).
+const PALE = ['#aebfe0', '#bccbe9', '#9fb2d6', '#c6d2ee', '#93a7cd', '#b2c1e2'];
+
 function CloudField() {
   const group = useRef();
   useFrame((state) => {
     const t = state.clock.elapsedTime;
     if (group.current) {
-      group.current.rotation.y = Math.sin(t * 0.045) * 0.18;
-      group.current.position.x = Math.sin(t * 0.05) * 0.8;
-      group.current.position.y = Math.sin(t * 0.03) * 0.3;
+      group.current.rotation.y = Math.sin(t * 0.04) * 0.16;
+      group.current.position.x = Math.sin(t * 0.05) * 0.9;
+      group.current.position.y = Math.sin(t * 0.03) * 0.35;
     }
   });
 
-  const clouds = useMemo(() => ([
-    { seed: 1, pos: [-6, -0.5, -3], color: '#7d96c8', vol: 9, seg: 40, opacity: 0.85 },
-    { seed: 2, pos: [6, 1.5, -6], color: '#6a83b6', vol: 10, seg: 40, opacity: 0.8 },
-    { seed: 3, pos: [0, -2, -1], color: '#8ea6d6', vol: 8, seg: 36, opacity: 0.85 },
-    { seed: 4, pos: [-3, 3, -9], color: '#566f9e', vol: 11, seg: 42, opacity: 0.7 },
-    { seed: 5, pos: [4.5, -2.5, -2], color: '#7f98ca', vol: 8, seg: 36, opacity: 0.82 },
-    { seed: 6, pos: [-8, 2, -5], color: '#617aad', vol: 9, seg: 38, opacity: 0.75 },
-  ]), []);
+  // Procedurally stack many clouds across several depth layers.
+  const clouds = useMemo(() => {
+    const arr = [];
+    const layers = [-1.5, -4, -6.5, -9, -12, -15];
+    let seed = 1;
+    layers.forEach((z, li) => {
+      const count = 3 + (li % 2 === 0 ? 1 : 0); // 3-4 per layer
+      for (let k = 0; k < count; k++) {
+        arr.push({
+          seed: seed++,
+          pos: [
+            (Math.random() - 0.5) * 18,
+            (Math.random() - 0.5) * 8,
+            z + (Math.random() - 0.5) * 1.6,
+          ],
+          color: PALE[(seed + k) % PALE.length],
+          vol: 7 + Math.random() * 5,
+          seg: 28 + Math.round(Math.random() * 8),
+          opacity: 0.42 + Math.random() * 0.22, // low per-cloud so they layer softly
+        });
+      }
+    });
+    return arr;
+  }, []);
 
   return (
     <group ref={group}>
-      <Clouds material={THREE.MeshLambertMaterial} limit={600}>
+      <Clouds material={THREE.MeshLambertMaterial} limit={1800}>
         {clouds.map((c) => (
           <Cloud
             key={c.seed}
             seed={c.seed}
             position={c.pos}
-            bounds={[11, 3.5, 3.5]}
+            bounds={[12, 3.5, 3.5]}
             segments={c.seg}
             volume={c.vol}
             color={c.color}
             opacity={c.opacity}
-            fade={26}
-            speed={0.16}
+            fade={24}
+            speed={0.14}
             growth={6}
           />
         ))}
