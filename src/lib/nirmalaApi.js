@@ -157,7 +157,8 @@ export function getDefaultMap(manifest) {
  */
 export function normalizeTimeseries(apiResponse) {
   const pickSeries = (block) => {
-    const cd = block?.chart_data;
+    // rain nests under chart_data; signal nests under signal_data — same shape.
+    const cd = block?.chart_data || block?.signal_data;
     if (!cd || !Array.isArray(cd.datasets) || cd.datasets.length === 0) return null;
     const ds = cd.datasets[0];
     return {

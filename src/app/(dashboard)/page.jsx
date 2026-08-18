@@ -227,7 +227,6 @@ export default function NirmalaDashboard() {
             station={selectedStation}
             open={Boolean(selectedStation)}
             onClose={() => setSelectedStation(null)}
-            activeLayer={activeLayer}
           />
         </Box>
       </Box>
