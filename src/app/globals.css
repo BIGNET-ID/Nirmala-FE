@@ -1,0 +1,235 @@
+/* ===========================================================================
+   Nirmala — BIGNET Web Design System v19 (tokens + base)
+   Sumber otoritatif: ~/Downloads/Design Consistent Web Pages/src/index.css
+   Diadaptasi untuk Next.js + MUI (tanpa Tailwind). Dashboard = dark command center.
+   =========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap');
+
+/* ── Primitive Tokens ── */
+:root {
+  --blue-navy: #10325f;
+  --blue-primary: #0d47a1;
+  --blue-dark: #002171;
+  --yellow: #f9a825;
+  --yellow-dark: #a16400;
+  --green: #3cba54;
+  --green-dark: #29803a;
+  --red: #d93025;
+  --red-dark: #d42f24;
+  --white: #ffffff;
+  --grey-50: #f8f8fa;
+  --grey-300: #dadce0;
+  --grey-600: #5f6368;
+  --grey-900: #202124;
+  --dm-900: #121212;
+  --dm-800: #1e1e1e;
+  --dm-700: #272727;
+  --dm-600: #2e2e2e;
+  --dm-300: #a0a0a0;
+  --dm-100: #e0e0e0;
+  --navy-tint: #0d47a1;
+  --blue-primary-tint: #0d47a1;
+  --blue-soft: #7aa2d9;
+  --red-tint: #e46c64;
+}
+
+/* ── Semantic Tokens — Light Mode Base ── */
+:root {
+  --color-bg: var(--white);
+  --color-bg-subtle: var(--grey-50);
+  --color-surface: var(--white);
+  --color-surface-raised: var(--white);
+  --color-border: var(--grey-300);
+  --color-border-control: var(--grey-600);
+  --color-text: var(--grey-900);
+  --color-text-muted: var(--grey-600);
+  --color-on-brand-solid: var(--white);
+  --color-brand-surface: var(--blue-navy);
+  --color-brand-solid: var(--blue-navy);
+  --color-heading: var(--blue-navy);
+  --color-link: var(--blue-primary);
+  --color-accent: var(--yellow);
+  --color-accent-text: var(--yellow-dark);
+  --color-success: var(--green);
+  --color-success-text: var(--green-dark);
+  --color-warning: var(--yellow);
+  --color-warning-text: var(--yellow-dark);
+  --color-danger: var(--red);
+  --color-danger-text: var(--red-dark);
+  --color-focus-ring: var(--blue-primary);
+  --color-stat: var(--blue-primary);
+
+  /* Typography */
+  --font-family-heading: 'Roboto', Arial, Helvetica, sans-serif;
+  --font-family-body: 'Roboto', Arial, Helvetica, sans-serif;
+  --font-family-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, monospace;
+
+  --font-h1: clamp(2rem, 1.502vw + 1.648rem, 3rem);
+  --font-h2: clamp(1.75rem, 0.376vw + 1.662rem, 2rem);
+  --font-h3: 1.5rem;
+  --font-h4: 1.25rem;
+  --font-h5: 1.125rem;
+  --font-h6: 1rem;
+  --font-body-lg: 1.125rem;
+  --font-body: 1rem;
+  --font-body-sm: 0.875rem;
+  --font-body-xs: 0.75rem;
+  --font-caption: 0.8125rem;
+  --font-overline: 0.75rem;
+  --font-mono: 0.875rem;
+
+  /* Spacing (dense dashboard) */
+  --space-4: 4px;  --space-8: 8px;   --space-12: 12px; --space-16: 16px;
+  --space-24: 24px; --space-32: 32px; --space-40: 40px; --space-48: 48px; --space-64: 64px;
+
+  /* Radius */
+  --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px; --radius-xl: 16px; --radius-full: 9999px;
+
+  /* Elevation (light only) */
+  --elevation-1: 0 1px 2px rgba(16,50,95,.08), 0 1px 3px rgba(16,50,95,.06);
+  --elevation-2: 0 2px 4px rgba(16,50,95,.08), 0 4px 8px rgba(16,50,95,.08);
+  --elevation-3: 0 4px 8px rgba(16,50,95,.10), 0 12px 24px rgba(16,50,95,.10);
+
+  /* Z-index scale */
+  --z-dropdown: 1000; --z-sticky: 1100; --z-header: 1200;
+  --z-overlay: 1300; --z-modal: 1400; --z-toast: 1500; --z-tooltip: 1600;
+
+  /* Motion */
+  --duration-instant: 100ms; --duration-fast: 150ms; --duration-base: 200ms; --duration-slow: 300ms;
+  --ease-standard: cubic-bezier(.2,0,0,1);
+  --ease-out: cubic-bezier(0,0,0,1);
+  --ease-in: cubic-bezier(.3,0,1,1);
+
+  /* Control */
+  --control-height-sm: 32px; --control-height-md: 40px; --control-height-lg: 48px;
+  --control-radius: var(--radius-md);
+  --focus-ring-width: 2px; --focus-ring-offset: 4px;
+
+  /* Logo */
+  --size-logo-header: 28px; --size-logo-header-sm: 24px;
+}
+
+/* ── Dark Mode Overrides (dashboard default) ── */
+:root[data-theme="dark"] {
+  --color-bg: var(--dm-900);
+  --color-bg-subtle: var(--dm-800);
+  --color-surface: var(--dm-800);
+  --color-surface-raised: var(--dm-700);
+  --color-border: var(--dm-600);
+  --color-border-control: var(--dm-300);
+  --color-text: var(--dm-100);
+  --color-text-muted: var(--dm-300);
+  --color-brand-solid: var(--blue-primary);
+  --color-heading: var(--navy-tint);
+  --color-link: var(--blue-primary-tint);
+  --color-success-text: var(--green);
+  --color-warning-text: var(--yellow);
+  --color-danger: var(--red-tint);
+  --color-danger-text: var(--red-tint);
+  --color-focus-ring: var(--nirmala-cyan);
+  --color-accent-text: var(--yellow);
+  --color-stat: var(--dm-100);
+  --elevation-1: none; --elevation-2: none; --elevation-3: none;
+}
+
+/* ── Nirmala Command-Center Tokens ── */
+:root {
+  --nirmala-map-bg: #050811;
+  --nirmala-map-bg-2: #0a1628;
+  --nirmala-glass-bg: rgba(10, 16, 36, 0.88);
+  --nirmala-glass-bg-header: rgba(5, 8, 17, 0.96);
+  --nirmala-glass-bg-timeline: rgba(10, 16, 36, 0.92);
+  --nirmala-glass-border: rgba(255, 255, 255, 0.07);
+  --nirmala-glass-blur: 20px;
+  --nirmala-cyan: #00e5ff;
+  --nirmala-cyan-dim: rgba(0, 229, 255, 0.15);
+  --nirmala-focus-glow: 0 0 0 3px rgba(0, 229, 255, 0.12);
+
+  /* Rain density ramp (heatmap + legend) */
+  --rain-1: #60a5fa;
+  --rain-2: #34d399;
+  --rain-3: #eab308;
+  --rain-4: #fb923c;
+  --rain-5: #ef4444;
+  --rain-6: #c084fc;
+
+  /* Sensor status */
+  --status-active: #34d399;
+  --status-raining: #60a5fa;
+  --status-inactive: #4b5563;
+  --status-blacklisted: #ef4444;
+}
+
+/* ── Global Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; padding: 0; }
+body {
+  font-family: var(--font-family-body);
+  font-size: var(--font-body);
+  line-height: 1.5;
+  color: var(--color-text);
+  background-color: var(--nirmala-map-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-full); }
+::-webkit-scrollbar-thumb:hover { background: var(--color-border-control); }
+
+/* Focus visible */
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* Mono utility for numeric/technical values */
+.mono, .num { font-family: var(--font-family-mono); }
+
+/* Micro-label pattern */
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-muted);
+}
+
+/* Material Symbols */
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+/* Animations */
+@keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(2.4); opacity: 0; } }
+@keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+@keyframes slide-in-right { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes live-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* Reduced motion (mandatory) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
