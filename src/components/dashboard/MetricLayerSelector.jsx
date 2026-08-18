@@ -12,8 +12,16 @@ const switchSx = {
   '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: 'rgba(0, 229, 255, 0.7)' },
 };
 
+const OWM_LAYERS = [
+  { id: null, label: 'Mati' },
+  { id: 'precipitation_new', label: 'Hujan' },
+  { id: 'clouds_new', label: 'Awan' },
+  { id: 'wind_new', label: 'Angin' },
+];
+
 export default function MetricLayerSelector({
   activeLayer, onLayerChange, showMarkers, onToggleMarkers, showCoverage, onToggleCoverage,
+  owmLayer, onOwmChange,
 }) {
   return (
     <Box
@@ -86,6 +94,36 @@ export default function MetricLayerSelector({
           </Button>
         ))}
       </Box>
+
+      {onOwmChange && (
+        <>
+          <Divider sx={{ my: 0.25, borderColor: 'var(--nirmala-glass-border)' }} />
+          <Typography sx={eyebrowSx}>Cuaca (OpenWeather)</Typography>
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            {OWM_LAYERS.map((o) => {
+              const active = owmLayer === o.id;
+              return (
+                <Button
+                  key={o.label}
+                  onClick={() => onOwmChange(o.id)}
+                  disableRipple
+                  sx={{
+                    flex: 1, minWidth: 0, px: 0.5, py: 0.5, fontSize: '0.68rem', fontWeight: 700,
+                    borderRadius: 'var(--radius-sm, 4px)',
+                    color: active ? 'var(--nirmala-cyan)' : 'text.secondary',
+                    border: `1px solid ${active ? 'var(--nirmala-cyan)' : 'transparent'}`,
+                    borderColor: active ? 'var(--nirmala-cyan-dim)' : 'transparent',
+                    background: active ? 'var(--nirmala-cyan-dim)' : 'rgba(255,255,255,0.03)',
+                    '&:hover': { background: 'var(--nirmala-cyan-dim)' },
+                  }}
+                >
+                  {o.label}
+                </Button>
+              );
+            })}
+          </Box>
+        </>
+      )}
 
       <Divider sx={{ my: 0.25, borderColor: 'var(--nirmala-glass-border)' }} />
 

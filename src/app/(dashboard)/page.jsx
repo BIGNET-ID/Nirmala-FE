@@ -5,6 +5,7 @@ import { Box } from '@mui/material';
 import GoogleMapWrapper from '@/components/map/GoogleMapWrapper';
 import CanvasHeatmapOverlay from '@/components/map/CanvasOverlay';
 import SensorDotLayer from '@/components/map/SensorDotLayer';
+import OpenWeatherLayer from '@/components/map/OpenWeatherLayer';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import MetricLayerSelector from '@/components/dashboard/MetricLayerSelector';
 import ColorRampLegend from '@/components/dashboard/ColorRampLegend';
@@ -24,6 +25,7 @@ export default function NirmalaDashboard() {
   const [activeLayer, setActiveLayer] = useState('rain');
   const [showMarkers, setShowMarkers] = useState(true);
   const [showCoverage, setShowCoverage] = useState(true);
+  const [owmLayer, setOwmLayer] = useState(null); // OpenWeather tile layer id or null
   const [selectedStation, setSelectedStation] = useState(null);
   const [map, setMap] = useState(null);
 
@@ -54,6 +56,7 @@ export default function NirmalaDashboard() {
         {/* Map container */}
         <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           <GoogleMapWrapper onMapLoad={setMap}>
+            <OpenWeatherLayer layer={owmLayer} />
             <CanvasHeatmapOverlay stations={SENSOR_STATIONS} showCoverage={showCoverage} />
             <SensorDotLayer
               stations={SENSOR_STATIONS}
@@ -71,6 +74,8 @@ export default function NirmalaDashboard() {
             onToggleMarkers={setShowMarkers}
             showCoverage={showCoverage}
             onToggleCoverage={setShowCoverage}
+            owmLayer={owmLayer}
+            onOwmChange={setOwmLayer}
           />
 
           {/* Right: Legend */}
