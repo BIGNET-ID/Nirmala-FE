@@ -3,11 +3,19 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * Camera-lens raindrops — a 2D canvas overlay (no WebGL) of glassy droplets that
- * cling to the "lens", occasionally slide down with a trail, then respawn.
- * Smooth via requestAnimationFrame. Purely decorative; pointer-events: none.
+ * Camera-lens raindrops — 2D canvas overlay (no WebGL).
+ *
+ * Realism:
+ *  - material/lighting: each drop is rendered like real glass water — a dark rim
+ *    (roundness), a subtle glassy body, a bright bottom refraction crescent, a
+ *    sharp top-left specular highlight and a soft secondary highlight.
+ *  - object: sliding drops elongate into teardrops and leave a wet trail.
+ *  - motion: frame-rate-independent smoothing — clinging drops occasionally
+ *    release and accelerate (capped) with a gentle horizontal meander, so the
+ *    fall reads smooth rather than stepped.
+ * Purely decorative; pointer-events: none.
  */
-export default function LensRain({ dropCount = 46, opacity = 0.5 }) {
+export default function LensRain({ dropCount = 34, opacity = 0.72 }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -26,58 +34,85 @@ export default function LensRain({ dropCount = 46, opacity = 0.5 }) {
     resize();
     window.addEventListener('resize', resize);
 
-    const spawn = (top) => ({
-      x: Math.random() * W,
-      y: top ? -20 : Math.random() * H,
-      r: 4 + Math.random() * 13,
-      vy: 0,
-      life: 0,
-      maxLife: 5 + Math.random() * 8,
-      sliding: Math.random() < 0.28,
-    });
+    const spawn = (top) => {
+      const r = 6 + Math.random() * 16;
+      return {
+        x: Math.random() * W,
+        y: top ? -r * 2 : Math.random() * H,
+        r,
+        state: 'cling',
+        vy: 0,
+        phase: Math.random() * Math.PI * 2,
+        startY: 0,
+      };
+    };
     const drops = Array.from({ length: dropCount }, () => spawn(false));
 
-    const drawDrop = (d) => {
-      // glassy body: soft radial with an off-centre highlight
-      const g = ctx.createRadialGradient(d.x - d.r * 0.3, d.y - d.r * 0.35, 0, d.x, d.y, d.r);
-      g.addColorStop(0, 'rgba(255,255,255,0.42)');
-      g.addColorStop(0.45, 'rgba(205,222,255,0.12)');
-      g.addColorStop(1, 'rgba(180,200,240,0)');
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-      ctx.fill();
-      // bright spec highlight
-      ctx.fillStyle = 'rgba(255,255,255,0.55)';
-      ctx.beginPath();
-      ctx.arc(d.x - d.r * 0.32, d.y - d.r * 0.34, d.r * 0.16, 0, Math.PI * 2);
-      ctx.fill();
+    const drawDrop = (x, y, r, elong) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(1, elong);
+      // dark rim → roundness
+      const rim = ctx.createRadialGradient(0, 0, r * 0.72, 0, 0, r);
+      rim.addColorStop(0, 'rgba(8,12,24,0)');
+      rim.addColorStop(0.82, 'rgba(8,12,24,0.28)');
+      rim.addColorStop(1, 'rgba(8,12,24,0)');
+      ctx.fillStyle = rim; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+      // glassy body
+      const body = ctx.createRadialGradient(0, -r * 0.15, 0, 0, r * 0.15, r * 0.95);
+      body.addColorStop(0, 'rgba(222,236,255,0.11)');
+      body.addColorStop(0.7, 'rgba(226,239,255,0.05)');
+      body.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = body; ctx.beginPath(); ctx.arc(0, 0, r * 0.92, 0, Math.PI * 2); ctx.fill();
+      // bottom refraction crescent
+      ctx.fillStyle = 'rgba(255,255,255,0.30)';
+      ctx.beginPath(); ctx.ellipse(0, r * 0.34, r * 0.5, r * 0.3, 0, 0, Math.PI * 2); ctx.fill();
+      // top-left sharp specular
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.beginPath(); ctx.arc(-r * 0.3, -r * 0.4, r * 0.16, 0, Math.PI * 2); ctx.fill();
+      // secondary highlight
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.beginPath(); ctx.arc(r * 0.22, -r * 0.08, r * 0.08, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
     };
 
     let last = performance.now();
     const frame = () => {
       const now = performance.now();
-      const dt = Math.min((now - last) / 1000, 0.05);
+      const dt = Math.min((now - last) / 1000, 0.033); // clamp → no jumps on refocus
       last = now;
       ctx.clearRect(0, 0, W, H);
       ctx.globalAlpha = opacity;
+
       for (let i = 0; i < drops.length; i++) {
         const d = drops[i];
-        d.life += dt;
-        if (d.sliding) {
-          d.vy += 40 * dt;
+        let elong = 1;
+
+        if (d.state === 'cling') {
+          // bigger drops are likelier to release and start sliding
+          if (Math.random() < dt * (0.06 + d.r / 500)) { d.state = 'slide'; d.startY = d.y; d.vy = 10; }
+        } else {
+          d.vy = Math.min(260, d.vy + 360 * dt);         // smooth, capped acceleration
           d.y += d.vy * dt;
-          // faint trail
-          ctx.strokeStyle = 'rgba(200,220,255,0.10)';
-          ctx.lineWidth = d.r * 0.5;
-          ctx.beginPath();
-          ctx.moveTo(d.x, d.y - d.vy * dt * 6);
-          ctx.lineTo(d.x, d.y);
-          ctx.stroke();
+          d.phase += dt * 3;
+          d.x += Math.sin(d.phase) * 10 * dt;            // gentle meander
+          elong = 1 + Math.min(1.3, d.vy / 150);         // teardrop stretch with speed
+
+          // wet trail behind the drop
+          const g = ctx.createLinearGradient(0, d.startY, 0, d.y);
+          g.addColorStop(0, 'rgba(200,220,255,0)');
+          g.addColorStop(1, 'rgba(200,220,255,0.12)');
+          ctx.strokeStyle = g;
+          ctx.lineWidth = d.r * 0.7;
+          ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.moveTo(d.x, d.startY); ctx.lineTo(d.x, d.y); ctx.stroke();
         }
-        drawDrop(d);
-        if (d.life > d.maxLife || d.y > H + 30) drops[i] = spawn(Math.random() < 0.6);
+
+        drawDrop(d.x, d.y, d.r, elong);
+
+        if (d.y > H + d.r * 3) drops[i] = spawn(true);
       }
+
       ctx.globalAlpha = 1;
       raf = requestAnimationFrame(frame);
     };
