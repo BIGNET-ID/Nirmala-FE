@@ -39,7 +39,15 @@ export default function MetricLayerSelector({
   showStorms, onToggleStorms, stormCount,
   showWind, onToggleWind,
   owmLayer, onOwmChange,
+  permissions,
 }) {
+  // Fail-open: a toggle is only hidden when the manifest explicitly says `false`.
+  // Undefined/null (manifest not loaded yet, or flag not present) keeps it visible.
+  // Thunderstorm has no dedicated permission flag in the PRD manifest contract,
+  // so it is intentionally never gated here.
+  const canViewSensor = permissions?.can_view_sensor !== false;
+  const canViewLightning = permissions?.can_view_lightning !== false;
+
   return (
     <Box
       sx={{
@@ -121,7 +129,7 @@ export default function MetricLayerSelector({
 
       <Divider sx={{ my: 0.25, borderColor: 'var(--nirmala-glass-border)' }} />
       <Typography sx={eyebrowSx}>Layer Tambahan</Typography>
-      {onToggleLightning && (
+      {onToggleLightning && canViewLightning && (
         <LayerSwitch checked={showLightning} onChange={onToggleLightning} label="Petir" count={lightningCount} />
       )}
       {onToggleStorms && (
@@ -130,8 +138,12 @@ export default function MetricLayerSelector({
       {onToggleWind && (
         <LayerSwitch checked={showWind} onChange={onToggleWind} label="Angin (partikel)" sx={{ mt: -0.75 }} />
       )}
-      <LayerSwitch checked={showCoverage} onChange={onToggleCoverage} label="Cakupan Sensor" sx={{ mt: -0.75 }} />
-      <LayerSwitch checked={showMarkers} onChange={onToggleMarkers} label="Titik Sensor" sx={{ mt: -0.75 }} />
+      {canViewSensor && (
+        <>
+          <LayerSwitch checked={showCoverage} onChange={onToggleCoverage} label="Cakupan Sensor" sx={{ mt: -0.75 }} />
+          <LayerSwitch checked={showMarkers} onChange={onToggleMarkers} label="Titik Sensor" sx={{ mt: -0.75 }} />
+        </>
+      )}
     </Box>
   );
 }

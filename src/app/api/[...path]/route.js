@@ -1,25 +1,28 @@
 /**
- * Transparent proxy for the Rainvision/Nirmala backend.
+ * Transparent proxy for the official Nirmala backend (c4c-nirmala.api.bignet.host).
  *
- * Why: the browser must not call the private backend directly — that hits CORS
- * and would expose any auth token. Instead the client calls same-origin
- * `/api/*` (see lib/axios baseURL ''), this server-side handler forwards to the
- * real backend, injecting the token from a SERVER-ONLY env var so it never
- * reaches the browser bundle.
+ * The backend is public and currently requires no auth, but the client still
+ * calls same-origin `/api/*` (see lib/axios baseURL '') and this server-side
+ * handler forwards to the real backend — keeping CORS out of the picture and
+ * leaving room to inject a token later without touching client code.
  *
  * Request `/api/sensors` -> params.path = ['sensors'] -> `${BACKEND}/api/sensors`.
  * On upstream failure returns 502 so the client falls back to the /fixtures copy.
  *
  * Env (server-only, NOT NEXT_PUBLIC):
- *   NIRMALA_BACKEND_URL  base URL of the backend (default: the known private IP)
- *   NIRMALA_API_TOKEN    bearer token, if the backend requires one (optional)
+ *   NIRMALA_BACKEND_URL  base URL of the backend (default: the official public host)
+ *   NIRMALA_API_TOKEN    bearer token, if the backend ever requires one (optional)
  */
 
 export const dynamic = 'force-dynamic';
 
-const BACKEND = process.env.NIRMALA_BACKEND_URL || 'http://172.18.188.154:8000';
+const BACKEND = process.env.NIRMALA_BACKEND_URL || 'https://c4c-nirmala.api.bignet.host';
 const TOKEN = process.env.NIRMALA_API_TOKEN || '';
-const TIMEOUT_MS = 5000; // < client axios timeout (6s) so the client gets a clean 502 -> fixture fast
+// /api/sensors (4.500+ stations, ~1.2MB) measured ~8.7s against the live
+// backend, well above the PRD's claimed ~300ms — keep this comfortably above
+// that, and below the client axios timeout (20s, see lib/axios.js) so the
+// client always gets a clean 502 -> fixture fallback rather than aborting first.
+const TIMEOUT_MS = 15000;
 
 export async function GET(request, ctx) {
   const { path = [] } = await ctx.params;

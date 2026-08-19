@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Box } from '@mui/material';
 import { motion } from 'motion/react';
 import GoogleMapWrapper from '@/components/map/GoogleMapWrapper';
@@ -18,13 +18,21 @@ import SensorStatsCard from '@/components/dashboard/SensorStatsCard';
 import MapInfoPill from '@/components/dashboard/MapInfoPill';
 import MapControls from '@/components/map/MapControls';
 import { usePlatformData } from '@/hooks/usePlatformData';
+import { useSensorStream } from '@/hooks/useSensorStream';
+import { useLightningStream } from '@/hooks/useLightningStream';
+import { useThunderstormStream } from '@/hooks/useThunderstormStream';
+import { useAuth } from '@/hooks/useAuth';
+import { METRICS } from '@/constants/metrics';
 import { MAP_CENTER, MAP_ZOOM_DEFAULT } from '@/constants/mapConfig';
 
 export default function NirmalaDashboard() {
-  const { sensors: apiSensors, lightning, thunderstorm, loading, error } = usePlatformData();
-  
-  // Use API sensors if available, otherwise fallback to empty array
-  const SENSOR_STATIONS = apiSensors && apiSensors.length > 0 ? apiSensors : [];
+  const { sensors: apiSensors, lightning: apiLightning, thunderstorm: apiThunderstorm, health, loading, error } = usePlatformData();
+  const { permissions, defaultMap, defaultLayer } = useAuth();
+
+  // Initial REST snapshot seeds each SSE hook; live updates flow in via /api/stream/*.
+  const { stations: SENSOR_STATIONS, status: sensorStreamStatus } = useSensorStream(apiSensors);
+  const { strikes: lightning, status: lightningStreamStatus } = useLightningStream(apiLightning);
+  const { storms: thunderstorm, status: thunderstormStreamStatus } = useThunderstormStream(apiThunderstorm);
 
   const [activeLayer, setActiveLayer] = useState('rain');
   const [showMarkers, setShowMarkers] = useState(true);
@@ -35,6 +43,24 @@ export default function NirmalaDashboard() {
   const [owmLayer, setOwmLayer] = useState(null); // OpenWeather tile layer id or null
   const [selectedStation, setSelectedStation] = useState(null);
   const [map, setMap] = useState(null);
+
+  // Manifest resolves async, after activeLayer's initial state and (likely) after
+  // the map has already mounted with the hardcoded MAP_CENTER/MAP_ZOOM_DEFAULT —
+  // apply its default_layer/default_map once each, the same way handleReset does.
+  const appliedDefaultLayerRef = useRef(false);
+  useEffect(() => {
+    if (appliedDefaultLayerRef.current || !defaultLayer) return;
+    if (METRICS[defaultLayer]) setActiveLayer(defaultLayer);
+    appliedDefaultLayerRef.current = true;
+  }, [defaultLayer]);
+
+  const appliedDefaultMapRef = useRef(false);
+  useEffect(() => {
+    if (appliedDefaultMapRef.current || !map || !defaultMap) return;
+    map.setCenter({ lat: defaultMap.lat, lng: defaultMap.lng });
+    map.setZoom(defaultMap.zoom);
+    appliedDefaultMapRef.current = true;
+  }, [map, defaultMap]);
 
   const stats = {
     total: SENSOR_STATIONS.length,
@@ -67,7 +93,7 @@ export default function NirmalaDashboard() {
           sx={{ position: 'fixed', inset: 0, bgcolor: '#eef5ff', pointerEvents: 'none', zIndex: 3000 }}
         />
 
-        <DashboardHeader stats={stats} />
+        <DashboardHeader stats={stats} health={health} streamStatus={sensorStreamStatus} />
 
         {/* Map container */}
         <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
@@ -103,6 +129,7 @@ export default function NirmalaDashboard() {
             onToggleWind={setShowWind}
             owmLayer={owmLayer}
             onOwmChange={setOwmLayer}
+            permissions={permissions}
           />
 
           {/* Right: Legend */}

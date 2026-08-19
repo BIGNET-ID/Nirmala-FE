@@ -1,7 +1,11 @@
 /**
  * Custom Hook: usePlatformData
- * Integrates real-time telemetry data from Nirmala API with proper refresh intervals
- * Based on PRD Section 7.1: API Endpoint Matrix
+ * Loads the initial REST snapshot (PRD §4.1 step 1: GET /api/sensors,
+ * /api/lightning, /api/thunderstorm on app load) plus manifest and health.
+ * Live incremental updates for sensors/lightning/thunderstorm come from the
+ * dedicated SSE hooks (useSensorStream/useLightningStream/useThunderstormStream,
+ * see PRD §5.4) instead of polling — this hook only fetches each once.
+ * Health has no SSE channel per PRD's Kategori grouping, so it keeps polling.
  */
 
 'use client';
@@ -38,16 +42,13 @@ export function usePlatformData() {
     loadManifest();
   }, []);
 
-  // Fetch sensors every 30s (SSE stream or API poll)
+  // Fetch sensors once — the initial REST snapshot. Live updates come from useSensorStream (SSE).
   useEffect(() => {
     const fetchSensors = async () => {
       try {
         setLoading(true);
-        console.log('[usePlatformData] Fetching sensors...');
         const response = await nirmalaApiService.getSensors();
-        console.log('[usePlatformData] Raw API response:', response);
         const normalized = normalizeSensors(response);
-        console.log('[usePlatformData] Normalized sensors (count=' + normalized.length + '):', normalized);
         setSensors(normalized);
         setError(null);
         setApiStatus('connected');
@@ -55,27 +56,16 @@ export function usePlatformData() {
         console.error('[usePlatformData] Error fetching sensors:', err);
         setError(err);
         setApiStatus('fallback');
-        // Still attempt to set empty state or use cached data
         setSensors([]);
       } finally {
         setLoading(false);
       }
     };
 
-    // Initial fetch
     fetchSensors();
-
-    // Schedule recurring fetches every 30 seconds
-    intervalsRef.current.sensors = setInterval(fetchSensors, 30000);
-
-    return () => {
-      if (intervalsRef.current.sensors) {
-        clearInterval(intervalsRef.current.sensors);
-      }
-    };
   }, []);
 
-  // Fetch lightning every 10s
+  // Fetch lightning once — the initial REST snapshot. Live updates come from useLightningStream (SSE).
   useEffect(() => {
     const fetchLightning = async () => {
       try {
@@ -88,20 +78,10 @@ export function usePlatformData() {
       }
     };
 
-    // Initial fetch
     fetchLightning();
-
-    // Schedule recurring fetches every 10 seconds
-    intervalsRef.current.lightning = setInterval(fetchLightning, 10000);
-
-    return () => {
-      if (intervalsRef.current.lightning) {
-        clearInterval(intervalsRef.current.lightning);
-      }
-    };
   }, []);
 
-  // Fetch thunderstorm every 30s
+  // Fetch thunderstorm once — the initial REST snapshot. Live updates come from useThunderstormStream (SSE).
   useEffect(() => {
     const fetchThunderstorm = async () => {
       try {
@@ -114,17 +94,7 @@ export function usePlatformData() {
       }
     };
 
-    // Initial fetch
     fetchThunderstorm();
-
-    // Schedule recurring fetches every 30 seconds
-    intervalsRef.current.thunderstorm = setInterval(fetchThunderstorm, 30000);
-
-    return () => {
-      if (intervalsRef.current.thunderstorm) {
-        clearInterval(intervalsRef.current.thunderstorm);
-      }
-    };
   }, []);
 
   // Fetch health every 60s

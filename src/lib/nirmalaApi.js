@@ -1,10 +1,11 @@
 /**
  * Nirmala API Service Layer
- * Integrates with Rainvision Kafka Pipeline Backend (NEXT_PUBLIC_API_BASE_URL).
- * Based on PRD Section 7: Technical API Contract & Data Schema.
+ * Integrates with the official Nirmala backend (c4c-nirmala.api.bignet.host),
+ * proxied through /api/* (see app/api/[...path]/route.js). Based on PRD
+ * Section 7: Technical API Contract & Data Schema.
  *
- * Dev fallback: when the real backend is unreachable (private IP, no VPN), each
- * method falls back to a CAPTURED REAL RESPONSE fixture served from /public/fixtures
+ * Resilience fallback: if the backend has a transient hiccup, each method
+ * falls back to a CAPTURED REAL RESPONSE fixture served from /public/fixtures
  * — NOT fabricated data. Fixtures carry the true field shape (binary is_raining +
  * status for /api/sensors; numeric rain+signal for /api/timeseries).
  */
@@ -26,15 +27,10 @@ async function loadFixture(name) {
 }
 
 export const nirmalaApiService = {
-  /**
-   * Sensor source. TEMPORARY: pointed at VIONA terminals (/api/terminals proxy)
-   * while the real Nirmala sensor API is unreachable. Swap back to /api/sensors
-   * once the BE is ready.
-   */
+  /** GET /api/sensors — snapshot 4.500+ stasiun sensor. Refresh on load. */
   async getSensors() {
     try {
-      // return await nirmalaApi.get('/api/sensors'); // ← restore when BE sensor API is live
-      return await nirmalaApi.get('/api/terminals');   // TEMP: VIONA terminal/latlong
+      return await nirmalaApi.get('/api/sensors');
     } catch (error) {
       console.warn('[Nirmala API] sensor source unavailable, using real-response fixture:', error.message);
       return (await loadFixture('sensors')) || { sensors: [] };
@@ -103,14 +99,13 @@ export const nirmalaApiService = {
 };
 
 /**
- * Normalize sensors to app shape. Real /api/sensors is BINARY: is_raining + status,
- * no numeric rain/temp — so no numeric intensity/temperature is derived here.
- * Numeric rain (mm) comes from /api/timeseries per-sensor (see SensorDetailDrawer).
+ * Normalize a single raw sensor record to app shape. Shared by normalizeSensors
+ * (REST snapshot array) and useSensorStream (per-event SSE payload), since the
+ * live stream is expected to carry the same raw per-sensor shape as /api/sensors.
  */
-export function normalizeSensors(apiResponse) {
-  if (!apiResponse || !apiResponse.sensors) return [];
-
-  return apiResponse.sensors.map((s) => ({
+export function normalizeSensor(s) {
+  if (!s) return null;
+  return {
     id: s.id,
     name: s.id,
     lat: s.latitude,
@@ -123,30 +118,52 @@ export function normalizeSensors(apiResponse) {
     unavailable: Boolean(s.unavailable),
     lastUpdate: s.last_update,
     scrapedAt: s._scraped_at,
-  }));
+  };
 }
 
-export function normalizeLightning(apiResponse) {
-  if (!apiResponse || !apiResponse.content) return [];
-  return apiResponse.content.map((strike) => ({
+/**
+ * Normalize sensors to app shape. Real /api/sensors is BINARY: is_raining + status,
+ * no numeric rain/temp — so no numeric intensity/temperature is derived here.
+ * Numeric rain (mm) comes from /api/timeseries per-sensor (see SensorDetailDrawer).
+ */
+export function normalizeSensors(apiResponse) {
+  if (!apiResponse || !apiResponse.sensors) return [];
+  return apiResponse.sensors.map(normalizeSensor);
+}
+
+/** Normalize a single raw lightning strike. Shared by normalizeLightning and useLightningStream. */
+export function normalizeLightningStrike(strike) {
+  if (!strike) return null;
+  return {
     id: `${strike.lat}_${strike.long}_${strike.time}`,
     lat: strike.lat,
     lng: strike.long,
     signalStrength: strike.signalStrengthKA,
     isCloud: strike.cloud,
     time: strike.time,
-  }));
+  };
 }
 
-export function normalizeThunderstorm(apiResponse) {
+export function normalizeLightning(apiResponse) {
   if (!apiResponse || !apiResponse.content) return [];
-  return apiResponse.content.map((storm) => ({
+  return apiResponse.content.map(normalizeLightningStrike);
+}
+
+/** Normalize a single raw thunderstorm cell. Shared by normalizeThunderstorm and useThunderstormStream. */
+export function normalizeThunderstormCell(storm) {
+  if (!storm) return null;
+  return {
     id: storm.stormId,
     centroid: storm.centroid,
     polygon: storm.polygon,
     severe: storm.severe,
     referenceTime: storm.referenceTime,
-  }));
+  };
+}
+
+export function normalizeThunderstorm(apiResponse) {
+  if (!apiResponse || !apiResponse.content) return [];
+  return apiResponse.content.map(normalizeThunderstormCell);
 }
 
 /** Extract the default map view from manifest (account.default_map). */

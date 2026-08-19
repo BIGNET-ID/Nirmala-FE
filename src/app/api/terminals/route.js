@@ -1,10 +1,16 @@
 /**
- * TEMPORARY sensor source: VIONA RTGS terminals.
+ * DEPRECATED / unused: VIONA RTGS terminals sensor source.
  *
- * While the real Nirmala sensor API isn't reachable, this fetches VIONA's
- * `/api/v1/terminal/latlong` from the 3 gateways (jyp=g1g, mnk=g1k, tmk=g1l),
- * merges + dedupes by lat/long, and maps each terminal into the Nirmala sensor
- * RAW shape so normalizeSensors + the whole dashboard work unchanged.
+ * This was a temporary stand-in for sensor data while the real Nirmala
+ * sensor API was unreachable. `nirmalaApiService.getSensors()` now calls
+ * the official `/api/sensors` (see src/lib/nirmalaApi.js) — this route is
+ * no longer called from the service layer. Left in place, unused, in case
+ * VIONA terminal data is needed again later.
+ *
+ * Fetches VIONA's `/api/v1/terminal/latlong` from the 3 gateways (jyp=g1g,
+ * mnk=g1k, tmk=g1l), merges + dedupes by lat/long, and maps each terminal
+ * into the Nirmala sensor RAW shape so normalizeSensors + the whole
+ * dashboard would work unchanged if re-enabled.
  *
  * VIONA requires a Bearer token (same token works for all 3 gateways). Token +
  * gateway URLs are server-only env; the browser only sees /api/terminals.

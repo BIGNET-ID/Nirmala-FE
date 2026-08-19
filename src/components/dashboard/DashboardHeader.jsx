@@ -21,7 +21,7 @@ function isActive(pathname, item) {
   return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
 
-export default function DashboardHeader({ stats }) {
+export default function DashboardHeader({ stats, health, streamStatus }) {
   const pathname = usePathname() || '/';
   const router = useRouter();
   const { user, logout } = useAuth() || {};
@@ -112,6 +112,30 @@ export default function DashboardHeader({ stats }) {
 
       {/* Right group — pinned right, never shrinks */}
       <Box sx={{ ml: 'auto', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        {/* Backend/Kafka health — GET /api/health (PRD §7.1 Kategori A) */}
+        {health && (
+          <Tooltip
+            title={
+              health.connected
+                ? `Kafka pipeline online · uptime ${Math.round((health.uptime_s || 0) / 3600)}j`
+                : 'Kafka pipeline tidak terhubung'
+            }
+            placement="bottom"
+          >
+            <Box sx={{
+              display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.5,
+              background: health.connected ? 'rgba(52,211,153,0.1)' : 'rgba(239,68,68,0.1)',
+              border: `1px solid ${health.connected ? 'rgba(52,211,153,0.3)' : 'rgba(239,68,68,0.3)'}`,
+              borderRadius: 999,
+            }}>
+              <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: health.connected ? 'var(--status-active, #34d399)' : '#ef4444' }} />
+              <Box sx={{ ...monoSx, fontSize: '0.65rem', color: health.connected ? 'var(--status-active, #34d399)' : '#ef4444', fontWeight: 700 }}>
+                {health.connected ? 'BACKEND OK' : 'BACKEND DOWN'}
+              </Box>
+            </Box>
+          </Tooltip>
+        )}
+
         {/* LIVE */}
         <Box sx={{
           display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.5,
@@ -123,6 +147,21 @@ export default function DashboardHeader({ stats }) {
             LIVE · {stats.active}/{stats.total}
           </Box>
         </Box>
+
+        {/* SSE connection status — only surfaced when not nominal, to avoid clutter */}
+        {streamStatus && streamStatus !== 'live' && (
+          <Tooltip title={`Koneksi stream sensor: ${streamStatus}`} placement="bottom">
+            <Box sx={{
+              display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.5,
+              background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 999,
+            }}>
+              <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: '#fbbf24' }} />
+              <Box sx={{ ...monoSx, fontSize: '0.65rem', color: '#fbbf24', fontWeight: 700 }}>
+                {streamStatus === 'reconnecting' ? 'STREAM RECONNECT' : 'STREAM CONNECTING'}
+              </Box>
+            </Box>
+          </Tooltip>
+        )}
 
         {/* Rain alert */}
         <Box sx={{
