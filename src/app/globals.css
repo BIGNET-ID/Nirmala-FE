@@ -246,3 +246,18 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * Google Maps attribution/ToS restyle — NOT hidden, per Google Maps Platform
+ * Terms of Service (attribution must remain visible and clickable). Blended
+ * into the dark command-center theme via colour/opacity only.
+ */
+.nirmala-gmap .gmnoprint,
+.nirmala-gmap .gm-style-cc {
+  opacity: 0.55;
+  filter: grayscale(1) brightness(1.6);
+}
+.nirmala-gmap .gmnoprint:hover,
+.nirmala-gmap .gm-style-cc:hover {
+  opacity: 0.9;
+}

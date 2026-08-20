@@ -53,18 +53,23 @@ const MAP_STYLE_DARK = [
 export default function GoogleMapWrapper({ children, onMapLoad }) {
   const { mode } = useThemeMode();
   return (
+    // Wrap in our own div rather than passing className to <Map> — that prop
+    // replaces (not merges with) the library's own sizing class internally,
+    // which silently zeroes the map's height.
     <APIProvider apiKey={API_KEY}>
-      <Map
-        defaultCenter={MAP_CENTER}
-        defaultZoom={MAP_ZOOM_DEFAULT}
-        styles={mode === 'dark' ? MAP_STYLE_DARK : MAP_STYLE_LIGHT}
-        disableDefaultUI={true}
-        gestureHandling="greedy"
-        onIdle={(e) => onMapLoad?.(e.map)}
-        style={{ width: '100%', height: '100%' }}
-      >
-        {children}
-      </Map>
+      <div className="nirmala-gmap" style={{ width: '100%', height: '100%' }}>
+        <Map
+          defaultCenter={MAP_CENTER}
+          defaultZoom={MAP_ZOOM_DEFAULT}
+          styles={mode === 'dark' ? MAP_STYLE_DARK : MAP_STYLE_LIGHT}
+          disableDefaultUI={true}
+          gestureHandling="greedy"
+          onIdle={(e) => onMapLoad?.(e.map)}
+          style={{ width: '100%', height: '100%' }}
+        >
+          {children}
+        </Map>
+      </div>
     </APIProvider>
   );
 }
