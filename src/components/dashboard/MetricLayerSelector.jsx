@@ -91,6 +91,11 @@ export default function MetricLayerSelector({
         zIndex: 'var(--z-overlay, 100)',
         p: 1.75,
         width: 248,
+        // Shares a relatively-positioned ancestor with SensorStatsCard (bottom:24,
+        // ~160px tall) — reserve that much space so a long toggle list never
+        // overlaps it, regardless of viewport height.
+        maxHeight: 'calc(100% - 280px)',
+        overflowY: 'auto',
         display: 'flex',
         flexDirection: 'column',
         gap: 1.25,

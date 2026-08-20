@@ -2,16 +2,18 @@
 // the tick math is easy to reason about/test without React or Maps state.
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-export const RAIN_HISTORY_DAYS = 4;
+// Fallback only — used when useRainHistoryRange can't reach the backend to
+// discover the real retained-history window (confirmed ~8 days as of writing,
+// but not contractual, so we still prefer asking the API over hardcoding it).
+export const RAIN_HISTORY_FALLBACK_DAYS = 4;
 export const RAIN_TICK_MINUTES = 15;
 
-/** Tick list for the sensor-rain-history mode: last N days + today, step-min apart. */
-export function buildRainTicks(now, days = RAIN_HISTORY_DAYS, stepMinutes = RAIN_TICK_MINUTES) {
+/** Tick list for the sensor-rain-history mode: `start` to `end`, step-min apart. */
+export function buildRainTicks(start, end, stepMinutes = RAIN_TICK_MINUTES) {
   const stepMs = stepMinutes * 60 * 1000;
-  const start = now.getTime() - days * DAY_MS;
   const ticks = [];
-  for (let t = start; t <= now.getTime(); t += stepMs) ticks.push(new Date(t));
-  if (ticks[ticks.length - 1]?.getTime() !== now.getTime()) ticks.push(now);
+  for (let t = start.getTime(); t <= end.getTime(); t += stepMs) ticks.push(new Date(t));
+  if (ticks[ticks.length - 1]?.getTime() !== end.getTime()) ticks.push(end);
   return ticks;
 }
 

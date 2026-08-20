@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, IconButton, Slider, Tooltip, Typography, CircularProgress } from '@mui/material';
+import { Box, IconButton, Slider, Tooltip, Typography, CircularProgress, Autocomplete, TextField } from '@mui/material';
 import { Icon } from '@iconify/react';
 
 const monoSx = { fontFamily: 'var(--font-family-mono)' };
@@ -8,6 +8,10 @@ const monoSx = { fontFamily: 'var(--font-family-mono)' };
 function fmt(date) {
   if (!date) return '—';
   return date.toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
+
+function dayLabel(date) {
+  return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
 /**
@@ -21,7 +25,15 @@ export default function TimeTravelBar({
 }) {
   const live = index == null;
   const disabled = ticks.length < 2;
-  const current = !live ? ticks[index]?.date : ticks[ticks.length - 1]?.date;
+  const currentIndex = live ? ticks.length - 1 : index;
+  const current = ticks[currentIndex]?.date;
+
+  // Only group the jump-to-time dropdown by day when the range actually spans
+  // more than one calendar day (rain history) — a single-day range (Himawari's
+  // ~6h rolling window) doesn't need a subheader for one group.
+  const spansMultipleDays = ticks.length > 1 && dayLabel(ticks[0].date) !== dayLabel(ticks[ticks.length - 1].date);
+  const tickOptions = ticks.map((t, i) => ({ i, date: t.date }));
+  const currentOption = tickOptions[currentIndex] ?? null;
 
   return (
     <Box
@@ -34,7 +46,7 @@ export default function TimeTravelBar({
         display: { xs: 'none', sm: 'flex' },
         alignItems: 'center',
         gap: 1.25,
-        width: 'min(640px, calc(100vw - 32px))',
+        width: 'min(720px, calc(100vw - 32px))',
         p: 1.25,
         pl: 1.5,
         backdropFilter: 'blur(20px)',
@@ -72,9 +84,30 @@ export default function TimeTravelBar({
         />
       )}
 
-      <Typography variant="caption" sx={{ ...monoSx, minWidth: 108, textAlign: 'right', color: 'text.secondary' }}>
-        {fmt(current)}
-      </Typography>
+      <Autocomplete
+        size="small"
+        disablePortal
+        disableClearable
+        disabled={disabled}
+        options={tickOptions}
+        value={currentOption}
+        groupBy={spansMultipleDays ? (o) => dayLabel(o.date) : undefined}
+        getOptionLabel={(o) => fmt(o.date)}
+        isOptionEqualToValue={(o, v) => o.i === v.i}
+        onChange={(_, newValue) => { if (newValue) onScrub(newValue.i); }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            variant="standard"
+            placeholder="Lompat ke waktu..."
+            slotProps={{ ...params.slotProps, input: { ...params.slotProps?.input, disableUnderline: true } }}
+          />
+        )}
+        sx={{
+          width: 176,
+          '& .MuiInputBase-input': { ...monoSx, fontSize: '0.75rem', color: 'text.secondary', textAlign: 'right' },
+        }}
+      />
 
       <Tooltip title="Kembali ke Live" placement="top">
         <span>

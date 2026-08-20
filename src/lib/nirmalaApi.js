@@ -59,12 +59,13 @@ export const nirmalaApiService = {
 
   /**
    * GET /api/timeseries/{sensor_id} — deret rain (mm, 5min avg) + signal per sensor.
-   * `nDays` optionally requests a wider history window (time-travel player).
+   * Backend ignores any `n_days`/limit param and always returns its full
+   * retained history (confirmed against the live API), so this always
+   * requests the plain endpoint with no query string.
    */
-  async getTimeseries(sensorId, { nDays } = {}) {
-    const qs = nDays ? `?n_days=${nDays}` : '';
+  async getTimeseries(sensorId) {
     try {
-      return await nirmalaApi.get(`/api/timeseries/${sensorId}${qs}`);
+      return await nirmalaApi.get(`/api/timeseries/${sensorId}`);
     } catch (error) {
       console.warn(`[Nirmala API] /api/timeseries/${sensorId} unavailable, using fixture:`, error.message);
       return await loadFixture('timeseries');

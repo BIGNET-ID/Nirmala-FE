@@ -38,12 +38,21 @@ function pickLabel(labels, ratio) {
   return labels[idx] ?? null;
 }
 
-/** Render API time labels as HH:mm when they parse as a date, else as-is. */
+/**
+ * Render API time labels as "18 Agu, 04.45" (date + time, not just HH:mm —
+ * a bare hour:minute is ambiguous once a series spans more than one day,
+ * which the rain/signal timeseries usually does).
+ */
 function formatTimeLabel(raw) {
   if (raw == null || raw === '') return '';
-  const d = new Date(raw);
-  if (!Number.isNaN(d.getTime()) && /\d{4}-\d{2}-\d{2}/.test(String(raw))) {
-    return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  // Nirmala timeseries labels have no year ("08-18 04:45") — resolve against
+  // the current year, same approach as lib/timeTravelRange's sensor parser.
+  const compact = /^(\d{2})-(\d{2}) (\d{2}):(\d{2})$/.exec(String(raw));
+  const d = compact
+    ? new Date(new Date().getFullYear(), +compact[1] - 1, +compact[2], +compact[3], +compact[4])
+    : new Date(raw);
+  if (!Number.isNaN(d.getTime())) {
+    return d.toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
   }
   return String(raw);
 }

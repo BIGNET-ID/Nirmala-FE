@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Box } from '@mui/material';
 import { motion } from 'motion/react';
 import GoogleMapWrapper from '@/components/map/GoogleMapWrapper';
@@ -26,6 +26,7 @@ import { useLightningStream } from '@/hooks/useLightningStream';
 import { useThunderstormStream } from '@/hooks/useThunderstormStream';
 import { useWindField } from '@/hooks/useWindField';
 import { useHimawariGrid } from '@/hooks/useHimawariGrid';
+import { useRainHistoryRange } from '@/hooks/useRainHistoryRange';
 import { useHistoricalSensorSnapshot } from '@/hooks/useHistoricalSensorSnapshot';
 import { useAuth } from '@/hooks/useAuth';
 import { METRICS } from '@/constants/metrics';
@@ -64,15 +65,24 @@ export default function NirmalaDashboard() {
 
   // Global time-travel control (Play + scrubber). `timelineIndex === null`
   // means "live"; otherwise it indexes into `ticks` below. Ticks are per-mode:
-  // 4 days + today for rain history, or the Himawari API's own rolling frame
-  // window (~hours, not days — see constants/metrics.js note).
+  // rain history's actual retained window (discovered from a reference
+  // sensor's timeseries — the backend has no fixed/contractual retention, see
+  // useRainHistoryRange), or the Himawari API's own rolling frame window
+  // (~hours, not days — see constants/metrics.js note).
   const [timelineIndex, setTimelineIndex] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [nowAnchor] = useState(() => new Date());
   const himawari = useHimawariGrid(activeLayer === 'himawari');
-  const ticks = activeLayer === 'himawari'
-    ? himawari.ticks
-    : buildRainTicks(nowAnchor).map((date) => ({ date }));
+  const rainHistoryRefSensorId = SENSOR_STATIONS.find((s) => s.status === 'active')?.id ?? SENSOR_STATIONS[0]?.id;
+  const rainHistory = useRainHistoryRange(activeLayer === 'rain', rainHistoryRefSensorId);
+  // Memoized so tick Date objects keep a stable identity across renders that
+  // don't actually change the range — ticks[i].date otherwise gets a fresh
+  // Date instance every render, which fed into useHistoricalSensorSnapshot's
+  // effect deps as a "changed" value on every render and looped infinitely.
+  const ticks = useMemo(() => {
+    if (activeLayer === 'himawari') return himawari.ticks;
+    if (!rainHistory.start || !rainHistory.end) return [];
+    return buildRainTicks(rainHistory.start, rainHistory.end).map((date) => ({ date }));
+  }, [activeLayer, himawari.ticks, rainHistory.start, rainHistory.end]);
 
   // Switching Layer Data resets the timeline to live — each mode's range is
   // independent (a rain-history position rarely lines up with a Himawari frame).
@@ -242,8 +252,8 @@ export default function NirmalaDashboard() {
               onScrub={handleTimelineScrub}
               onPlayPause={handleTimelinePlayPause}
               onGoLive={handleTimelineGoLive}
-              loading={activeLayer === 'himawari' && himawari.loading}
-              caveat={activeLayer === 'himawari' ? 'Cakupan: Filipina saja · jendela waktu terbatas' : null}
+              loading={(activeLayer === 'himawari' && himawari.loading) || (activeLayer === 'rain' && rainHistory.loading)}
+              caveat={activeLayer === 'himawari' ? 'Waktu di atas adalah jam citra satelit tersedia, bukan waktu sekarang · Cakupan: Filipina saja' : null}
             />
           )}
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { nirmalaApiService } from '@/lib/nirmalaApi';
-import { RAIN_HISTORY_DAYS, parseSensorHistoryLabel } from '@/lib/timeTravelRange';
+import { parseSensorHistoryLabel } from '@/lib/timeTravelRange';
 
 const CONCURRENCY = 20;
 
@@ -40,7 +40,7 @@ export function useHistoricalSensorSnapshot(selectedTimestamp, stations, map) {
         const batch = toFetch.slice(i, i + CONCURRENCY);
         await Promise.allSettled(
           batch.map(async (s) => {
-            const resp = await nirmalaApiService.getTimeseries(s.id, { nDays: RAIN_HISTORY_DAYS });
+            const resp = await nirmalaApiService.getTimeseries(s.id);
             const labels = resp?.rain?.chart_data?.labels || [];
             const data = resp?.rain?.chart_data?.datasets?.[0]?.data || [];
             cache.set(s.id, { labels, data });

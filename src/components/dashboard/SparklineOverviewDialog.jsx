@@ -11,8 +11,12 @@ export default function SparklineOverviewDialog({ open, onClose, stationId, rain
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="sm"
+      maxWidth="md"
       fullWidth
+      // Nests on top of SensorDetailDrawer (--z-modal, 1400) — needs a higher
+      // z-index or its own paper renders behind the drawer, making the close
+      // button (and everything else) unclickable.
+      sx={{ zIndex: 1450 }}
       slotProps={{
         paper: {
           sx: {
