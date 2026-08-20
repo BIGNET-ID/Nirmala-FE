@@ -36,7 +36,7 @@ export const METRICS = {
     key: 'himawari',
     label: 'Himawari',
     icon: 'material-symbols:satellite-alt-rounded',
-    legendNote: 'Citra satelit Himawari. Cakupan: Filipina saja, mengikuti jendela waktu yang disediakan API.',
+    legendNote: 'Deteksi awan berpotensi hujan lebat dari JMA. Cakupan: Asia Tenggara (termasuk Indonesia), bukan pengukuran curah hujan aktual.',
   },
 };
 

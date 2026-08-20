@@ -25,7 +25,7 @@ import { useSensorStream } from '@/hooks/useSensorStream';
 import { useLightningStream } from '@/hooks/useLightningStream';
 import { useThunderstormStream } from '@/hooks/useThunderstormStream';
 import { useWindField } from '@/hooks/useWindField';
-import { useHimawariGrid } from '@/hooks/useHimawariGrid';
+import { useJmaHimawariTicks } from '@/hooks/useJmaHimawariTicks';
 import { useRainHistoryRange } from '@/hooks/useRainHistoryRange';
 import { useHistoricalSensorSnapshot } from '@/hooks/useHistoricalSensorSnapshot';
 import { useAuth } from '@/hooks/useAuth';
@@ -67,11 +67,12 @@ export default function NirmalaDashboard() {
   // means "live"; otherwise it indexes into `ticks` below. Ticks are per-mode:
   // rain history's actual retained window (discovered from a reference
   // sensor's timeseries — the backend has no fixed/contractual retention, see
-  // useRainHistoryRange), or the Himawari API's own rolling frame window
-  // (~hours, not days — see constants/metrics.js note).
+  // useRainHistoryRange), or a fixed rolling 24h/10-minute window computed
+  // client-side from JMA's Himawari image URL pattern (see useJmaHimawariTicks).
   const [timelineIndex, setTimelineIndex] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const himawari = useHimawariGrid(activeLayer === 'himawari');
+  const himawari = useJmaHimawariTicks(activeLayer === 'himawari');
+  const [himawariStatus, setHimawariStatus] = useState('ok'); // 'ok' | 'loading' | 'unavailable'
   const rainHistoryRefSensorId = SENSOR_STATIONS.find((s) => s.status === 'active')?.id ?? SENSOR_STATIONS[0]?.id;
   const rainHistory = useRainHistoryRange(activeLayer === 'rain', rainHistoryRefSensorId);
   // Memoized so tick Date objects keep a stable identity across renders that
@@ -111,9 +112,19 @@ export default function NirmalaDashboard() {
   const historicalStations = useHistoricalSensorSnapshot(selectedTimestamp, SENSOR_STATIONS, map);
   const rainStations = selectedTimestamp ? (historicalStations || SENSOR_STATIONS) : SENSOR_STATIONS;
 
-  const currentHimawariTick = activeLayer === 'himawari'
-    ? (timelineIndex != null ? himawari.ticks[timelineIndex] : himawari.ticks[himawari.ticks.length - 1])
-    : null;
+  // When "live" (no explicit scrub position), retry the last few ticks —
+  // JMA sometimes hasn't published the newest 10-minute frame yet. A
+  // user-picked historical tick gets no fallback: if that exact minute
+  // wasn't published, say so (HimawariLayer's onStatus) rather than
+  // silently substituting a different time than the one they picked.
+  const himawariCandidateUrls = useMemo(() => {
+    if (activeLayer !== 'himawari' || !himawari.ticks.length) return [];
+    if (timelineIndex != null) {
+      const tick = himawari.ticks[timelineIndex];
+      return tick ? [tick.url] : [];
+    }
+    return himawari.ticks.slice(-4).reverse().map((t) => t.url);
+  }, [activeLayer, himawari.ticks, timelineIndex]);
 
   // Manifest resolves async, after activeLayer's initial state and (likely) after
   // the map has already mounted with the hardcoded MAP_CENTER/MAP_ZOOM_DEFAULT —
@@ -177,7 +188,12 @@ export default function NirmalaDashboard() {
             )}
             {activeLayer === 'mesh' && <MeshLayer stations={SENSOR_STATIONS} />}
             {activeLayer === 'himawari' && (
-              <HimawariLayer active bounds={himawari.bounds} frameUrl={currentHimawariTick?.url} />
+              <HimawariLayer
+                active
+                bounds={himawari.bounds}
+                candidateUrls={himawariCandidateUrls}
+                onStatus={setHimawariStatus}
+              />
             )}
             <ThunderstormLayer storms={thunderstorm} show={showStorms} />
             <LightningLayer strikes={lightning} show={showLightning} />
@@ -237,6 +253,33 @@ export default function NirmalaDashboard() {
           {/* Top-center: contextual info pill */}
           <MapInfoPill raining={stats.raining} total={stats.total} loading={loading && stats.total === 0} />
 
+          {/* Top-center, below the info pill: Himawari load-failure notice.
+              Rare (only when JMA hasn't published any of the last 4 frames,
+              or a specifically-scrubbed frame doesn't exist), so it doesn't
+              need a permanent slot the way MapInfoPill does. */}
+          {activeLayer === 'himawari' && himawariStatus === 'unavailable' && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 128,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 'var(--z-overlay, 100)',
+                px: 1.75,
+                py: 0.75,
+                display: { xs: 'none', sm: 'block' },
+                backdropFilter: 'blur(20px)',
+                background: 'var(--nirmala-glass-bg)',
+                border: '1px solid var(--nirmala-glass-border)',
+                borderRadius: 'var(--radius-full, 9999px)',
+                fontSize: '0.78rem',
+                color: 'text.primary',
+              }}
+            >
+              Citra tidak tersedia untuk waktu ini
+            </Box>
+          )}
+
           {/* Bottom-left: sensor statistics */}
           <SensorStatsCard stats={stats} />
 
@@ -253,7 +296,7 @@ export default function NirmalaDashboard() {
               onPlayPause={handleTimelinePlayPause}
               onGoLive={handleTimelineGoLive}
               loading={(activeLayer === 'himawari' && himawari.loading) || (activeLayer === 'rain' && rainHistory.loading)}
-              caveat={activeLayer === 'himawari' ? 'Waktu di atas adalah jam citra satelit tersedia, bukan waktu sekarang · Cakupan: Filipina saja' : null}
+              caveat={activeLayer === 'himawari' ? 'Deteksi awan berpotensi hujan lebat, bukan pengukuran curah hujan aktual · Sumber: JMA (Japan Meteorological Agency)' : null}
             />
           )}
 
