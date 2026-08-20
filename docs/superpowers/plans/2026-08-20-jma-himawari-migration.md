@@ -15,6 +15,8 @@
 - No new backend route. JMA images load directly from the client (`<img>`/`GroundOverlay`) — confirmed no CORS/Referer restriction and no `robots.txt` disallow.
 - Attribution is legally required by JMA's Terms of Use. The caveat text shown in the UI must mention "JMA" (see Task 3).
 - This product detects *potential* convective rainfall from cloud-top temperature, not measured rainfall — the caveat text must say this is not an actual rainfall measurement (see Task 3).
+- (Added for Tasks 5-6) Reading pixel data from the JMA image via `<canvas>` requires the image to be loaded with `crossOrigin = 'anonymous'`. This is confirmed to work: JMA's CloudFront-fronted server returns `Access-Control-Allow-Origin: *` when the request carries an `Origin` header (as a real browser `<img crossorigin>` request does) — verified live with `curl -H "Origin: http://localhost:3010" ...`. A plain `curl -I` with no `Origin` header misses this because CloudFront varies its response on `Origin`, which is why the original Task 1 investigation concluded (correctly, for plain display) that CORS didn't matter — that conclusion doesn't extend to canvas pixel access, which does need it and does get it.
+- (Added for Tasks 5-6) Magenta "rainfall potential" pixel detection threshold, sampled from a live `r2w_hrp_*.jpg`: `r >= 180 && g <= 70 && b >= 100`. Do not use a different threshold without re-sampling — grayscale sky/cloud pixels have `r === g === b`, and JMA's own green country-border overlay lines have low `r`/`b` with mid-range `g`; both must fall outside this range.
 
 ---
 
@@ -642,6 +644,429 @@ chore(himawari): remove dead bignet grid code
 useHimawariGrid.js, nirmalaApi.getHimawariGrid, and the
 buildHimawariTicks/parseHimawariTime helpers are unreachable now that
 page.jsx uses useJmaHimawariTicks instead.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+)"
+```
+
+---
+
+## Extension: recolor + crossfade (Tasks 5-6)
+
+Added after the original 4 tasks shipped and passed final review. The
+raw JMA JPEG (grayscale sky/cloud + magenta rainfall-potential blobs, no
+transparency) was being shown as-is, covering the whole 30°N-15°S/90°E-165°E
+box opaquely — obscuring the app's own basemap everywhere, not just where
+clouds actually are. This extension recolors each frame client-side so only
+the magenta shapes render (in the app's brand cyan), everything else fully
+transparent, and crossfades between frames instead of an abrupt swap.
+
+### Task 5: Recolor helper module
+
+**Files:**
+- Create: `src/lib/jmaHimawariRecolor.js`
+
+**Interfaces:**
+- Consumes: nothing (pure functions; `recolorToTransparentPng` takes a DOM
+  `HTMLImageElement` as a parameter rather than importing/loading one itself).
+- Produces (used by Task 6):
+  - `DEFAULT_RECOLOR_TARGET: { r: number, g: number, b: number, a: number }`
+  - `isMagentaPixel(r: number, g: number, b: number): boolean`
+  - `recolorToTransparentPng(image: HTMLImageElement, target?: typeof DEFAULT_RECOLOR_TARGET): string` — returns a `data:image/png;base64,...` URL. Throws if `image` wasn't loaded with `crossOrigin = 'anonymous'` (canvas taint) — Task 6's caller is responsible for that and for catching this.
+
+- [ ] **Step 1: Write the verification script for `isMagentaPixel` (expected to fail — the module doesn't exist yet)**
+
+`recolorToTransparentPng` needs a real `<canvas>`/`Image`, which plain Node doesn't have — only `isMagentaPixel` (pure arithmetic) is verified this way. `recolorToTransparentPng` gets verified in the browser as part of Task 6, since it's only meaningful wired into `HimawariLayer`.
+
+Create `/tmp/verify-jma-recolor.mjs`:
+
+```js
+import { isMagentaPixel, DEFAULT_RECOLOR_TARGET } from '/Users/ekabayuperwita/Documents/Kerjaan/Nirmala 3/.claude/worktrees/jma-himawari-migration/src/lib/jmaHimawariRecolor.js';
+
+function assertEqual(actual, expected, label) {
+  const a = JSON.stringify(actual);
+  const e = JSON.stringify(expected);
+  if (a !== e) throw new Error(`FAIL ${label}: got ${a}, expected ${e}`);
+  console.log(`OK ${label}`);
+}
+
+// Sampled true-magenta cluster from a live r2w_hrp_*.jpg: R in [201,255], G in [0,53], B in [120,203].
+assertEqual(isMagentaPixel(255, 0, 180), true, 'core magenta');
+assertEqual(isMagentaPixel(210, 40, 130), true, 'edge-of-cluster magenta');
+assertEqual(isMagentaPixel(37, 37, 37), false, 'grayscale sky/cloud (r=g=b)');
+assertEqual(isMagentaPixel(0, 75, 0), false, 'JMA green border line');
+assertEqual(isMagentaPixel(255, 217, 255), false, 'bright white cloud (g not low)');
+assertEqual(isMagentaPixel(179, 0, 100), false, 'just below the r threshold');
+assertEqual(isMagentaPixel(180, 71, 100), false, 'just above the g threshold');
+assertEqual(isMagentaPixel(180, 0, 99), false, 'just below the b threshold');
+assertEqual(DEFAULT_RECOLOR_TARGET, { r: 0, g: 229, b: 255, a: 217 }, 'DEFAULT_RECOLOR_TARGET is Nirmala cyan at ~0.85 alpha');
+
+console.log('ALL PASS');
+```
+
+- [ ] **Step 2: Run it, confirm it fails**
+
+```bash
+node /tmp/verify-jma-recolor.mjs
+```
+Expected: a "Cannot find module" error (the file doesn't exist yet).
+
+- [ ] **Step 3: Create `src/lib/jmaHimawariRecolor.js`**
+
+```js
+/**
+ * Recolors JMA's raw "Heavy Rainfall Potential Areas" JPEG into a
+ * transparent-background PNG: only the magenta "rainfall potential" blobs
+ * are kept (recolored to the app's brand cyan), everything else — plain
+ * sky/cloud grayscale, JMA's own green country-border overlay lines — is
+ * made fully transparent so the app's own basemap and coastlines stay
+ * visible underneath.
+ *
+ * Thresholds were derived by sampling actual pixel values from a live
+ * r2w_hrp_*.jpg (see docs/superpowers/specs/2026-08-20-jma-himawari-migration-design.md):
+ * true magenta blobs cluster at R in [201,255], G in [0,53], B in [120,203];
+ * plain grayscale sky/cloud has R=G=B; JMA's green border lines have low
+ * R/B and mid-range G. `isMagentaPixel` uses a slightly wider margin than
+ * the sampled cluster to tolerate JPEG compression noise at blob edges.
+ *
+ * Requires `image` to have been loaded with `crossOrigin = 'anonymous'` —
+ * see this plan's Global Constraints for why that's safe to rely on with
+ * JMA's server specifically.
+ */
+
+export const DEFAULT_RECOLOR_TARGET = { r: 0, g: 229, b: 255, a: 217 }; // var(--nirmala-cyan), ~0.85 alpha
+
+export function isMagentaPixel(r, g, b) {
+  return r >= 180 && g <= 70 && b >= 100;
+}
+
+/**
+ * Draws `image` (an already-loaded, CORS-clean HTMLImageElement) to an
+ * offscreen canvas, recolors magenta pixels to `target`, makes everything
+ * else transparent, and returns a `data:image/png` URL. Synchronous once
+ * the image is decoded — no network calls. Throws (SecurityError) if
+ * `image` wasn't loaded with `crossOrigin = 'anonymous'`.
+ */
+export function recolorToTransparentPng(image, target = DEFAULT_RECOLOR_TARGET) {
+  const canvas = document.createElement('canvas');
+  canvas.width = image.naturalWidth;
+  canvas.height = image.naturalHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(image, 0, 0);
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+  for (let i = 0; i < data.length; i += 4) {
+    if (isMagentaPixel(data[i], data[i + 1], data[i + 2])) {
+      data[i] = target.r;
+      data[i + 1] = target.g;
+      data[i + 2] = target.b;
+      data[i + 3] = target.a;
+    } else {
+      data[i + 3] = 0;
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+  return canvas.toDataURL('image/png');
+}
+```
+
+- [ ] **Step 4: Run the verification script again, confirm it passes**
+
+```bash
+node /tmp/verify-jma-recolor.mjs
+```
+Expected: 9 `OK ...` lines followed by `ALL PASS`.
+
+- [ ] **Step 5: Delete the scratch file and commit**
+
+```bash
+rm /tmp/verify-jma-recolor.mjs
+cd "/Users/ekabayuperwita/Documents/Kerjaan/Nirmala 3/.claude/worktrees/jma-himawari-migration"
+git add src/lib/jmaHimawariRecolor.js
+git commit -m "$(cat <<'EOF'
+feat(himawari): add magenta-recolor-to-transparent-PNG helper
+
+Pure canvas-processing function: given a loaded JMA frame image, keeps
+only the magenta rainfall-potential pixels (recolored to Nirmala's
+brand cyan) and makes everything else transparent, so the frame can be
+overlaid without hiding the basemap under grayscale sky/cloud.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+)"
+```
+
+---
+
+### Task 6: Wire recolor + crossfade into `HimawariLayer`
+
+**Files:**
+- Modify: `src/components/map/HimawariLayer.jsx` (full file shown below — this replaces the version Tasks 2-4 left in place, including their fixes from the final review's fix round)
+
+**Interfaces:**
+- Consumes: `recolorToTransparentPng` from `@/lib/jmaHimawariRecolor` (Task 5).
+- Produces: no prop/interface changes — `active`, `candidateUrls`, `bounds`, `opacity`, `onStatus` keep the exact same meaning as before. `page.jsx` needs no changes for this task.
+
+This task, like Task 2, can only be meaningfully exercised inside a live Google Map — there is no test runner. Verification is the Step 2 browser checklist below.
+
+- [ ] **Step 1: Replace the full contents of `src/components/map/HimawariLayer.jsx`**
+
+Current file (for reference — this is what you're replacing; if what's actually on disk differs from this in more than trivial whitespace, STOP and report NEEDS_CONTEXT rather than guessing which version is authoritative):
+
+```jsx
+'use client';
+
+import { useEffect, useRef } from 'react';
+import { useMap } from '@vis.gl/react-google-maps';
+
+/**
+ * Himawari (JMA) satellite overlay. Unlike OpenWeatherLayer (a z/x/y tile
+ * pyramid), JMA returns ONE static JPEG per timestamp covering a fixed
+ * lat/lng box — so this uses google.maps.GroundOverlay, not ImageMapType.
+ *
+ * JMA has no manifest telling us which timestamps actually have a published
+ * image (unlike the old bignet API), and the newest frame is sometimes not
+ * published yet when we ask for it. `candidateUrls` lets the caller supply a
+ * fallback chain (newest first) — this preloads each with a plain Image()
+ * (not GroundOverlay directly) so a 404 can be caught and the next
+ * candidate tried, instead of silently showing a blank overlay.
+ */
+export default function HimawariLayer({ active, candidateUrls = [], bounds, opacity = 0.7, onStatus }) {
+  const map = useMap();
+  const overlayRef = useRef(null);
+  // Stabilize on URL content, not array identity — useJmaHimawariTicks
+  // rebuilds its tick array every 60s even when the underlying URLs haven't
+  // changed (the 10-minute bucket didn't roll), and depending on
+  // `candidateUrls` by reference would tear down and rebuild the overlay
+  // every minute for no reason.
+  const urlKey = candidateUrls.join('|');
+
+  useEffect(() => {
+    if (!map || !window.google || !active || !candidateUrls.length || !bounds) {
+      overlayRef.current?.setMap(null);
+      overlayRef.current = null;
+      onStatus?.('ok'); // nothing to show is not a failure — hide any stale "unavailable" message
+      return;
+    }
+
+    let cancelled = false;
+    let currentImg = null;
+    onStatus?.('loading');
+
+    const tryCandidate = (i) => {
+      if (i >= candidateUrls.length) {
+        if (cancelled) return;
+        overlayRef.current?.setMap(null);
+        overlayRef.current = null;
+        onStatus?.('unavailable');
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('[HimawariLayer] all candidate frames failed to load:', candidateUrls);
+        }
+        return;
+      }
+
+      const img = new Image();
+      currentImg = img;
+      img.onload = () => {
+        if (cancelled) return;
+        const gmBounds = new window.google.maps.LatLngBounds(
+          { lat: bounds.south, lng: bounds.west },
+          { lat: bounds.north, lng: bounds.east },
+        );
+        overlayRef.current?.setMap(null);
+        const overlay = new window.google.maps.GroundOverlay(candidateUrls[i], gmBounds, { opacity });
+        overlay.setMap(map);
+        overlayRef.current = overlay;
+        onStatus?.('ok');
+      };
+      img.onerror = () => { if (!cancelled) tryCandidate(i + 1); };
+      img.src = candidateUrls[i];
+    };
+    tryCandidate(0);
+
+    return () => {
+      cancelled = true;
+      if (currentImg) currentImg.src = ''; // abort any in-flight preload
+      overlayRef.current?.setMap(null);
+      overlayRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, active, urlKey, bounds, opacity, onStatus]);
+
+  return null;
+}
+```
+
+New file:
+
+```jsx
+'use client';
+
+import { useEffect, useRef } from 'react';
+import { useMap } from '@vis.gl/react-google-maps';
+import { recolorToTransparentPng } from '@/lib/jmaHimawariRecolor';
+
+const CROSSFADE_MS = 400;
+
+/**
+ * Himawari (JMA) satellite overlay. Unlike OpenWeatherLayer (a z/x/y tile
+ * pyramid), JMA returns ONE static JPEG per timestamp covering a fixed
+ * lat/lng box — so this uses google.maps.GroundOverlay, not ImageMapType.
+ *
+ * JMA has no manifest telling us which timestamps actually have a published
+ * image (unlike the old bignet API), and the newest frame is sometimes not
+ * published yet when we ask for it. `candidateUrls` lets the caller supply a
+ * fallback chain (newest first) — this preloads each with a plain Image()
+ * (not GroundOverlay directly) so a load failure can be caught and the next
+ * candidate tried, instead of silently showing a blank overlay.
+ *
+ * Each successfully-loaded frame is recolored client-side (see
+ * jmaHimawariRecolor.js) so only the magenta "rainfall potential" shapes
+ * show, transparent everywhere else — the app's own basemap stays visible.
+ * Recoloring needs pixel-level canvas access, which requires the image to
+ * be loaded with crossOrigin='anonymous' (JMA's server supports this — see
+ * this plan's Global Constraints).
+ *
+ * Frame changes crossfade over CROSSFADE_MS instead of an abrupt swap:
+ * GroundOverlay.setOpacity() is animated on both the incoming and outgoing
+ * overlay simultaneously via requestAnimationFrame, then the outgoing one
+ * is removed.
+ */
+export default function HimawariLayer({ active, candidateUrls = [], bounds, opacity = 0.7, onStatus }) {
+  const map = useMap();
+  const overlayRef = useRef(null);
+  const prevOverlayRef = useRef(null);
+  const fadeRafRef = useRef(0);
+  // Stabilize on URL content, not array identity — useJmaHimawariTicks
+  // rebuilds its tick array every 60s even when the underlying URLs haven't
+  // changed (the 10-minute bucket didn't roll), and depending on
+  // `candidateUrls` by reference would tear down and rebuild the overlay
+  // every minute for no reason.
+  const urlKey = candidateUrls.join('|');
+
+  useEffect(() => {
+    if (!map || !window.google || !active || !candidateUrls.length || !bounds) {
+      cancelAnimationFrame(fadeRafRef.current);
+      overlayRef.current?.setMap(null);
+      prevOverlayRef.current?.setMap(null);
+      overlayRef.current = null;
+      prevOverlayRef.current = null;
+      onStatus?.('ok'); // nothing to show is not a failure — hide any stale "unavailable" message
+      return;
+    }
+
+    let cancelled = false;
+    let currentImg = null;
+    onStatus?.('loading');
+
+    const crossfadeIn = (dataUrl, gmBounds) => {
+      const outgoing = overlayRef.current;
+      const incoming = new window.google.maps.GroundOverlay(dataUrl, gmBounds, { opacity: 0 });
+      incoming.setMap(map);
+      prevOverlayRef.current = outgoing;
+      overlayRef.current = incoming;
+
+      cancelAnimationFrame(fadeRafRef.current);
+      const start = performance.now();
+      const step = (now) => {
+        const t = Math.min(1, (now - start) / CROSSFADE_MS);
+        incoming.setOpacity(t * opacity);
+        outgoing?.setOpacity((1 - t) * opacity);
+        if (t < 1) {
+          fadeRafRef.current = requestAnimationFrame(step);
+        } else {
+          outgoing?.setMap(null);
+          if (prevOverlayRef.current === outgoing) prevOverlayRef.current = null;
+        }
+      };
+      fadeRafRef.current = requestAnimationFrame(step);
+    };
+
+    const tryCandidate = (i) => {
+      if (i >= candidateUrls.length) {
+        if (cancelled) return;
+        cancelAnimationFrame(fadeRafRef.current);
+        overlayRef.current?.setMap(null);
+        prevOverlayRef.current?.setMap(null);
+        overlayRef.current = null;
+        prevOverlayRef.current = null;
+        onStatus?.('unavailable');
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('[HimawariLayer] all candidate frames failed to load:', candidateUrls);
+        }
+        return;
+      }
+
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      currentImg = img;
+      img.onload = () => {
+        if (cancelled) return;
+        let dataUrl;
+        try {
+          dataUrl = recolorToTransparentPng(img);
+        } catch (err) {
+          if (process.env.NODE_ENV !== 'production') {
+            console.warn('[HimawariLayer] recolor failed, trying next candidate:', err);
+          }
+          tryCandidate(i + 1);
+          return;
+        }
+        if (cancelled) return;
+        const gmBounds = new window.google.maps.LatLngBounds(
+          { lat: bounds.south, lng: bounds.west },
+          { lat: bounds.north, lng: bounds.east },
+        );
+        crossfadeIn(dataUrl, gmBounds);
+        onStatus?.('ok');
+      };
+      img.onerror = () => { if (!cancelled) tryCandidate(i + 1); };
+      img.src = candidateUrls[i];
+    };
+    tryCandidate(0);
+
+    return () => {
+      cancelled = true;
+      if (currentImg) currentImg.src = ''; // abort any in-flight preload
+      cancelAnimationFrame(fadeRafRef.current);
+      overlayRef.current?.setMap(null);
+      prevOverlayRef.current?.setMap(null);
+      overlayRef.current = null;
+      prevOverlayRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, active, urlKey, bounds, opacity, onStatus]);
+
+  return null;
+}
+```
+
+- [ ] **Step 2: Verify in the browser**
+
+The Browser pane should already have a tab open and logged into the running dev server (check with `mcp__Claude_Browser__tabs_context` — do not attempt any login yourself; if no tab is logged in, report NEEDS_CONTEXT and ask for one).
+
+1. Switch to Himawari mode. Confirm the overlay now shows ONLY colored (cyan) blob shapes over the map — the plain grayscale sky/cloud background and JMA's green border lines should be gone, with the app's own basemap/coastlines fully visible everywhere else.
+2. Zoom in on a cyan blob and confirm its edges look reasonably clean (not a solid rectangle, not obviously inverted — i.e. the transparent/opaque regions are the right way around).
+3. Use the "Lompat ke waktu..." dropdown to scrub between two adjacent ticks (10 minutes apart) and confirm the shape crossfades smoothly over roughly 400ms rather than popping instantly — this can be checked by taking two screenshots ~150-200ms apart during the transition and confirming the older shape is still partially visible (not a hard cut).
+4. Confirm the "Reset tampilan"/zoom/pan controls and other layers (sensor dots, legend, caveat text) still work normally with Himawari active — this task should not have regressed anything from Tasks 1-4.
+5. Open the console and confirm no new errors appear (a `SecurityError` here would mean the `crossOrigin` fix isn't working — treat that as a real failure, not noise, and investigate rather than reporting DONE).
+6. Trigger the "unavailable" path once (same technique as Task 3's Step 8 item 9 — read that task's report for the method) and confirm it still shows the "Citra tidak tersedia untuk waktu ini" message correctly with recoloring now in the mix.
+
+- [ ] **Step 3: Commit**
+
+```bash
+cd "/Users/ekabayuperwita/Documents/Kerjaan/Nirmala 3/.claude/worktrees/jma-himawari-migration"
+git add src/components/map/HimawariLayer.jsx
+git commit -m "$(cat <<'EOF'
+feat(himawari): recolor frames to transparent PNG, crossfade transitions
+
+Only the magenta rainfall-potential shapes render now (recolored to
+Nirmala's brand cyan) — plain grayscale sky/cloud and JMA's own
+country-border overlay lines are made transparent, so the app's own
+basemap stays visible everywhere except where clouds actually are.
+Frame changes crossfade over 400ms instead of popping instantly.
 
 Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
 EOF
