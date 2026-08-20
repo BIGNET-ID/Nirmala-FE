@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * JMA "Heavy Rainfall Potential Areas" imagery (Southeast Asia, native
  * resolution). Public, no auth. Loaded as a plain <img>/GroundOverlay (not
@@ -19,6 +17,15 @@ export const JMA_SEA_BOUNDS = { north: 30, south: -15, west: 90, east: 165 };
 
 export const JMA_TICK_STEP_MINUTES = 10;
 export const JMA_TICK_COUNT = 144; // 24h of history at a 10-minute step
+
+// JMA overwrites each HHMM slot in place and does NOT 404 an unpublished
+// slot — it serves the PREVIOUS day's image at that same HHMM with a clean
+// 200 (confirmed by checking Last-Modified on the live endpoint: ~12min
+// observed publish latency). Without this offset, "live" mode would
+// silently display yesterday's frame as current, and HimawariLayer's
+// fallback-retry chain would never trigger for it (a stale 200 is not a
+// load failure).
+export const JMA_PUBLISH_LAG_MINUTES = 20; // rounded up from the ~12min observed lag
 
 /** Round `date` down to the nearest `stepMinutes` boundary, in UTC. */
 export function roundDownToStep(date, stepMinutes = JMA_TICK_STEP_MINUTES) {

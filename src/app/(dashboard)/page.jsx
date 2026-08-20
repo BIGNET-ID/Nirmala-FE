@@ -72,7 +72,7 @@ export default function NirmalaDashboard() {
   const [timelineIndex, setTimelineIndex] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const himawari = useJmaHimawariTicks(activeLayer === 'himawari');
-  const [himawariStatus, setHimawariStatus] = useState('ok'); // 'ok' | 'loading' | 'unavailable'
+  const [himawariStatus, setHimawariStatus] = useState('ok'); // 'ok' | 'loading' | 'unavailable' — only 'unavailable' has UI today (see the notice box below); 'loading' is reserved for a future spinner.
   const rainHistoryRefSensorId = SENSOR_STATIONS.find((s) => s.status === 'active')?.id ?? SENSOR_STATIONS[0]?.id;
   const rainHistory = useRainHistoryRange(activeLayer === 'rain', rainHistoryRefSensorId);
   // Memoized so tick Date objects keep a stable identity across renders that
@@ -256,7 +256,10 @@ export default function NirmalaDashboard() {
           {/* Top-center, below the info pill: Himawari load-failure notice.
               Rare (only when JMA hasn't published any of the last 4 frames,
               or a specifically-scrubbed frame doesn't exist), so it doesn't
-              need a permanent slot the way MapInfoPill does. */}
+              need a permanent slot the way MapInfoPill does. Hidden below the
+              `sm` breakpoint like TimeTravelBar itself — on mobile a failed
+              overlay shows a blank map with no explanation, but the legend
+              note still communicates the data's limitations regardless. */}
           {activeLayer === 'himawari' && himawariStatus === 'unavailable' && (
             <Box
               sx={{

@@ -18,6 +18,12 @@ import { useMap } from '@vis.gl/react-google-maps';
 export default function HimawariLayer({ active, candidateUrls = [], bounds, opacity = 0.7, onStatus }) {
   const map = useMap();
   const overlayRef = useRef(null);
+  // Stabilize on URL content, not array identity — useJmaHimawariTicks
+  // rebuilds its tick array every 60s even when the underlying URLs haven't
+  // changed (the 10-minute bucket didn't roll), and depending on
+  // `candidateUrls` by reference would tear down and rebuild the overlay
+  // every minute for no reason.
+  const urlKey = candidateUrls.join('|');
 
   useEffect(() => {
     if (!map || !window.google || !active || !candidateUrls.length || !bounds) {
@@ -28,6 +34,7 @@ export default function HimawariLayer({ active, candidateUrls = [], bounds, opac
     }
 
     let cancelled = false;
+    let currentImg = null;
     onStatus?.('loading');
 
     const tryCandidate = (i) => {
@@ -36,10 +43,14 @@ export default function HimawariLayer({ active, candidateUrls = [], bounds, opac
         overlayRef.current?.setMap(null);
         overlayRef.current = null;
         onStatus?.('unavailable');
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('[HimawariLayer] all candidate frames failed to load:', candidateUrls);
+        }
         return;
       }
 
       const img = new Image();
+      currentImg = img;
       img.onload = () => {
         if (cancelled) return;
         const gmBounds = new window.google.maps.LatLngBounds(
@@ -59,10 +70,12 @@ export default function HimawariLayer({ active, candidateUrls = [], bounds, opac
 
     return () => {
       cancelled = true;
+      if (currentImg) currentImg.src = ''; // abort any in-flight preload
       overlayRef.current?.setMap(null);
       overlayRef.current = null;
     };
-  }, [map, active, candidateUrls, bounds, opacity, onStatus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, active, urlKey, bounds, opacity, onStatus]);
 
   return null;
 }

@@ -29,8 +29,9 @@ export default function TimeTravelBar({
   const current = ticks[currentIndex]?.date;
 
   // Only group the jump-to-time dropdown by day when the range actually spans
-  // more than one calendar day (rain history) — a single-day range (Himawari's
-  // ~6h rolling window) doesn't need a subheader for one group.
+  // more than one calendar day. Both time-travel modes can trigger this:
+  // rain history (many days), and Himawari's ~24h rolling window, which
+  // itself usually spans two calendar days (it crosses a UTC midnight).
   const spansMultipleDays = ticks.length > 1 && dayLabel(ticks[0].date) !== dayLabel(ticks[ticks.length - 1].date);
   const tickOptions = ticks.map((t, i) => ({ i, date: t.date }));
   const currentOption = tickOptions[currentIndex] ?? null;
