@@ -10,7 +10,6 @@ import { useThemeMode } from '@/context/ThemeModeContext';
 
 const NAV = [
   { label: 'Peta Radar', href: '/', icon: 'material-symbols:radar-rounded', exact: true },
-  { label: 'Sensor', href: '/sensors', icon: 'material-symbols:sensors-rounded' },
   { label: 'Pengaturan', href: '/settings', icon: 'material-symbols:settings-rounded', soon: true },
 ];
 

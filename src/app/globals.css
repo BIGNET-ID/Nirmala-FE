@@ -4,7 +4,7 @@
    Diadaptasi untuk Next.js + MUI (tanpa Tailwind). Dashboard = dark command center.
    =========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,1..1000&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap');
 
@@ -63,8 +63,8 @@
   --color-stat: var(--blue-primary);
 
   /* Typography */
-  --font-family-heading: 'Roboto', Arial, Helvetica, sans-serif;
-  --font-family-body: 'Roboto', Arial, Helvetica, sans-serif;
+  --font-family-heading: 'Google Sans Flex', Arial, Helvetica, sans-serif;
+  --font-family-body: 'Google Sans Flex', Arial, Helvetica, sans-serif;
   --font-family-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, monospace;
 
   --font-h1: clamp(2rem, 1.502vw + 1.648rem, 3rem);

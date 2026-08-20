@@ -29,7 +29,7 @@ export function makeTheme(mode = 'dark') {
     },
     shape: { borderRadius: 12 },
     typography: {
-      fontFamily: "'Roboto', Arial, Helvetica, sans-serif",
+      fontFamily: "'Google Sans Flex', Arial, Helvetica, sans-serif",
       button: { textTransform: 'none', fontWeight: 700 },
     },
     components: {

@@ -57,13 +57,27 @@ export const nirmalaApiService = {
     }
   },
 
-  /** GET /api/timeseries/{sensor_id} — deret rain (mm, 5min avg) + signal per sensor. */
-  async getTimeseries(sensorId) {
+  /**
+   * GET /api/timeseries/{sensor_id} — deret rain (mm, 5min avg) + signal per sensor.
+   * `nDays` optionally requests a wider history window (time-travel player).
+   */
+  async getTimeseries(sensorId, { nDays } = {}) {
+    const qs = nDays ? `?n_days=${nDays}` : '';
     try {
-      return await nirmalaApi.get(`/api/timeseries/${sensorId}`);
+      return await nirmalaApi.get(`/api/timeseries/${sensorId}${qs}`);
     } catch (error) {
       console.warn(`[Nirmala API] /api/timeseries/${sensorId} unavailable, using fixture:`, error.message);
       return await loadFixture('timeseries');
+    }
+  },
+
+  /** GET /api/grid — Himawari satellite frame manifest (public, no auth). */
+  async getHimawariGrid() {
+    try {
+      return await nirmalaApi.get('/api/grid');
+    } catch (error) {
+      console.warn('[Nirmala API] /api/grid unavailable:', error.message);
+      return null;
     }
   },
 

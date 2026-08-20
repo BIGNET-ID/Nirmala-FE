@@ -11,6 +11,7 @@ import OpenWeatherLayer from '@/components/map/OpenWeatherLayer';
 import LightningLayer from '@/components/map/LightningLayer';
 import ThunderstormLayer from '@/components/map/ThunderstormLayer';
 import WindParticleLayer from '@/components/map/WindParticleLayer';
+import HimawariLayer from '@/components/map/HimawariLayer';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import MetricLayerSelector from '@/components/dashboard/MetricLayerSelector';
 import ColorRampLegend from '@/components/dashboard/ColorRampLegend';
@@ -18,15 +19,19 @@ import SensorDetailDrawer from '@/components/dashboard/SensorDetailDrawer';
 import SensorStatsCard from '@/components/dashboard/SensorStatsCard';
 import MapInfoPill from '@/components/dashboard/MapInfoPill';
 import MapControls from '@/components/map/MapControls';
+import TimeTravelBar from '@/components/dashboard/TimeTravelBar';
 import { usePlatformData } from '@/hooks/usePlatformData';
 import { useSensorStream } from '@/hooks/useSensorStream';
 import { useLightningStream } from '@/hooks/useLightningStream';
 import { useThunderstormStream } from '@/hooks/useThunderstormStream';
 import { useWindField } from '@/hooks/useWindField';
+import { useHimawariGrid } from '@/hooks/useHimawariGrid';
+import { useHistoricalSensorSnapshot } from '@/hooks/useHistoricalSensorSnapshot';
 import { useAuth } from '@/hooks/useAuth';
 import { METRICS } from '@/constants/metrics';
 import { MAP_CENTER, MAP_ZOOM_DEFAULT } from '@/constants/mapConfig';
 import { LAYER_STATUS } from '@/constants/layerStatus';
+import { buildRainTicks } from '@/lib/timeTravelRange';
 
 // SSE streams report 'connecting'/'live'/'reconnecting'; a toggle also needs
 // to say "connected but nothing to show right now" — this maps both signals
@@ -56,6 +61,49 @@ export default function NirmalaDashboard() {
   const [owmLayer, setOwmLayer] = useState(null); // OpenWeather tile layer id or null
   const [selectedStation, setSelectedStation] = useState(null);
   const [map, setMap] = useState(null);
+
+  // Global time-travel control (Play + scrubber). `timelineIndex === null`
+  // means "live"; otherwise it indexes into `ticks` below. Ticks are per-mode:
+  // 4 days + today for rain history, or the Himawari API's own rolling frame
+  // window (~hours, not days — see constants/metrics.js note).
+  const [timelineIndex, setTimelineIndex] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [nowAnchor] = useState(() => new Date());
+  const himawari = useHimawariGrid(activeLayer === 'himawari');
+  const ticks = activeLayer === 'himawari'
+    ? himawari.ticks
+    : buildRainTicks(nowAnchor).map((date) => ({ date }));
+
+  // Switching Layer Data resets the timeline to live — each mode's range is
+  // independent (a rain-history position rarely lines up with a Himawari frame).
+  useEffect(() => { setTimelineIndex(null); setIsPlaying(false); }, [activeLayer]);
+
+  useEffect(() => {
+    if (!isPlaying) return;
+    const id = setInterval(() => {
+      setTimelineIndex((i) => {
+        const next = (i ?? 0) + 1;
+        if (next >= ticks.length) { setIsPlaying(false); return null; }
+        return next;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [isPlaying, ticks.length]);
+
+  const handleTimelinePlayPause = () => {
+    setTimelineIndex((i) => (i == null ? 0 : i));
+    setIsPlaying((p) => !p);
+  };
+  const handleTimelineScrub = (v) => { setTimelineIndex(v); setIsPlaying(false); };
+  const handleTimelineGoLive = () => { setTimelineIndex(null); setIsPlaying(false); };
+
+  const selectedTimestamp = activeLayer === 'rain' && timelineIndex != null ? ticks[timelineIndex].date : null;
+  const historicalStations = useHistoricalSensorSnapshot(selectedTimestamp, SENSOR_STATIONS, map);
+  const rainStations = selectedTimestamp ? (historicalStations || SENSOR_STATIONS) : SENSOR_STATIONS;
+
+  const currentHimawariTick = activeLayer === 'himawari'
+    ? (timelineIndex != null ? himawari.ticks[timelineIndex] : himawari.ticks[himawari.ticks.length - 1])
+    : null;
 
   // Manifest resolves async, after activeLayer's initial state and (likely) after
   // the map has already mounted with the hardcoded MAP_CENTER/MAP_ZOOM_DEFAULT —
@@ -115,9 +163,12 @@ export default function NirmalaDashboard() {
           <GoogleMapWrapper onMapLoad={setMap}>
             <OpenWeatherLayer layer={owmLayer} />
             {activeLayer === 'rain' && (
-              <CanvasHeatmapOverlay stations={SENSOR_STATIONS} showCoverage={showCoverage} />
+              <CanvasHeatmapOverlay stations={rainStations} showCoverage={showCoverage} />
             )}
             {activeLayer === 'mesh' && <MeshLayer stations={SENSOR_STATIONS} />}
+            {activeLayer === 'himawari' && (
+              <HimawariLayer active bounds={himawari.bounds} frameUrl={currentHimawariTick?.url} />
+            )}
             <ThunderstormLayer storms={thunderstorm} show={showStorms} />
             <LightningLayer strikes={lightning} show={showLightning} />
             <WindParticleLayer show={showWind} field={windField} />
@@ -129,6 +180,22 @@ export default function NirmalaDashboard() {
               focus={activeLayer === 'node'}
             />
           </GoogleMapWrapper>
+
+          {/* Soften the Google attribution strip to match the theme, without
+              covering or reducing the legibility of the logo/Terms link. */}
+          <Box
+            sx={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 40,
+              pointerEvents: 'none',
+              zIndex: 1,
+              background: 'linear-gradient(to top, var(--nirmala-map-bg) 0%, transparent 100%)',
+              opacity: 0.55,
+            }}
+          />
 
           {/* Left: Layer selector */}
           <MetricLayerSelector
@@ -163,9 +230,22 @@ export default function NirmalaDashboard() {
           {/* Bottom-left: sensor statistics */}
           <SensorStatsCard stats={stats} />
 
-          {/* Timeline forecast: hidden — no national historical snapshots yet
-              (only per-sensor timeseries). Re-enable when the backend exposes
-              historical national snapshots. See spec §3.5 / §7 gaps. */}
+          {/* Bottom-center: time-travel player. Rain-history mode replays sensors
+              (viewport-capped, see useHistoricalSensorSnapshot for why); Himawari
+              mode scrubs real satellite frames. Not shown for Mesh/Node — no time
+              dimension there. */}
+          {(activeLayer === 'rain' || activeLayer === 'himawari') && (
+            <TimeTravelBar
+              ticks={ticks}
+              index={timelineIndex}
+              isPlaying={isPlaying}
+              onScrub={handleTimelineScrub}
+              onPlayPause={handleTimelinePlayPause}
+              onGoLive={handleTimelineGoLive}
+              loading={activeLayer === 'himawari' && himawari.loading}
+              caveat={activeLayer === 'himawari' ? 'Cakupan: Filipina saja · jendela waktu terbatas' : null}
+            />
+          )}
 
           {/* Map Controls */}
           <MapControls

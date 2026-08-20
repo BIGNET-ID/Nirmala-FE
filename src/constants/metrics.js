@@ -32,6 +32,12 @@ export const METRICS = {
     icon: 'material-symbols:sensors-rounded',
     legendNote: 'Klik titik sensor untuk melihat grafik curah hujan.',
   },
+  himawari: {
+    key: 'himawari',
+    label: 'Himawari',
+    icon: 'material-symbols:satellite-alt-rounded',
+    legendNote: 'Citra satelit Himawari. Cakupan: Filipina saja, mengikuti jendela waktu yang disediakan API.',
+  },
 };
 
 export const UPCOMING_LAYERS = [

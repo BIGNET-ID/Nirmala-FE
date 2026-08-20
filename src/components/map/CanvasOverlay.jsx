@@ -90,6 +90,7 @@ function colourizeInto(layer, shadow, W, H, lut, maxAlpha) {
 
 function renderHeatmap(canvas, shadow, coolLayer, warmLayer, stations, projection, map, showCoverage) {
   const W = canvas.width, H = canvas.height;
+  if (W <= 0 || H <= 0) return;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, W, H);
   if (!stations.length || !map) return;

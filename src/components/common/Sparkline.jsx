@@ -1,6 +1,6 @@
 'use client';
 
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
 /**
  * Lightweight dependency-free SVG sparkline (BIGNET DS v19 dark-glass).
@@ -31,8 +31,26 @@ function downsample(data, buckets, mode) {
   return out;
 }
 
+/** Pick a representative label at a 0..1 position along the label array. */
+function pickLabel(labels, ratio) {
+  if (!labels || !labels.length) return null;
+  const idx = Math.round(ratio * (labels.length - 1));
+  return labels[idx] ?? null;
+}
+
+/** Render API time labels as HH:mm when they parse as a date, else as-is. */
+function formatTimeLabel(raw) {
+  if (raw == null || raw === '') return '';
+  const d = new Date(raw);
+  if (!Number.isNaN(d.getTime()) && /\d{4}-\d{2}-\d{2}/.test(String(raw))) {
+    return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  }
+  return String(raw);
+}
+
 export default function Sparkline({
   data = [],
+  labels = [],
   variant = 'line',
   color = '#00e5ff',
   height = 56,
@@ -59,7 +77,10 @@ export default function Sparkline({
   const y = (v) => H - ((v - min) / range) * (H - 4) - 2;
   const uid = `sl-${Math.round(min)}-${Math.round(max)}-${n}`;
 
+  const hasLabels = labels && labels.length > 0;
+
   return (
+    <Box>
     <Box
       component="svg"
       viewBox={`0 0 ${W} ${H}`}
@@ -97,6 +118,23 @@ export default function Sparkline({
           </>
         );
       })()}
+    </Box>
+    {hasLabels && (
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.25 }}>
+        <Typography variant="caption" sx={{ fontSize: 10, lineHeight: 1.4, color: 'text.secondary',
+          fontFamily: 'var(--font-family-mono)' }}>
+          {formatTimeLabel(pickLabel(labels, 0))}
+        </Typography>
+        <Typography variant="caption" sx={{ fontSize: 10, lineHeight: 1.4, color: 'text.secondary',
+          fontFamily: 'var(--font-family-mono)' }}>
+          {formatTimeLabel(pickLabel(labels, 0.5))}
+        </Typography>
+        <Typography variant="caption" sx={{ fontSize: 10, lineHeight: 1.4, color: 'text.secondary',
+          fontFamily: 'var(--font-family-mono)' }}>
+          {formatTimeLabel(pickLabel(labels, 1))}
+        </Typography>
+      </Box>
+    )}
     </Box>
   );
 }

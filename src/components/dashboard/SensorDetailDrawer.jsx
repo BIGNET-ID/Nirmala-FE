@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Box, Drawer, Typography, Divider, Chip, IconButton, Stack, CircularProgress } from '@mui/material';
+import { Box, Drawer, Typography, Divider, Chip, IconButton, Button, Stack, CircularProgress } from '@mui/material';
 import { Icon } from '@iconify/react';
 import Sparkline from '@/components/common/Sparkline';
+import SparklineOverviewDialog from '@/components/dashboard/SparklineOverviewDialog';
 import { nirmalaApiService, normalizeTimeseries } from '@/lib/nirmalaApi';
 
 const STATUS_META = {
@@ -52,6 +53,7 @@ function last(arr) {
 export default function SensorDetailDrawer({ station, open, onClose }) {
   const [series, setSeries] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [overviewOpen, setOverviewOpen] = useState(false);
   const reqId = useRef(0);
 
   useEffect(() => {
@@ -148,7 +150,7 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
                   {rainMax != null ? `${rainMax.toFixed(2)} mm` : '—'}
                 </Typography>
               </Box>
-              <Sparkline data={rainData} variant="bar" color="#60a5fa" height={58}
+              <Sparkline data={rainData} labels={rain?.labels} variant="bar" color="#60a5fa" height={58}
                 ariaLabel={`Curah hujan, puncak ${rainMax ?? 0} mm`} />
               <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                 Terakhir: <Box component="span" sx={monoSx}>{rainLast != null ? `${rainLast.toFixed(2)} mm` : '—'}</Box>
@@ -163,11 +165,30 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
                   {signalLast != null ? signalLast.toFixed(2) : '—'}
                 </Typography>
               </Box>
-              <Sparkline data={signalData} variant="area" color="#00e5ff" height={58}
+              <Sparkline data={signalData} labels={signal?.labels} variant="area" color="#00e5ff" height={58}
                 ariaLabel="Kualitas sinyal sensor" />
             </Box>
+
+            <Button
+              size="small"
+              startIcon={<Icon icon="material-symbols:open-in-full-rounded" />}
+              onClick={() => setOverviewOpen(true)}
+              sx={{ alignSelf: 'flex-start', color: 'text.secondary', fontSize: '0.72rem', fontWeight: 700 }}
+            >
+              Overview
+            </Button>
           </Stack>
         )}
+
+        <SparklineOverviewDialog
+          open={overviewOpen}
+          onClose={() => setOverviewOpen(false)}
+          stationId={station.id}
+          rain={rain}
+          signal={signal}
+          rainMax={rainMax}
+          signalLast={signalLast}
+        />
 
         {!loading && !series && (
           <Typography variant="body2" sx={{ color: 'text.secondary', py: 2, textAlign: 'center' }}>

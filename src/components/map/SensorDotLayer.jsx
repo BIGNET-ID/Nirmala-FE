@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 import { useMap } from '@vis.gl/react-google-maps';
-import { statusColor } from '@/lib/sensorColor';
+import { statusColor, SENSOR_STATUS_COLOR } from '@/lib/sensorColor';
+import { clusterPoints } from '@/lib/clusterPoints';
 
 /**
  * Minimal sensor dots rendered on a canvas OverlayView (BIGNET DS v19).
@@ -22,6 +23,20 @@ const DOT_R_RAIN = 3.2;
 const FOCUS_SCALE = 1.8;
 const HIT_PX = 11;
 
+// Clustering (Node Sensor mode only) — grid-bucket by on-screen pixel
+// proximity, not a fixed zoom threshold, so dense areas (Java) cluster while
+// sparse areas split naturally at the same zoom level.
+const CLUSTER_CELL_PX = 48;
+const CLUSTER_MIN_R = 18;
+const CLUSTER_MAX_EXTRA_R = 14;
+const clusterRadius = (count) => CLUSTER_MIN_R + Math.min(CLUSTER_MAX_EXTRA_R, Math.sqrt(count));
+const clusterColor = (c) => {
+  if (c.hasBlacklisted) return SENSOR_STATUS_COLOR.blacklisted;
+  if (c.hasInactive) return SENSOR_STATUS_COLOR.inactive;
+  if (c.isRaining) return SENSOR_STATUS_COLOR.raining;
+  return SENSOR_STATUS_COLOR.active;
+};
+
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' &&
   window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -32,7 +47,8 @@ export default function SensorDotLayer({ stations, showMarkers = true, selectedI
   const canvasRef = useRef(null);
   const rafRef = useRef(0);
   const pulseRef = useRef(0);
-  const renderedRef = useRef([]);   // [{ st, x, y }] in canvas coords
+  const renderedRef = useRef([]);   // [{ st, x, y }] in canvas coords (unclustered/single dots)
+  const clusteredRef = useRef([]);  // [{ x, y, r, count, items }] in canvas coords (Node Sensor mode)
   const stationsRef = useRef(stations);
   const showRef = useRef(showMarkers);
   const focusRef = useRef(focus);
@@ -63,19 +79,14 @@ export default function SensorDotLayer({ stations, showMarkers = true, selectedI
       const ctx = c.getContext('2d');
       ctx.clearRect(0, 0, c.width, c.height);
       renderedRef.current = [];
+      clusteredRef.current = [];
       if (!showRef.current) return;
 
       const projection = overlayRef.current?.getProjection();
       if (!projection) return;
       const W = c.width, H = c.height, pad = 24;
 
-      for (const st of stationsRef.current) {
-        const p = projection.fromLatLngToDivPixel(new window.google.maps.LatLng(st.lat, st.lng));
-        const x = p.x - c._offsetX;
-        const y = p.y - c._offsetY;
-        if (x < -pad || x > W + pad || y < -pad || y > H + pad) continue;
-        renderedRef.current.push({ st, x, y });
-
+      const drawDot = (st, x, y) => {
         const color = statusColor(st);
         const scale = focusRef.current ? FOCUS_SCALE : 1;
         const r = (st.isRaining ? DOT_R_RAIN : DOT_R) * scale;
@@ -85,6 +96,55 @@ export default function SensorDotLayer({ stations, showMarkers = true, selectedI
         ctx.globalAlpha = 0.95;
         ctx.fill();
         ctx.globalAlpha = 1;
+      };
+
+      if (!focusRef.current) {
+        // Live/Kerapatan Hujan/Mesh modes: unclustered, as before.
+        for (const st of stationsRef.current) {
+          const p = projection.fromLatLngToDivPixel(new window.google.maps.LatLng(st.lat, st.lng));
+          const x = p.x - c._offsetX;
+          const y = p.y - c._offsetY;
+          if (x < -pad || x > W + pad || y < -pad || y > H + pad) continue;
+          renderedRef.current.push({ st, x, y });
+          drawDot(st, x, y);
+        }
+      } else {
+        // Node Sensor mode: cluster nearby dots by on-screen proximity.
+        const projected = [];
+        for (const st of stationsRef.current) {
+          const p = projection.fromLatLngToDivPixel(new window.google.maps.LatLng(st.lat, st.lng));
+          const x = p.x - c._offsetX;
+          const y = p.y - c._offsetY;
+          if (x < -pad || x > W + pad || y < -pad || y > H + pad) continue;
+          projected.push({ st, x, y });
+        }
+        const { clusters, singles } = clusterPoints(projected, CLUSTER_CELL_PX);
+
+        for (const { st, x, y } of singles) {
+          renderedRef.current.push({ st, x, y });
+          drawDot(st, x, y);
+        }
+
+        for (const cl of clusters) {
+          const r = clusterRadius(cl.count);
+          ctx.beginPath();
+          ctx.arc(cl.x, cl.y, r, 0, Math.PI * 2);
+          ctx.fillStyle = clusterColor(cl);
+          ctx.globalAlpha = 0.85;
+          ctx.fill();
+          ctx.globalAlpha = 1;
+          ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          ctx.font = "700 12px 'Roboto Mono', monospace";
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(String(cl.count), cl.x, cl.y);
+
+          clusteredRef.current.push({ x: cl.x, y: cl.y, r, count: cl.count, items: cl.items });
+        }
       }
 
       // Selected highlight (cyan ring, optional pulse).
@@ -139,6 +199,29 @@ export default function SensorDotLayer({ stations, showMarkers = true, selectedI
           const cp = projection.fromLatLngToDivPixel(e.latLng);
           const cx = cp.x - canvas._offsetX;
           const cy = cp.y - canvas._offsetY;
+
+          // Clusters sit visually on top and are larger — test them first.
+          for (const cl of clusteredRef.current) {
+            const dx = cl.x - cx, dy = cl.y - cy;
+            if (dx * dx + dy * dy <= cl.r * cl.r) {
+              let south = 90, west = 180, north = -90, east = -180;
+              for (const { st } of cl.items) {
+                south = Math.min(south, st.lat); north = Math.max(north, st.lat);
+                west = Math.min(west, st.lng); east = Math.max(east, st.lng);
+              }
+              if (south === north && west === east) {
+                map.setCenter({ lat: south, lng: west });
+                map.setZoom(Math.min((map.getZoom() ?? 5) + 3, 18));
+              } else {
+                map.fitBounds(
+                  new window.google.maps.LatLngBounds({ lat: south, lng: west }, { lat: north, lng: east }),
+                  48,
+                );
+              }
+              return;
+            }
+          }
+
           let best = null, bestD = HIT_PX * HIT_PX;
           for (const pt of renderedRef.current) {
             const dx = pt.x - cx, dy = pt.y - cy, d = dx * dx + dy * dy;

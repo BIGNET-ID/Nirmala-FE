@@ -59,7 +59,7 @@ const switchSx = {
 };
 
 const OWM_LAYERS = [
-  { id: null, label: 'Mati' },
+  { id: null, label: 'Nonaktif' },
   { id: 'precipitation_new', label: 'Hujan' },
   { id: 'clouds_new', label: 'Awan' },
 ];
@@ -158,6 +158,19 @@ export default function MetricLayerSelector({
               );
             })}
           </Box>
+          <Typography
+            variant="caption"
+            component="a"
+            href="https://openweathermap.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{
+              color: 'text.secondary', fontSize: 10, textDecoration: 'none',
+              '&:hover': { textDecoration: 'underline' },
+            }}
+          >
+            Data cuaca oleh OpenWeather
+          </Typography>
         </>
       )}
 
