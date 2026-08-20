@@ -28,7 +28,12 @@ const CROSSFADE_MS = 400;
  * Frame changes crossfade over CROSSFADE_MS instead of an abrupt swap:
  * GroundOverlay.setOpacity() is animated on both the incoming and outgoing
  * overlay simultaneously via requestAnimationFrame, then the outgoing one
- * is removed.
+ * is removed. This requires the per-tick effect's cleanup to NOT tear down
+ * the currently-visible overlay (only the two guard/exhausted branches
+ * below do that) — otherwise the "outgoing" overlay would already be gone
+ * by the time the next tick's image finishes loading/recoloring, and the
+ * crossfade would just be a fade-in from blank every time. Actual teardown
+ * on unmount is handled by the separate mount-only effect at the bottom.
  */
 export default function HimawariLayer({ active, candidateUrls = [], bounds, opacity = 0.7, onStatus }) {
   const map = useMap();
@@ -126,14 +131,31 @@ export default function HimawariLayer({ active, candidateUrls = [], bounds, opac
     return () => {
       cancelled = true;
       if (currentImg) currentImg.src = ''; // abort any in-flight preload
-      cancelAnimationFrame(fadeRafRef.current);
-      overlayRef.current?.setMap(null);
-      prevOverlayRef.current?.setMap(null);
-      overlayRef.current = null;
-      prevOverlayRef.current = null;
+      // Deliberately does NOT touch overlayRef/prevOverlayRef/fadeRafRef
+      // here — this cleanup runs on every re-render where urlKey changes
+      // (e.g. the user scrubbing to a new tick), and the currently-visible
+      // overlay (and any crossfade already in progress) must keep showing
+      // until the NEXT tick's own tryCandidate/crossfadeIn explicitly takes
+      // over as `outgoing`. See the two branches above (inactive/no
+      // candidates, and exhausted candidates) for the only cases that
+      // actually mean "there's nothing to show" — and the mount-only effect
+      // below for teardown on real unmount.
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, active, urlKey, bounds, opacity, onStatus]);
+
+  // Real unmount only (empty deps) — the per-tick effect above deliberately
+  // leaves the overlay in place across ordinary re-runs, so something has
+  // to remove it when this component actually leaves the tree (e.g. the
+  // user switches away from Himawari mode entirely).
+  useEffect(() => {
+    return () => {
+      cancelAnimationFrame(fadeRafRef.current);
+      overlayRef.current?.setMap(null);
+      prevOverlayRef.current?.setMap(null);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return null;
 }
