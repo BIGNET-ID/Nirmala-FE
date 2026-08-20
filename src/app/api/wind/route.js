@@ -28,7 +28,7 @@ const TTL_MS = 20 * 60 * 1000;
 let cache = null; // { t, data }
 
 export async function GET() {
-  if (!KEY) return new Response(JSON.stringify({ error: 'no_key' }), { status: 204 });
+  if (!KEY) return Response.json({ error: 'no_key' }, { status: 503 });
   if (cache && Date.now() - cache.t < TTL_MS) {
     return Response.json(cache.data, { headers: { 'x-cache': 'hit' } });
   }

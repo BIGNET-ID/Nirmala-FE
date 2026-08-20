@@ -195,6 +195,7 @@ export default function CanvasHeatmapOverlay({ stations, showCoverage = true }) 
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
       overlay.setMap(null);
     };
   }, [map]);

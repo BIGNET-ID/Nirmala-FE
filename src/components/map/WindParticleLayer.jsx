@@ -45,32 +45,17 @@ function sampleField(field, lat, lng) {
   return { u: lerp(uTop, uBot, fy), v: lerp(vTop, vBot, fy) };
 }
 
-export default function WindParticleLayer({ show = true }) {
+export default function WindParticleLayer({ show = true, field = null }) {
   const map = useMap();
   const overlayRef = useRef(null);
   const canvasRef = useRef(null);
-  const fieldRef = useRef(null);
+  const fieldRef = useRef(field);
   const showRef = useRef(show);
   const rafRef = useRef(0);
   const particlesRef = useRef([]);
 
   useEffect(() => { showRef.current = show; }, [show]);
-
-  // fetch the wind field (and refresh periodically)
-  useEffect(() => {
-    let alive = true;
-    const load = async () => {
-      try {
-        const r = await fetch('/api/wind', { cache: 'no-store' });
-        if (!r.ok) return;
-        const data = await r.json();
-        if (alive && data?.u) fieldRef.current = data;
-      } catch {}
-    };
-    load();
-    const id = setInterval(load, 20 * 60 * 1000);
-    return () => { alive = false; clearInterval(id); };
-  }, []);
+  useEffect(() => { fieldRef.current = field; }, [field]);
 
   useEffect(() => {
     if (!map || !window.google) return;

@@ -1,22 +1,53 @@
-import { Box, Button, Typography, Divider, FormControlLabel, Switch } from '@mui/material';
+import { Box, Button, Typography, Divider, FormControlLabel, Switch, Tooltip } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { METRICS } from '@/constants/metrics';
+import { LAYER_STATUS } from '@/constants/layerStatus';
+
+/**
+ * Adding a new "Layer Tambahan" toggle:
+ * 1. State `show<Name>` in page.jsx (default false, unless it's a base layer like sensors).
+ * 2. Back it with a hook/stream returning `{ data, status }` — status uses LAYER_STATUS
+ *    (src/constants/layerStatus.js), e.g. useLightningStream / useThunderstormStream / useWindField.
+ * 3. Pass `show<Name>`, `onToggle<Name>`, optional `<name>Count` and `<name>Status` down here.
+ *    Only render the LayerSwitch when its onToggle handler prop is truthy (see the
+ *    `onToggleLightning && ...` guards below) so permission-gated/optional layers can be omitted.
+ * 4. The layer component itself: 'use client', accepts `{ data, show }`, returns null
+ *    immediately when `!show`/no map, creates all Google Maps objects inside a
+ *    useEffect, and its cleanup must both cancel any pending rAF/interval AND reset
+ *    the ref back to 0/null — an uncleared ref permanently blocks re-scheduling under
+ *    React Strict Mode's dev-only double-invoke (see ThunderstormLayer's neighbours,
+ *    CanvasOverlay.jsx / SensorDotLayer.jsx, for the pattern to copy).
+ * 5. Mount the component in page.jsx's map render tree next to the other layers.
+ */
 
 const eyebrowSx = {
   fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
   letterSpacing: '0.1em', color: 'text.secondary',
 };
 
-function LayerSwitch({ checked, onChange, label, count, sx }) {
+const STATUS_DOT = {
+  [LAYER_STATUS.EMPTY]: { color: '#5b6b82', title: 'Tidak ada data untuk ditampilkan saat ini.' },
+  [LAYER_STATUS.ERROR]: { color: '#f59e0b', title: 'Gagal memuat data.' },
+};
+
+function LayerSwitch({ checked, onChange, label, count, status, sx }) {
+  const dot = STATUS_DOT[status];
   return (
     <FormControlLabel
       sx={{ ml: 0, mr: 0, justifyContent: 'space-between', width: '100%', ...sx }}
       labelPlacement="start"
       control={<Switch checked={checked} onChange={(e) => onChange(e.target.checked)} size="small" sx={switchSx} />}
       label={
-        <Typography variant="body2" sx={{ fontSize: '0.82rem', color: 'text.primary' }}>
-          {label}{typeof count === 'number' ? <Box component="span" sx={{ color: 'text.secondary', fontFamily: 'var(--font-family-mono)', ml: 0.5 }}>· {count}</Box> : null}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+          <Typography variant="body2" sx={{ fontSize: '0.82rem', color: 'text.primary' }}>
+            {label}{typeof count === 'number' ? <Box component="span" sx={{ color: 'text.secondary', fontFamily: 'var(--font-family-mono)', ml: 0.5 }}>· {count}</Box> : null}
+          </Typography>
+          {dot && (
+            <Tooltip title={dot.title} placement="top">
+              <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: dot.color, flexShrink: 0 }} />
+            </Tooltip>
+          )}
+        </Box>
       }
     />
   );
@@ -35,9 +66,9 @@ const OWM_LAYERS = [
 
 export default function MetricLayerSelector({
   activeLayer, onLayerChange, showMarkers, onToggleMarkers, showCoverage, onToggleCoverage,
-  showLightning, onToggleLightning, lightningCount,
-  showStorms, onToggleStorms, stormCount,
-  showWind, onToggleWind,
+  showLightning, onToggleLightning, lightningCount, lightningStatus,
+  showStorms, onToggleStorms, stormCount, stormStatus,
+  showWind, onToggleWind, windStatus,
   owmLayer, onOwmChange,
   permissions,
 }) {
@@ -130,13 +161,13 @@ export default function MetricLayerSelector({
       <Divider sx={{ my: 0.25, borderColor: 'var(--nirmala-glass-border)' }} />
       <Typography sx={eyebrowSx}>Layer Tambahan</Typography>
       {onToggleLightning && canViewLightning && (
-        <LayerSwitch checked={showLightning} onChange={onToggleLightning} label="Petir" count={lightningCount} />
+        <LayerSwitch checked={showLightning} onChange={onToggleLightning} label="Petir" count={lightningCount} status={lightningStatus} />
       )}
       {onToggleStorms && (
-        <LayerSwitch checked={showStorms} onChange={onToggleStorms} label="Sel Badai" count={stormCount} sx={{ mt: -0.75 }} />
+        <LayerSwitch checked={showStorms} onChange={onToggleStorms} label="Sel Badai" count={stormCount} status={stormStatus} sx={{ mt: -0.75 }} />
       )}
       {onToggleWind && (
-        <LayerSwitch checked={showWind} onChange={onToggleWind} label="Angin (partikel)" sx={{ mt: -0.75 }} />
+        <LayerSwitch checked={showWind} onChange={onToggleWind} label="Angin (partikel)" status={windStatus} sx={{ mt: -0.75 }} />
       )}
       {canViewSensor && (
         <>

@@ -182,6 +182,7 @@ export default function SensorDotLayer({ stations, showMarkers = true, selectedI
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
       stopPulse();
       overlay.setMap(null);
     };

@@ -1,53 +1,44 @@
 /**
- * Login proxy → VIONA-4 auth workflow.
+ * TEMPORARY hardcoded login — VIONA-4 auth workflow disabled until the
+ * official Nirmala backend auth is ready. Checked server-side only, never
+ * shipped to the client bundle. Downstream /api/terminals-style routes
+ * fall back to VIONA_API_TOKEN when there's no per-user viona_token
+ * cookie, so this route doesn't need to mint a real VIONA token.
  *
- * POST { email, password } → VIONA POST /api/v1/auth/login → { data: { token, user } }.
- * (VIONA's Turnstile is not enforced server-side, so email+password is enough.)
- * On success we also drop an httpOnly `viona_token` cookie so the /api/terminals
- * proxy can call the gateways with the logged-in user's own token. The token is
- * additionally returned to the client for the encrypted AuthContext store.
+ * Known risk (flagged, accepted by product owner 2026-08-20): plaintext
+ * credentials in source. Replace with real backend auth before this ships
+ * beyond internal/demo use.
+ *
+ * TODO: remove this block and restore the VIONA proxy once backend auth
+ * ships. See git history for the original implementation.
  */
 
 export const dynamic = 'force-dynamic';
 
-const AUTH_URL = process.env.VIONA_AUTH_URL || 'https://viona-api.bignet.id';
+const TEMP_EMAIL = 'ITBDI@bignet.id';
+const TEMP_PASSWORD = 'admin';
 
 export async function POST(request) {
   let body = {};
   try { body = await request.json(); } catch {}
-  const { email, password, turnstileToken } = body;
+  const { email, password } = body;
   if (!email || !password) {
     return Response.json({ status: false, message: 'Email & password wajib diisi.' }, { status: 400 });
   }
 
-  try {
-    const upstream = await fetch(`${AUTH_URL}/api/v1/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({ email, password, ...(turnstileToken ? { turnstileToken } : {}) }),
-      cache: 'no-store',
-    });
-    const data = await upstream.json().catch(() => ({}));
-    const token = data?.data?.token;
-
-    if (!upstream.ok || !token) {
-      return Response.json(
-        { status: false, message: data?.message || 'Login gagal.' },
-        { status: upstream.status || 401 },
-      );
-    }
-
-    const user = data?.data?.user || { email };
-    const headers = new Headers({ 'content-type': 'application/json' });
-    headers.append(
-      'Set-Cookie',
-      `viona_token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${60 * 60 * 8}`,
-    );
-    return new Response(JSON.stringify({ status: true, user, token }), { status: 200, headers });
-  } catch (err) {
-    return Response.json(
-      { status: false, message: 'Tidak dapat menghubungi server autentikasi.' },
-      { status: 502 },
-    );
+  if (
+    email.trim().toLowerCase() !== TEMP_EMAIL.toLowerCase() ||
+    password !== TEMP_PASSWORD
+  ) {
+    return Response.json({ status: false, message: 'Email atau password salah.' }, { status: 401 });
   }
+
+  const token = crypto.randomUUID();
+  const user = { email };
+  const headers = new Headers({ 'content-type': 'application/json' });
+  headers.append(
+    'Set-Cookie',
+    `viona_token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${60 * 60 * 8}`,
+  );
+  return new Response(JSON.stringify({ status: true, user, token }), { status: 200, headers });
 }

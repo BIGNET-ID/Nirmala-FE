@@ -21,9 +21,20 @@ import { usePlatformData } from '@/hooks/usePlatformData';
 import { useSensorStream } from '@/hooks/useSensorStream';
 import { useLightningStream } from '@/hooks/useLightningStream';
 import { useThunderstormStream } from '@/hooks/useThunderstormStream';
+import { useWindField } from '@/hooks/useWindField';
 import { useAuth } from '@/hooks/useAuth';
 import { METRICS } from '@/constants/metrics';
 import { MAP_CENTER, MAP_ZOOM_DEFAULT } from '@/constants/mapConfig';
+import { LAYER_STATUS } from '@/constants/layerStatus';
+
+// SSE streams report 'connecting'/'live'/'reconnecting'; a toggle also needs
+// to say "connected but nothing to show right now" — this maps both signals
+// into the one LAYER_STATUS vocabulary every layer indicator reads.
+function streamStatus(sseStatus, count) {
+  if (sseStatus === 'reconnecting') return LAYER_STATUS.ERROR;
+  if (sseStatus === 'connecting') return LAYER_STATUS.LOADING;
+  return count > 0 ? LAYER_STATUS.OK : LAYER_STATUS.EMPTY;
+}
 
 export default function NirmalaDashboard() {
   const { sensors: apiSensors, lightning: apiLightning, thunderstorm: apiThunderstorm, health, loading, error } = usePlatformData();
@@ -33,6 +44,7 @@ export default function NirmalaDashboard() {
   const { stations: SENSOR_STATIONS, status: sensorStreamStatus } = useSensorStream(apiSensors);
   const { strikes: lightning, status: lightningStreamStatus } = useLightningStream(apiLightning);
   const { storms: thunderstorm, status: thunderstormStreamStatus } = useThunderstormStream(apiThunderstorm);
+  const { field: windField, status: windFieldStatus } = useWindField();
 
   const [activeLayer, setActiveLayer] = useState('rain');
   const [showMarkers, setShowMarkers] = useState(true);
@@ -58,7 +70,9 @@ export default function NirmalaDashboard() {
   useEffect(() => {
     if (appliedDefaultMapRef.current || !map || !defaultMap) return;
     map.setCenter({ lat: defaultMap.lat, lng: defaultMap.lng });
-    map.setZoom(defaultMap.zoom);
+    // Never let the manifest zoom in tighter than our national-view floor —
+    // it may only zoom out further.
+    map.setZoom(Math.min(defaultMap.zoom, MAP_ZOOM_DEFAULT));
     appliedDefaultMapRef.current = true;
   }, [map, defaultMap]);
 
@@ -102,7 +116,7 @@ export default function NirmalaDashboard() {
             <CanvasHeatmapOverlay stations={SENSOR_STATIONS} showCoverage={showCoverage} />
             <ThunderstormLayer storms={thunderstorm} show={showStorms} />
             <LightningLayer strikes={lightning} show={showLightning} />
-            <WindParticleLayer show={showWind} />
+            <WindParticleLayer show={showWind} field={windField} />
             <SensorDotLayer
               stations={SENSOR_STATIONS}
               showMarkers={showMarkers}
@@ -122,11 +136,14 @@ export default function NirmalaDashboard() {
             showLightning={showLightning}
             onToggleLightning={setShowLightning}
             lightningCount={lightning?.length || 0}
+            lightningStatus={streamStatus(lightningStreamStatus, lightning?.length || 0)}
             showStorms={showStorms}
             onToggleStorms={setShowStorms}
             stormCount={thunderstorm?.length || 0}
+            stormStatus={streamStatus(thunderstormStreamStatus, thunderstorm?.length || 0)}
             showWind={showWind}
             onToggleWind={setShowWind}
+            windStatus={windFieldStatus}
             owmLayer={owmLayer}
             onOwmChange={setOwmLayer}
             permissions={permissions}
