@@ -2,6 +2,9 @@
 
 import { useEffect, useRef } from 'react';
 import { useMap } from '@vis.gl/react-google-maps';
+import { recolorToTransparentPng } from '@/lib/jmaHimawariRecolor';
+
+const CROSSFADE_MS = 400;
 
 /**
  * Himawari (JMA) satellite overlay. Unlike OpenWeatherLayer (a z/x/y tile
@@ -12,12 +15,26 @@ import { useMap } from '@vis.gl/react-google-maps';
  * image (unlike the old bignet API), and the newest frame is sometimes not
  * published yet when we ask for it. `candidateUrls` lets the caller supply a
  * fallback chain (newest first) — this preloads each with a plain Image()
- * (not GroundOverlay directly) so a 404 can be caught and the next
+ * (not GroundOverlay directly) so a load failure can be caught and the next
  * candidate tried, instead of silently showing a blank overlay.
+ *
+ * Each successfully-loaded frame is recolored client-side (see
+ * jmaHimawariRecolor.js) so only the magenta "rainfall potential" shapes
+ * show, transparent everywhere else — the app's own basemap stays visible.
+ * Recoloring needs pixel-level canvas access, which requires the image to
+ * be loaded with crossOrigin='anonymous' (JMA's server supports this — see
+ * this plan's Global Constraints).
+ *
+ * Frame changes crossfade over CROSSFADE_MS instead of an abrupt swap:
+ * GroundOverlay.setOpacity() is animated on both the incoming and outgoing
+ * overlay simultaneously via requestAnimationFrame, then the outgoing one
+ * is removed.
  */
 export default function HimawariLayer({ active, candidateUrls = [], bounds, opacity = 0.7, onStatus }) {
   const map = useMap();
   const overlayRef = useRef(null);
+  const prevOverlayRef = useRef(null);
+  const fadeRafRef = useRef(0);
   // Stabilize on URL content, not array identity — useJmaHimawariTicks
   // rebuilds its tick array every 60s even when the underlying URLs haven't
   // changed (the 10-minute bucket didn't roll), and depending on
@@ -27,8 +44,11 @@ export default function HimawariLayer({ active, candidateUrls = [], bounds, opac
 
   useEffect(() => {
     if (!map || !window.google || !active || !candidateUrls.length || !bounds) {
+      cancelAnimationFrame(fadeRafRef.current);
       overlayRef.current?.setMap(null);
+      prevOverlayRef.current?.setMap(null);
       overlayRef.current = null;
+      prevOverlayRef.current = null;
       onStatus?.('ok'); // nothing to show is not a failure — hide any stale "unavailable" message
       return;
     }
@@ -37,11 +57,37 @@ export default function HimawariLayer({ active, candidateUrls = [], bounds, opac
     let currentImg = null;
     onStatus?.('loading');
 
+    const crossfadeIn = (dataUrl, gmBounds) => {
+      const outgoing = overlayRef.current;
+      const incoming = new window.google.maps.GroundOverlay(dataUrl, gmBounds, { opacity: 0 });
+      incoming.setMap(map);
+      prevOverlayRef.current = outgoing;
+      overlayRef.current = incoming;
+
+      cancelAnimationFrame(fadeRafRef.current);
+      const start = performance.now();
+      const step = (now) => {
+        const t = Math.min(1, (now - start) / CROSSFADE_MS);
+        incoming.setOpacity(t * opacity);
+        outgoing?.setOpacity((1 - t) * opacity);
+        if (t < 1) {
+          fadeRafRef.current = requestAnimationFrame(step);
+        } else {
+          outgoing?.setMap(null);
+          if (prevOverlayRef.current === outgoing) prevOverlayRef.current = null;
+        }
+      };
+      fadeRafRef.current = requestAnimationFrame(step);
+    };
+
     const tryCandidate = (i) => {
       if (i >= candidateUrls.length) {
         if (cancelled) return;
+        cancelAnimationFrame(fadeRafRef.current);
         overlayRef.current?.setMap(null);
+        prevOverlayRef.current?.setMap(null);
         overlayRef.current = null;
+        prevOverlayRef.current = null;
         onStatus?.('unavailable');
         if (process.env.NODE_ENV !== 'production') {
           console.warn('[HimawariLayer] all candidate frames failed to load:', candidateUrls);
@@ -50,17 +96,26 @@ export default function HimawariLayer({ active, candidateUrls = [], bounds, opac
       }
 
       const img = new Image();
+      img.crossOrigin = 'anonymous';
       currentImg = img;
       img.onload = () => {
+        if (cancelled) return;
+        let dataUrl;
+        try {
+          dataUrl = recolorToTransparentPng(img);
+        } catch (err) {
+          if (process.env.NODE_ENV !== 'production') {
+            console.warn('[HimawariLayer] recolor failed, trying next candidate:', err);
+          }
+          tryCandidate(i + 1);
+          return;
+        }
         if (cancelled) return;
         const gmBounds = new window.google.maps.LatLngBounds(
           { lat: bounds.south, lng: bounds.west },
           { lat: bounds.north, lng: bounds.east },
         );
-        overlayRef.current?.setMap(null);
-        const overlay = new window.google.maps.GroundOverlay(candidateUrls[i], gmBounds, { opacity });
-        overlay.setMap(map);
-        overlayRef.current = overlay;
+        crossfadeIn(dataUrl, gmBounds);
         onStatus?.('ok');
       };
       img.onerror = () => { if (!cancelled) tryCandidate(i + 1); };
@@ -71,8 +126,11 @@ export default function HimawariLayer({ active, candidateUrls = [], bounds, opac
     return () => {
       cancelled = true;
       if (currentImg) currentImg.src = ''; // abort any in-flight preload
+      cancelAnimationFrame(fadeRafRef.current);
       overlayRef.current?.setMap(null);
+      prevOverlayRef.current?.setMap(null);
       overlayRef.current = null;
+      prevOverlayRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, active, urlKey, bounds, opacity, onStatus]);
