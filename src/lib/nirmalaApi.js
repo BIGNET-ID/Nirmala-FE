@@ -72,16 +72,6 @@ export const nirmalaApiService = {
     }
   },
 
-  /** GET /api/grid — Himawari satellite frame manifest (public, no auth). */
-  async getHimawariGrid() {
-    try {
-      return await nirmalaApi.get('/api/grid');
-    } catch (error) {
-      console.warn('[Nirmala API] /api/grid unavailable:', error.message);
-      return null;
-    }
-  },
-
   /** GET /api/manifest — metadata platform, permissions, default map, statistik Kafka. */
   async getManifest() {
     try {

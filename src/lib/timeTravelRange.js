@@ -17,22 +17,6 @@ export function buildRainTicks(start, end, stepMinutes = RAIN_TICK_MINUTES) {
   return ticks;
 }
 
-/** Tick list for Himawari mode: one tick per real frame the API returned. */
-export function buildHimawariTicks(frames) {
-  return (frames || [])
-    .map((f) => ({ date: parseHimawariTime(f.time), url: f.url }))
-    .filter((f) => !Number.isNaN(f.date.getTime()))
-    .sort((a, b) => a.date - b.date);
-}
-
-/** Himawari's "YYYY-MM-DDTHHmm" (no colon in the time part) -> Date (UTC). */
-export function parseHimawariTime(raw) {
-  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2})(\d{2})$/.exec(raw || '');
-  if (!m) return new Date(NaN);
-  const [, y, mo, d, h, mi] = m;
-  return new Date(Date.UTC(+y, +mo - 1, +d, +h, +mi));
-}
-
 /**
  * Nirmala timeseries labels have no year ("08-18 10:50") — resolve against a
  * reference date's year. Good enough for a 4-5 day lookback window; a
