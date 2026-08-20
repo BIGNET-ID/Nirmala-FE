@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useMap } from '@vis.gl/react-google-maps';
+import { statusColor } from '@/lib/sensorColor';
 
 /**
  * Minimal sensor dots rendered on a canvas OverlayView (BIGNET DS v19).
@@ -11,24 +12,21 @@ import { useMap } from '@vis.gl/react-google-maps';
  * needs no mapId. Dots are coloured by status; the selected sensor gets a cyan
  * highlight ring that gently pulses (disabled under prefers-reduced-motion).
  * Clicks are hit-tested against the last rendered points and open the drawer.
+ *
+ * `focus` (Node Sensor mode): dots render larger and ignore `showMarkers` —
+ * in that mode the dots ARE the view, not an optional overlay.
  */
 
 const DOT_R = 2.6;
 const DOT_R_RAIN = 3.2;
+const FOCUS_SCALE = 1.8;
 const HIT_PX = 11;
-
-function statusColor(st) {
-  if (st.blacklisted || st.status === 'blacklisted') return '#ef4444'; // --status-blacklisted
-  if (st.inactive || st.unavailable || st.status === 'inactive') return '#4b5563'; // --status-inactive
-  if (st.isRaining) return '#60a5fa'; // --status-raining
-  return '#34d399'; // --status-active (dry)
-}
 
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' &&
   window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-export default function SensorDotLayer({ stations, showMarkers = true, selectedId = null, onSelect }) {
+export default function SensorDotLayer({ stations, showMarkers = true, selectedId = null, onSelect, focus = false }) {
   const map = useMap();
   const overlayRef = useRef(null);
   const canvasRef = useRef(null);
@@ -37,11 +35,13 @@ export default function SensorDotLayer({ stations, showMarkers = true, selectedI
   const renderedRef = useRef([]);   // [{ st, x, y }] in canvas coords
   const stationsRef = useRef(stations);
   const showRef = useRef(showMarkers);
+  const focusRef = useRef(focus);
   const selectedRef = useRef(selectedId);
   const onSelectRef = useRef(onSelect);
 
   useEffect(() => { stationsRef.current = stations; }, [stations]);
   useEffect(() => { showRef.current = showMarkers; }, [showMarkers]);
+  useEffect(() => { focusRef.current = focus; }, [focus]);
   useEffect(() => { onSelectRef.current = onSelect; }, [onSelect]);
 
   useEffect(() => {
@@ -77,7 +77,8 @@ export default function SensorDotLayer({ stations, showMarkers = true, selectedI
         renderedRef.current.push({ st, x, y });
 
         const color = statusColor(st);
-        const r = st.isRaining ? DOT_R_RAIN : DOT_R;
+        const scale = focusRef.current ? FOCUS_SCALE : 1;
+        const r = (st.isRaining ? DOT_R_RAIN : DOT_R) * scale;
         ctx.beginPath();
         ctx.arc(x, y, r, 0, Math.PI * 2);
         ctx.fillStyle = color;
@@ -207,6 +208,7 @@ export default function SensorDotLayer({ stations, showMarkers = true, selectedI
   }, [showMarkers]);
 
   useEffect(() => { overlayRef.current?._repaint?.(); }, [stations]);
+  useEffect(() => { overlayRef.current?._repaint?.(); }, [focus]);
 
   return null;
 }

@@ -6,6 +6,7 @@ import { motion } from 'motion/react';
 import GoogleMapWrapper from '@/components/map/GoogleMapWrapper';
 import CanvasHeatmapOverlay from '@/components/map/CanvasOverlay';
 import SensorDotLayer from '@/components/map/SensorDotLayer';
+import MeshLayer from '@/components/map/MeshLayer';
 import OpenWeatherLayer from '@/components/map/OpenWeatherLayer';
 import LightningLayer from '@/components/map/LightningLayer';
 import ThunderstormLayer from '@/components/map/ThunderstormLayer';
@@ -113,15 +114,19 @@ export default function NirmalaDashboard() {
         <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           <GoogleMapWrapper onMapLoad={setMap}>
             <OpenWeatherLayer layer={owmLayer} />
-            <CanvasHeatmapOverlay stations={SENSOR_STATIONS} showCoverage={showCoverage} />
+            {activeLayer === 'rain' && (
+              <CanvasHeatmapOverlay stations={SENSOR_STATIONS} showCoverage={showCoverage} />
+            )}
+            {activeLayer === 'mesh' && <MeshLayer stations={SENSOR_STATIONS} />}
             <ThunderstormLayer storms={thunderstorm} show={showStorms} />
             <LightningLayer strikes={lightning} show={showLightning} />
             <WindParticleLayer show={showWind} field={windField} />
             <SensorDotLayer
               stations={SENSOR_STATIONS}
-              showMarkers={showMarkers}
+              showMarkers={activeLayer === 'rain' ? showMarkers : true}
               selectedId={selectedStation?.id ?? null}
               onSelect={setSelectedStation}
+              focus={activeLayer === 'node'}
             />
           </GoogleMapWrapper>
 

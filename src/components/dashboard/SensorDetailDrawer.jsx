@@ -84,13 +84,16 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
       anchor="right"
       open={open}
       onClose={onClose}
-      PaperProps={{
-        sx: {
-          width: 328,
-          bgcolor: 'var(--nirmala-glass-bg)',
-          backdropFilter: 'blur(20px)',
-          borderLeft: '1px solid var(--nirmala-glass-border)',
-          backgroundImage: 'none',
+      sx={{ zIndex: 'var(--z-modal, 1400)' }}
+      slotProps={{
+        paper: {
+          sx: {
+            width: 328,
+            bgcolor: 'var(--nirmala-glass-bg)',
+            backdropFilter: 'blur(20px)',
+            borderLeft: '1px solid var(--nirmala-glass-border)',
+            backgroundImage: 'none',
+          },
         },
       }}
     >

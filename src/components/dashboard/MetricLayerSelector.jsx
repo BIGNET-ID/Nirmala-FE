@@ -78,6 +78,9 @@ export default function MetricLayerSelector({
   // so it is intentionally never gated here.
   const canViewSensor = permissions?.can_view_sensor !== false;
   const canViewLightning = permissions?.can_view_lightning !== false;
+  // Cakupan Sensor / Titik Sensor are optional overlays only in Heat Map mode —
+  // in Mesh/Node mode the sensor dots are the core view, not something to toggle off.
+  const showSensorToggles = activeLayer === 'rain';
 
   return (
     <Box
@@ -169,7 +172,7 @@ export default function MetricLayerSelector({
       {onToggleWind && (
         <LayerSwitch checked={showWind} onChange={onToggleWind} label="Angin (partikel)" status={windStatus} sx={{ mt: -0.75 }} />
       )}
-      {canViewSensor && (
+      {canViewSensor && showSensorToggles && (
         <>
           <LayerSwitch checked={showCoverage} onChange={onToggleCoverage} label="Cakupan Sensor" sx={{ mt: -0.75 }} />
           <LayerSwitch checked={showMarkers} onChange={onToggleMarkers} label="Titik Sensor" sx={{ mt: -0.75 }} />
