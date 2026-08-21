@@ -81,17 +81,35 @@ function probeBasetime(basetime) {
   });
 }
 
-export default function HimawariLayer({ active, candidateBasetimes = [], opacity = 0.7, onStatus }) {
+export default function HimawariLayer({ active, candidateBasetimes = [], prefetchBasetime = null, opacity = 0.7, onStatus }) {
   const map = useMap();
   const overlayRef = useRef(null);
   const prevOverlayRef = useRef(null);
   const fadeRafRef = useRef(0);
+  const preloadRef = useRef(null); // { basetime, type } | null — a hidden (opacity 0) map type warming the browser's tile cache for the upcoming frame
   // Stabilize on basetime content, not array identity — useJmaHimawariTicks
   // rebuilds its tick array every 60s even when the underlying basetimes
   // haven't changed (the 10-minute bucket didn't roll), and depending on
   // `candidateBasetimes` by reference would tear down and rebuild the
   // overlay every minute for no reason.
   const basetimeKey = candidateBasetimes.join('|');
+
+  // While playing, warm the browser's HTTP cache for the *next* frame's
+  // actual viewport tiles (not just the single probe tile) while the
+  // current frame is still showing, by pushing a hidden (opacity 0)
+  // ImageMapType for it — Google Maps will issue real tile requests for the
+  // current viewport against this type immediately. When the timeline
+  // actually advances to this basetime, crossfadeIn (below) reuses this
+  // already-warm map type instead of creating a fresh one, so the fade-in
+  // doesn't stall on network fetches.
+  useEffect(() => {
+    if (!map || !window.google || !active || !prefetchBasetime) return;
+    if (preloadRef.current?.basetime === prefetchBasetime) return;
+    if (preloadRef.current) removeOverlayMapType(map, preloadRef.current.type);
+    const type = makeImageMapType(prefetchBasetime, 0);
+    map.overlayMapTypes.push(type);
+    preloadRef.current = { basetime: prefetchBasetime, type };
+  }, [map, active, prefetchBasetime]);
 
   useEffect(() => {
     if (!map || !window.google || !active || !candidateBasetimes.length) {
@@ -119,8 +137,14 @@ export default function HimawariLayer({ active, candidateBasetimes = [], opacity
       if (prevOverlayRef.current && prevOverlayRef.current !== outgoing) {
         removeOverlayMapType(map, prevOverlayRef.current);
       }
-      const incoming = makeImageMapType(basetime, 0);
-      map.overlayMapTypes.push(incoming);
+      let incoming;
+      if (preloadRef.current?.basetime === basetime) {
+        incoming = preloadRef.current.type;
+        preloadRef.current = null;
+      } else {
+        incoming = makeImageMapType(basetime, 0);
+        map.overlayMapTypes.push(incoming);
+      }
       prevOverlayRef.current = outgoing;
       overlayRef.current = incoming;
 
@@ -196,9 +220,11 @@ export default function HimawariLayer({ active, candidateBasetimes = [], opacity
       if (map) {
         if (overlayRef.current) removeOverlayMapType(map, overlayRef.current);
         if (prevOverlayRef.current) removeOverlayMapType(map, prevOverlayRef.current);
+        if (preloadRef.current) removeOverlayMapType(map, preloadRef.current.type);
       }
       overlayRef.current = null;
       prevOverlayRef.current = null;
+      preloadRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
