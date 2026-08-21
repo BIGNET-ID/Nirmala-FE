@@ -8,14 +8,16 @@ const CROSSFADE_MS = 400;
 const TILE_SIZE = 256;
 
 // Fixed probe tile used only to check whether a basetime has been published
-// yet. z=0/x=0/y=0 covers the entire globe in a single tile, so it always
-// falls inside JMA's full-disk ('fd') footprint regardless of which part of
-// the world the map viewport is currently showing — no need to convert the
-// current viewport into tile coordinates just to ask "does this basetime
-// exist yet?". All z/x/y tiles for one basetime are published together (or
-// not at all), so checking this one tile is a valid stand-in for the whole
-// pyramid.
-const PROBE_TILE = { z: 0, x: 0, y: 0 };
+// yet. z=0/x=0/y=0 would be convenient (one tile covering the whole globe,
+// no viewport-to-tile conversion needed) but JMA does not serve those low
+// zooms for this product at all — z=0/1/2 404 unconditionally for every
+// basetime, even ones whose real z=5+ viewport tiles return 200 (verified
+// empirically against JMA's live server). z=5/x=26/y=12 (over Indonesia,
+// well inside the satellite's visible disk) is confirmed to exist for real
+// basetimes, so it's used instead. All z/x/y tiles for one basetime are
+// still published together (or not at all), so checking this one
+// confirmed-valid tile remains a correct stand-in for the whole pyramid.
+const PROBE_TILE = { z: 5, x: 26, y: 12 };
 
 /**
  * Himawari (JMA) satellite overlay. Renders JMA's "Cloud-top Enhanced"
