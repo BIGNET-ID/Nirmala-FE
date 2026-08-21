@@ -105,11 +105,21 @@ export default function HimawariLayer({ active, candidateBasetimes = [], prefetc
   useEffect(() => {
     if (!map || !window.google || !active || !prefetchBasetime) return;
     if (preloadRef.current?.basetime === prefetchBasetime) return;
-    if (preloadRef.current) removeOverlayMapType(map, preloadRef.current.type);
+    if (preloadRef.current) {
+      // Only tear down the tracked preload if it can no longer be consumed
+      // by the current tick's (possibly still-debounced) crossfadeIn — if
+      // its basetime is still a live candidate, leave it in place and wait;
+      // removing it here would race crossfadeIn's own reuse check below and
+      // silently defeat the prefetch on every steady-state Play tick.
+      if (candidateBasetimes.includes(preloadRef.current.basetime)) return;
+      removeOverlayMapType(map, preloadRef.current.type);
+      preloadRef.current = null;
+    }
     const type = makeImageMapType(prefetchBasetime, 0);
     map.overlayMapTypes.push(type);
     preloadRef.current = { basetime: prefetchBasetime, type };
-  }, [map, active, prefetchBasetime]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, active, prefetchBasetime, basetimeKey]);
 
   useEffect(() => {
     if (!map || !window.google || !active || !candidateBasetimes.length) {
