@@ -16,11 +16,13 @@ const TILE_BASE_URL = 'https://www.jma.go.jp/bosai/himawari/data/satimg';
 export const JMA_TICK_STEP_MINUTES = 10;
 export const JMA_TICK_COUNT = 144; // 24h of history at a 10-minute step
 
-// JMA overwrites each basetime slot in place and does NOT 404 an unpublished
-// slot — it serves the PREVIOUS day's tiles at that same HHMM with a clean
-// 200 (confirmed on the previous HRP product; assumed to hold here too since
-// it's the same publishing pipeline). Without this offset, "live" mode would
-// silently display a stale frame as current.
+// Unpublished basetimes 404 cleanly (confirmed live against the new tile URL
+// pattern, which encodes the full YYYYMMDD in the path) — this is what
+// HimawariLayer.jsx's probe-based candidate fallback depends on to work at
+// all. JMA_PUBLISH_LAG_MINUTES exists only to bias the first probe attempt
+// toward a timestamp that's likely already published, saving one wasted
+// round-trip before falling back through older candidates — not to work
+// around any stale-200 behavior.
 export const JMA_PUBLISH_LAG_MINUTES = 20; // rounded up from the ~12min observed lag on HRP
 
 /** Round `date` down to the nearest `stepMinutes` boundary, in UTC. */

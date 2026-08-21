@@ -12,9 +12,10 @@ const TILE_SIZE = 256;
 // no viewport-to-tile conversion needed) but JMA does not serve those low
 // zooms for this product at all — z=0/1/2 404 unconditionally for every
 // basetime, even ones whose real z=5+ viewport tiles return 200 (verified
-// empirically against JMA's live server). z=5/x=26/y=12 (over Indonesia,
-// well inside the satellite's visible disk) is confirmed to exist for real
-// basetimes, so it's used instead. All z/x/y tiles for one basetime are
+// empirically against JMA's live server). z=5/x=26/y=12 (a point well within
+// the satellite's visible disk, around 41°N — roughly Japan/Korea, not
+// Indonesia — confirmed live to return 200 for real basetimes and 404 for
+// bogus ones) is used instead. All z/x/y tiles for one basetime are
 // still published together (or not at all), so checking this one
 // confirmed-valid tile remains a correct stand-in for the whole pyramid.
 const PROBE_TILE = { z: 5, x: 26, y: 12 };
@@ -65,6 +66,8 @@ function makeImageMapType(basetime, opacity) {
     name: `himawari-${basetime}`,
     tileSize: new window.google.maps.Size(TILE_SIZE, TILE_SIZE),
     opacity,
+    minZoom: 3,
+    maxZoom: 5,
     getTileUrl: (coord, zoom) => {
       const n = 1 << zoom;
       const x = ((coord.x % n) + n) % n; // wrap horizontally
@@ -88,7 +91,7 @@ export default function HimawariLayer({ active, candidateBasetimes = [], prefetc
   const overlayRef = useRef(null);
   const prevOverlayRef = useRef(null);
   const fadeRafRef = useRef(0);
-  const preloadRef = useRef(null); // { basetime, type } | null — a hidden (opacity 0) map type warming the browser's tile cache for the upcoming frame
+  const preloadsRef = useRef([]); // Array<{basetime, type}> — hidden (opacity 0) map types warming the browser's tile cache; usually 0-2 entries (one that might still be reused as the current frame, one being warmed for the frame after)
   // Stabilize on basetime content, not array identity — useJmaHimawariTicks
   // rebuilds its tick array every 60s even when the underlying basetimes
   // haven't changed (the 10-minute bucket didn't roll), and depending on
@@ -105,21 +108,22 @@ export default function HimawariLayer({ active, candidateBasetimes = [], prefetc
   // already-warm map type instead of creating a fresh one, so the fade-in
   // doesn't stall on network fetches.
   useEffect(() => {
-    if (!map || !window.google || !active || !prefetchBasetime) return;
-    if (preloadRef.current?.basetime === prefetchBasetime) return;
-    if (preloadRef.current) {
-      // Only tear down the tracked preload if it can no longer be consumed
-      // by the current tick's (possibly still-debounced) crossfadeIn — if
-      // its basetime is still a live candidate, leave it in place and wait;
-      // removing it here would race crossfadeIn's own reuse check below and
-      // silently defeat the prefetch on every steady-state Play tick.
-      if (candidateBasetimes.includes(preloadRef.current.basetime)) return;
-      removeOverlayMapType(map, preloadRef.current.type);
-      preloadRef.current = null;
-    }
+    if (!map || !window.google || !active) return;
+    // Drop any preload that's neither still a live candidate (might yet be
+    // reused by crossfadeIn for the current tick) nor the upcoming prefetch
+    // target — this runs even when there's nothing new to prefetch (e.g.
+    // Play just paused), so a stale preload never lingers in
+    // map.overlayMapTypes issuing invisible tile requests forever.
+    preloadsRef.current = preloadsRef.current.filter((p) => {
+      const keep = candidateBasetimes.includes(p.basetime) || p.basetime === prefetchBasetime;
+      if (!keep) removeOverlayMapType(map, p.type);
+      return keep;
+    });
+    if (!prefetchBasetime) return;
+    if (preloadsRef.current.some((p) => p.basetime === prefetchBasetime)) return;
     const type = makeImageMapType(prefetchBasetime, 0);
     map.overlayMapTypes.push(type);
-    preloadRef.current = { basetime: prefetchBasetime, type };
+    preloadsRef.current.push({ basetime: prefetchBasetime, type });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, active, prefetchBasetime, basetimeKey]);
 
@@ -150,9 +154,10 @@ export default function HimawariLayer({ active, candidateBasetimes = [], prefetc
         removeOverlayMapType(map, prevOverlayRef.current);
       }
       let incoming;
-      if (preloadRef.current?.basetime === basetime) {
-        incoming = preloadRef.current.type;
-        preloadRef.current = null;
+      const preloadIdx = preloadsRef.current.findIndex((p) => p.basetime === basetime);
+      if (preloadIdx !== -1) {
+        incoming = preloadsRef.current[preloadIdx].type;
+        preloadsRef.current.splice(preloadIdx, 1);
       } else {
         incoming = makeImageMapType(basetime, 0);
         map.overlayMapTypes.push(incoming);
@@ -232,11 +237,11 @@ export default function HimawariLayer({ active, candidateBasetimes = [], prefetc
       if (map) {
         if (overlayRef.current) removeOverlayMapType(map, overlayRef.current);
         if (prevOverlayRef.current) removeOverlayMapType(map, prevOverlayRef.current);
-        if (preloadRef.current) removeOverlayMapType(map, preloadRef.current.type);
+        preloadsRef.current.forEach((p) => removeOverlayMapType(map, p.type));
       }
       overlayRef.current = null;
       prevOverlayRef.current = null;
-      preloadRef.current = null;
+      preloadsRef.current = [];
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

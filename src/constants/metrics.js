@@ -36,7 +36,7 @@ export const METRICS = {
     key: 'himawari',
     label: 'Himawari',
     icon: 'material-symbols:satellite-alt-rounded',
-    legendNote: 'Deteksi awan berpotensi hujan lebat dari JMA. Cakupan: Asia Tenggara (termasuk Indonesia), bukan pengukuran curah hujan aktual.',
+    legendNote: 'Citra suhu puncak awan (infrared enhanced) dari JMA. Cakupan: piringan penuh Himawari, termasuk Indonesia.',
   },
 };
 
