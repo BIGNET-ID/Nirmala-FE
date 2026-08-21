@@ -117,14 +117,22 @@ export default function NirmalaDashboard() {
   // user-picked historical tick gets no fallback: if that exact minute
   // wasn't published, say so (HimawariLayer's onStatus) rather than
   // silently substituting a different time than the one they picked.
-  const himawariCandidateUrls = useMemo(() => {
+  const himawariBasetimeCandidates = useMemo(() => {
     if (activeLayer !== 'himawari' || !himawari.ticks.length) return [];
     if (timelineIndex != null) {
       const tick = himawari.ticks[timelineIndex];
-      return tick ? [tick.url] : [];
+      return tick ? [tick.basetime] : [];
     }
-    return himawari.ticks.slice(-4).reverse().map((t) => t.url);
+    return himawari.ticks.slice(-4).reverse().map((t) => t.basetime);
   }, [activeLayer, himawari.ticks, timelineIndex]);
+
+  // While Play is running, hand HimawariLayer the *next* tick's basetime so
+  // it can warm the tile cache ahead of time (see HimawariLayer.jsx's
+  // prefetch effect) — only meaningful mid-playback with a known index.
+  const himawariPrefetchBasetime = useMemo(() => {
+    if (activeLayer !== 'himawari' || !isPlaying || timelineIndex == null) return null;
+    return himawari.ticks[timelineIndex + 1]?.basetime ?? null;
+  }, [activeLayer, isPlaying, timelineIndex, himawari.ticks]);
 
   // Manifest resolves async, after activeLayer's initial state and (likely) after
   // the map has already mounted with the hardcoded MAP_CENTER/MAP_ZOOM_DEFAULT —
@@ -190,8 +198,8 @@ export default function NirmalaDashboard() {
             {activeLayer === 'himawari' && (
               <HimawariLayer
                 active
-                bounds={himawari.bounds}
-                candidateUrls={himawariCandidateUrls}
+                candidateBasetimes={himawariBasetimeCandidates}
+                prefetchBasetime={himawariPrefetchBasetime}
                 onStatus={setHimawariStatus}
               />
             )}
@@ -299,7 +307,7 @@ export default function NirmalaDashboard() {
               onPlayPause={handleTimelinePlayPause}
               onGoLive={handleTimelineGoLive}
               loading={(activeLayer === 'himawari' && himawari.loading) || (activeLayer === 'rain' && rainHistory.loading)}
-              caveat={activeLayer === 'himawari' ? 'Deteksi awan berpotensi hujan lebat, bukan pengukuran curah hujan aktual · Sumber: JMA (Japan Meteorological Agency)' : null}
+              caveat={activeLayer === 'himawari' ? 'Citra infrared awan (suhu puncak awan) · Sumber: JMA (Japan Meteorological Agency)' : null}
             />
           )}
 
