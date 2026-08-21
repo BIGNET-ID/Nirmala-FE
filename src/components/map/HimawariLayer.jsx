@@ -64,12 +64,21 @@ export default function HimawariLayer({ active, candidateUrls = [], bounds, opac
 
     const crossfadeIn = (dataUrl, gmBounds) => {
       const outgoing = overlayRef.current;
+      cancelAnimationFrame(fadeRafRef.current);
+      // Finalize whatever the previous crossfade left mid-flight — cancelling
+      // its rAF loop above means its own `outgoing` (tracked in
+      // prevOverlayRef) never reaches the t>=1 branch that would remove it,
+      // so it would otherwise be stranded on the map at a partial opacity
+      // forever (reachable by scrubbing across cached ticks faster than
+      // CROSSFADE_MS).
+      if (prevOverlayRef.current && prevOverlayRef.current !== outgoing) {
+        prevOverlayRef.current.setMap(null);
+      }
       const incoming = new window.google.maps.GroundOverlay(dataUrl, gmBounds, { opacity: 0 });
       incoming.setMap(map);
       prevOverlayRef.current = outgoing;
       overlayRef.current = incoming;
 
-      cancelAnimationFrame(fadeRafRef.current);
       const start = performance.now();
       const step = (now) => {
         const t = Math.min(1, (now - start) / CROSSFADE_MS);
@@ -109,10 +118,23 @@ export default function HimawariLayer({ active, candidateUrls = [], bounds, opac
         try {
           dataUrl = recolorToTransparentPng(img);
         } catch (err) {
+          // Recolor failure is not candidate-specific — it's almost always
+          // canvas taint from JMA's CORS header not behaving as expected,
+          // which will reproduce identically for every remaining
+          // candidate. Trying the next one would just burn N more full
+          // downloads for no chance of a different outcome, so treat this
+          // as terminal for the whole chain instead of recursing into
+          // tryCandidate(i + 1).
+          if (cancelled) return;
+          cancelAnimationFrame(fadeRafRef.current);
+          overlayRef.current?.setMap(null);
+          prevOverlayRef.current?.setMap(null);
+          overlayRef.current = null;
+          prevOverlayRef.current = null;
+          onStatus?.('unavailable');
           if (process.env.NODE_ENV !== 'production') {
-            console.warn('[HimawariLayer] recolor failed, trying next candidate:', err);
+            console.warn('[HimawariLayer] recolor failed (likely a CORS/canvas-taint issue, not specific to this frame) — treating the whole candidate chain as exhausted:', err);
           }
-          tryCandidate(i + 1);
           return;
         }
         if (cancelled) return;
@@ -126,10 +148,18 @@ export default function HimawariLayer({ active, candidateUrls = [], bounds, opac
       img.onerror = () => { if (!cancelled) tryCandidate(i + 1); };
       img.src = candidateUrls[i];
     };
-    tryCandidate(0);
+    // Debounce: scrubbing the time-travel slider can change `urlKey` many
+    // times per second (every intermediate drag position), and each
+    // attempt costs a full JPEG download plus a synchronous canvas
+    // recolor pass — skip intermediate positions instead of doing that
+    // work for frames the user never settles on. This also shrinks (though
+    // doesn't by itself eliminate — see the crossfadeIn finalize step
+    // above) the window for two crossfades to overlap.
+    const debounceId = setTimeout(() => tryCandidate(0), 200);
 
     return () => {
       cancelled = true;
+      clearTimeout(debounceId);
       if (currentImg) currentImg.src = ''; // abort any in-flight preload
       // Deliberately does NOT touch overlayRef/prevOverlayRef/fadeRafRef
       // here — this cleanup runs on every re-render where urlKey changes
@@ -153,6 +183,8 @@ export default function HimawariLayer({ active, candidateUrls = [], bounds, opac
       cancelAnimationFrame(fadeRafRef.current);
       overlayRef.current?.setMap(null);
       prevOverlayRef.current?.setMap(null);
+      overlayRef.current = null;
+      prevOverlayRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

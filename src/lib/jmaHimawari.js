@@ -1,9 +1,19 @@
 /**
  * JMA "Heavy Rainfall Potential Areas" imagery (Southeast Asia, native
- * resolution). Public, no auth. Loaded as a plain <img>/GroundOverlay (not
- * fetched via JS), so the lack of an Access-Control-Allow-Origin header on
- * JMA's response doesn't matter — confirmed no Referer/robots.txt block
- * either. See docs/superpowers/specs/2026-08-20-jma-himawari-migration-design.md.
+ * resolution). Public, no auth, no robots.txt/Referer block (confirmed).
+ *
+ * IMPORTANT — this now DOES depend on CORS: HimawariLayer recolors each
+ * frame client-side via <canvas>, which requires the image to be loaded
+ * with crossOrigin='anonymous'. JMA's CloudFront-fronted server only sends
+ * `Access-Control-Allow-Origin: *` when the request carries an `Origin`
+ * header (confirmed live — a plain `curl -I` with no Origin header misses
+ * it, which is why an earlier version of this comment wrongly said CORS
+ * "didn't matter"). A real browser <img crossorigin> request does send
+ * Origin, so this works today — but there is no manifest, no contract, and
+ * no monitoring for this dependency: if JMA ever changes their CORS
+ * policy, URL convention, or 10-minute step, this feature fails silently
+ * (a blank map plus the "unavailable" pill), with nothing to alert anyone.
+ * See docs/superpowers/specs/2026-08-20-jma-himawari-migration-design.md.
  */
 
 const BASE_URL = 'https://www.data.jma.go.jp/mscweb/data/himawari/img/r2w';

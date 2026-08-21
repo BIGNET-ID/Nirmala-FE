@@ -40,15 +40,23 @@ export function recolorToTransparentPng(image, target = DEFAULT_RECOLOR_TARGET) 
 
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const data = imageData.data;
+  let magentaCount = 0;
   for (let i = 0; i < data.length; i += 4) {
     if (isMagentaPixel(data[i], data[i + 1], data[i + 2])) {
       data[i] = target.r;
       data[i + 1] = target.g;
       data[i + 2] = target.b;
       data[i + 3] = target.a;
+      magentaCount++;
     } else {
+      data[i] = 0;
+      data[i + 1] = 0;
+      data[i + 2] = 0;
       data[i + 3] = 0;
     }
+  }
+  if (process.env.NODE_ENV !== 'production' && magentaCount === 0) {
+    console.warn('[jmaHimawariRecolor] no magenta pixels detected — either genuinely no rainfall-potential areas right now, or JMA changed their color palette (isMagentaPixel\'s threshold may need re-sampling)');
   }
   ctx.putImageData(imageData, 0, 0);
   return canvas.toDataURL('image/png');
