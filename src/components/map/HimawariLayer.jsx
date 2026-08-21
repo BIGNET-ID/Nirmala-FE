@@ -6,6 +6,8 @@ import { buildJmaHimawariTileUrl } from '@/lib/jmaHimawari';
 
 const CROSSFADE_MS = 400;
 const TILE_SIZE = 256;
+const MIN_ZOOM = 3;
+const MAX_ZOOM = 5;
 
 // Fixed probe tile used only to check whether a basetime has been published
 // yet. z=0/x=0/y=0 would be convenient (one tile covering the whole globe,
@@ -66,8 +68,8 @@ function makeImageMapType(basetime, opacity) {
     name: `himawari-${basetime}`,
     tileSize: new window.google.maps.Size(TILE_SIZE, TILE_SIZE),
     opacity,
-    minZoom: 3,
-    maxZoom: 5,
+    minZoom: MIN_ZOOM,
+    maxZoom: MAX_ZOOM,
     getTileUrl: (coord, zoom) => {
       const n = 1 << zoom;
       const x = ((coord.x % n) + n) % n; // wrap horizontally
@@ -86,7 +88,7 @@ function probeBasetime(basetime) {
   });
 }
 
-export default function HimawariLayer({ active, candidateBasetimes = [], prefetchBasetime = null, opacity = 0.7, onStatus }) {
+export default function HimawariLayer({ active, candidateBasetimes = [], prefetchBasetime = null, opacity = 0.7, onStatus, onZoomRangeChange }) {
   const map = useMap();
   const overlayRef = useRef(null);
   const prevOverlayRef = useRef(null);
@@ -126,6 +128,24 @@ export default function HimawariLayer({ active, candidateBasetimes = [], prefetc
     preloadsRef.current.push({ basetime: prefetchBasetime, type });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, active, prefetchBasetime, basetimeKey]);
+
+  // JMA only serves this product at zoom MIN_ZOOM..MAX_ZOOM (see
+  // makeImageMapType) — outside that range Google Maps simply renders
+  // nothing for this map type, which looks identical to a data failure
+  // unless the caller is told to explain it differently. Report the
+  // in-range/out-of-range state separately from onStatus (which is about
+  // data availability, not zoom) so page.jsx can show a distinct "zoom to
+  // 3-5" hint instead of the "citra tidak tersedia" message.
+  useEffect(() => {
+    if (!map || !window.google || !active) { onZoomRangeChange?.(true); return; }
+    const checkZoom = () => {
+      const zoom = map.getZoom();
+      onZoomRangeChange?.(zoom >= MIN_ZOOM && zoom <= MAX_ZOOM);
+    };
+    checkZoom();
+    const listener = map.addListener('zoom_changed', checkZoom);
+    return () => listener.remove();
+  }, [map, active, onZoomRangeChange]);
 
   useEffect(() => {
     if (!map || !window.google || !active || !candidateBasetimes.length) {

@@ -73,6 +73,7 @@ export default function NirmalaDashboard() {
   const [isPlaying, setIsPlaying] = useState(false);
   const himawari = useJmaHimawariTicks(activeLayer === 'himawari');
   const [himawariStatus, setHimawariStatus] = useState('ok'); // 'ok' | 'loading' | 'unavailable' — only 'unavailable' has UI today (see the notice box below); 'loading' is reserved for a future spinner.
+  const [himawariZoomInRange, setHimawariZoomInRange] = useState(true); // JMA only serves this product at zoom 3-5 — see HimawariLayer's onZoomRangeChange
   const rainHistoryRefSensorId = SENSOR_STATIONS.find((s) => s.status === 'active')?.id ?? SENSOR_STATIONS[0]?.id;
   const rainHistory = useRainHistoryRange(activeLayer === 'rain', rainHistoryRefSensorId);
   // Memoized so tick Date objects keep a stable identity across renders that
@@ -201,6 +202,7 @@ export default function NirmalaDashboard() {
                 candidateBasetimes={himawariBasetimeCandidates}
                 prefetchBasetime={himawariPrefetchBasetime}
                 onStatus={setHimawariStatus}
+                onZoomRangeChange={setHimawariZoomInRange}
               />
             )}
             <ThunderstormLayer storms={thunderstorm} show={showStorms} />
@@ -261,14 +263,17 @@ export default function NirmalaDashboard() {
           {/* Top-center: contextual info pill */}
           <MapInfoPill raining={stats.raining} total={stats.total} loading={loading && stats.total === 0} />
 
-          {/* Top-center, below the info pill: Himawari load-failure notice.
-              Rare (only when JMA hasn't published any of the last 4 frames,
-              or a specifically-scrubbed frame doesn't exist), so it doesn't
-              need a permanent slot the way MapInfoPill does. Hidden below the
-              `sm` breakpoint like TimeTravelBar itself — on mobile a failed
-              overlay shows a blank map with no explanation, but the legend
-              note still communicates the data's limitations regardless. */}
-          {activeLayer === 'himawari' && himawariStatus === 'unavailable' && (
+          {/* Top-center, below the info pill: Himawari notice — either "zoom
+              out of range" (JMA only serves this product at zoom 3-5; takes
+              priority since it explains why nothing shows regardless of data
+              status) or the load-failure notice (rare: JMA hasn't published
+              any of the last 4 frames, or a specifically-scrubbed frame
+              doesn't exist). Neither needs a permanent slot the way
+              MapInfoPill does. Hidden below the `sm` breakpoint like
+              TimeTravelBar itself — on mobile a failed overlay shows a blank
+              map with no explanation, but the legend note still
+              communicates the data's limitations regardless. */}
+          {activeLayer === 'himawari' && (!himawariZoomInRange || himawariStatus === 'unavailable') && (
             <Box
               sx={{
                 position: 'absolute',
@@ -287,7 +292,9 @@ export default function NirmalaDashboard() {
                 color: 'text.primary',
               }}
             >
-              Citra tidak tersedia untuk waktu ini
+              {himawariZoomInRange
+                ? 'Citra tidak tersedia untuk waktu ini'
+                : 'Perbesar/perkecil peta ke level zoom 3–5 untuk melihat citra satelit'}
             </Box>
           )}
 
