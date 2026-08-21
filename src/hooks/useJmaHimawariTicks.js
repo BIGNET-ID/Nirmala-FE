@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { JMA_TICK_COUNT, JMA_TICK_STEP_MINUTES, JMA_SEA_BOUNDS, JMA_PUBLISH_LAG_MINUTES, roundDownToStep, buildJmaHimawariUrl } from '@/lib/jmaHimawari';
+import { JMA_TICK_COUNT, JMA_TICK_STEP_MINUTES, JMA_PUBLISH_LAG_MINUTES, roundDownToStep, buildJmaHimawariBasetime } from '@/lib/jmaHimawari';
 
 // Real time keeps moving while the user sits in Himawari mode — re-derive
 // the tick list periodically so "live" advances, the same way the old
@@ -20,7 +20,7 @@ function buildTicks() {
   const out = [];
   for (let i = JMA_TICK_COUNT - 1; i >= 0; i--) {
     const date = new Date(latest.getTime() - i * JMA_TICK_STEP_MINUTES * 60 * 1000);
-    out.push({ date, url: buildJmaHimawariUrl(date) });
+    out.push({ date, basetime: buildJmaHimawariBasetime(date) });
   }
   return out;
 }
@@ -36,5 +36,5 @@ export function useJmaHimawariTicks(active) {
     return () => clearInterval(id);
   }, [active]);
 
-  return { ticks, bounds: JMA_SEA_BOUNDS, loading: false };
+  return { ticks, loading: false };
 }
