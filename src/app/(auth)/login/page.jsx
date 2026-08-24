@@ -188,7 +188,7 @@ export default function LoginPage() {
           </Button>
 
           <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 2.5, color: 'var(--color-text-muted)', ...{ fontFamily: 'var(--font-family-mono)' } }}>
-            Nirmala · Auth VIONA-4
+            Nirmala · Secure Login
           </Typography>
         </Box>
       </Box>

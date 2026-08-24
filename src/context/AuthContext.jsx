@@ -17,7 +17,7 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  // GET /api/manifest once per session — independent of VIONA login status.
+  // GET /api/manifest once per session — independent of login status.
   // Feeds UI-level feature gating (layer toggles) and initial map view, per
   // PRD §6.3. This is NOT a security gate: AuthGuard's login check is untouched.
   useEffect(() => {
@@ -37,7 +37,7 @@ export function AuthProvider({ children }) {
     setUser(userData);
   };
 
-  /** Authenticate against the VIONA-4 workflow via the /api/auth/login proxy. */
+  /** Authenticate via the /api/auth/login proxy. */
   const signIn = async (email, password) => {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
