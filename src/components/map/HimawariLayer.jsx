@@ -88,7 +88,7 @@ function probeBasetime(basetime) {
   });
 }
 
-export default function HimawariLayer({ active, candidateBasetimes = [], prefetchBasetime = null, opacity = 0.7, onStatus, onZoomRangeChange, onBasetimeResolved }) {
+export default function HimawariLayer({ active, candidateBasetimes = [], prefetchBasetime = null, opacity = 0.55, onStatus, onZoomRangeChange, onBasetimeResolved }) {
   const map = useMap();
   const overlayRef = useRef(null);
   const prevOverlayRef = useRef(null);

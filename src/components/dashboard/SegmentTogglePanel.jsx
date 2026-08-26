@@ -144,13 +144,14 @@ const OWM_LAYERS = [
 ];
 
 export default function SegmentTogglePanel({
-  activeLayer, onLayerChange, showMarkers, onToggleMarkers, showCoverage, onToggleCoverage,
+  activeLayer, onLayerChange, onToggleHimawari, showMarkers, onToggleMarkers, showCoverage, onToggleCoverage,
   showLightning, onToggleLightning, lightningCount, lightningStatus,
   showStorms, onToggleStorms, stormCount, stormStatus,
   showWind, onToggleWind, windStatus,
   owmLayer, onOwmChange,
   permissions,
 }) {
+  const himawariActive = activeLayer === 'himawari';
   // Fail-open: a control is only hidden when the manifest explicitly says
   // `false`. Undefined/null (manifest not loaded yet, or flag absent) keeps
   // it visible — same rule MetricLayerSelector used.
@@ -180,11 +181,10 @@ export default function SegmentTogglePanel({
     >
       <SegmentGroup title="Sky Segment">
         <VendorCard title="JMA Himawari-9" accent="var(--nirmala-cyan)">
-          <ModeButton
-            active={activeLayer === 'himawari'}
-            icon={METRICS.himawari.icon}
+          <LayerSwitch
+            checked={himawariActive}
+            onChange={onToggleHimawari}
             label={METRICS.himawari.label}
-            onClick={() => onLayerChange('himawari')}
           />
         </VendorCard>
 
@@ -211,6 +211,18 @@ export default function SegmentTogglePanel({
               );
             })}
           </Box>
+          {/* Both Himawari (cloud-top IR) and this tile depict cloud/weather
+              cover over the same area — layering them at full strength makes
+              them hard to tell apart. OpenWeather's tile opacity is lowered
+              automatically (see page.jsx) while Himawari is active; this note
+              is the only way the user learns why the overlay looks fainter,
+              since color alone can't communicate it (OpenWeather's tile
+              colors are fixed server-side, not something we can restyle). */}
+          {himawariActive && owmLayer && (
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.62rem', lineHeight: 1.4 }}>
+              Opacity diturunkan otomatis karena Himawari aktif
+            </Typography>
+          )}
           {onToggleWind && (
             <LayerSwitch checked={showWind} onChange={onToggleWind} label="Angin (partikel)" status={windStatus} />
           )}

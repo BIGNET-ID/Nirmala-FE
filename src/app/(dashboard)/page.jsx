@@ -55,6 +55,17 @@ export default function NirmalaDashboard() {
   const { field: windField, status: windFieldStatus } = useWindField();
 
   const [activeLayer, setActiveLayer] = useState('rain');
+  // The last-selected ground mode (rain/mesh/node) — restored when the
+  // Himawari switch turns off, so leaving Himawari mode never dead-ends on
+  // "no mode selected"; it goes back to wherever the user actually was.
+  const [groundLayer, setGroundLayer] = useState('rain');
+  const handleLayerChange = (layer) => {
+    setActiveLayer(layer);
+    if (layer !== 'himawari') setGroundLayer(layer);
+  };
+  const handleHimawariToggle = (checked) => {
+    setActiveLayer(checked ? 'himawari' : groundLayer);
+  };
   const [showMarkers, setShowMarkers] = useState(true);
   const [showCoverage, setShowCoverage] = useState(true);
   const [showLightning, setShowLightning] = useState(false);
@@ -120,7 +131,7 @@ export default function NirmalaDashboard() {
   const appliedDefaultLayerRef = useRef(false);
   useEffect(() => {
     if (appliedDefaultLayerRef.current || !defaultLayer) return;
-    if (METRICS[defaultLayer]) setActiveLayer(defaultLayer);
+    if (METRICS[defaultLayer]) handleLayerChange(defaultLayer);
     appliedDefaultLayerRef.current = true;
   }, [defaultLayer]);
 
@@ -230,7 +241,11 @@ export default function NirmalaDashboard() {
         <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           <Box sx={{ position: 'absolute', inset: 0, display: activeTab === 'current' ? 'block' : 'none' }}>
             <GoogleMapWrapper onMapLoad={setMap}>
-              <OpenWeatherLayer layer={owmLayer} />
+              {/* Himawari (cloud-top IR) and this tile both depict cloud/weather
+                  cover over the same area — lower this one's opacity while
+                  Himawari is active so the two don't visually fight (see the
+                  matching note in SegmentTogglePanel). */}
+              <OpenWeatherLayer layer={owmLayer} opacity={activeLayer === 'himawari' ? 0.4 : 0.75} />
               {activeLayer === 'rain' && (
                 <CanvasHeatmapOverlay stations={SENSOR_STATIONS} showCoverage={showCoverage} />
               )}
@@ -275,7 +290,8 @@ export default function NirmalaDashboard() {
             {/* Left: Sky/Ground Segment panel */}
             <SegmentTogglePanel
               activeLayer={activeLayer}
-              onLayerChange={setActiveLayer}
+              onLayerChange={handleLayerChange}
+              onToggleHimawari={handleHimawariToggle}
               showMarkers={showMarkers}
               onToggleMarkers={setShowMarkers}
               showCoverage={showCoverage}
