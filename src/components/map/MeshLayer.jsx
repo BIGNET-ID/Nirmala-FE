@@ -2,18 +2,18 @@
 
 import { useEffect, useMemo, useRef } from 'react';
 import { useMap } from '@vis.gl/react-google-maps';
-import { buildMinimumSpanningTree } from '@/lib/meshTopology';
+import { buildSensorMeshGraph } from '@/lib/meshTopology';
 import { edgeDistanceToColor } from '@/lib/algorithms/colorScales';
 
 /**
- * "Mesh Map" mode: a Minimum Spanning Tree connecting every sensor — every
- * sensor has at least one edge, and the tree's longest edges are exactly
- * the biggest sensor-coverage gaps nationwide (see meshTopology.js for why
- * an MST, not a plain nearest-neighbour graph or a full complete graph).
- * Edge colour+thickness scale with distance (short = thin/cool, long =
- * thick/hot) so gaps are visible at a glance, at any zoom level — unlike
- * the old nearest-neighbour mesh, there is no zoom threshold here; this is
- * meant to be read nationally first, then zoomed in for local detail.
+ * "Mesh Map" mode: a dense k-nearest-neighbour mesh connecting every
+ * sensor — every sensor has an edge to each of its nearest neighbours
+ * (forming a grid with cells/loops), and no sensor is ever left
+ * unconnected, even a lone outlier (see meshTopology.js for the bridge
+ * pass that guarantees this). Edge colour+thickness scale with distance
+ * (short = thin/cool, long = thick/hot) so gaps are visible at a glance,
+ * at any zoom level — this is meant to be read nationally first, then
+ * zoomed in for local detail.
  * Draws edges ONLY — the dots themselves are SensorDotLayer's job (it owns
  * click/select), mounted on top of this layer in page.jsx.
  */
@@ -28,7 +28,7 @@ export default function MeshLayer({ stations = [], onDistanceRangeChange }) {
   // changes every live tick — so it's memoized on the id set, not `stations`.
   const stationIdKey = stations.map((s) => s.id).join(',');
   const { edges, minDistanceKm, maxDistanceKm } = useMemo(
-    () => buildMinimumSpanningTree(stations),
+    () => buildSensorMeshGraph(stations, { k: 12 }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [stationIdKey],
   );
