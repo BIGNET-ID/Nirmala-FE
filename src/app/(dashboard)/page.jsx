@@ -13,6 +13,7 @@ import ThunderstormLayer from '@/components/map/ThunderstormLayer';
 import WindParticleLayer from '@/components/map/WindParticleLayer';
 import HimawariLayer from '@/components/map/HimawariLayer';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
+import ProvinceFilterSelect from '@/components/dashboard/ProvinceFilterSelect';
 import MetricLayerSelector from '@/components/dashboard/MetricLayerSelector';
 import ColorRampLegend from '@/components/dashboard/ColorRampLegend';
 import SensorDetailDrawer from '@/components/dashboard/SensorDetailDrawer';
@@ -32,7 +33,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { METRICS } from '@/constants/metrics';
 import { MAP_CENTER, MAP_ZOOM_DEFAULT } from '@/constants/mapConfig';
 import { LAYER_STATUS } from '@/constants/layerStatus';
+import { PROVINCES } from '@/constants/provinces';
 import { buildRainTicks } from '@/lib/timeTravelRange';
+import { filterStationsInBounds, summarizeStations } from '@/lib/provinceFilter';
 
 // SSE streams report 'connecting'/'live'/'reconnecting'; a toggle also needs
 // to say "connected but nothing to show right now" — this maps both signals
@@ -63,6 +66,7 @@ export default function NirmalaDashboard() {
   const [selectedStation, setSelectedStation] = useState(null);
   const [map, setMap] = useState(null);
   const [activeTab, setActiveTab] = useState('current'); // 'current' | 'timeline' — PRD §4.1 Dual-Tab
+  const [selectedProvinceCode, setSelectedProvinceCode] = useState(null);
 
   // Global time-travel control (Play + scrubber). `timelineIndex === null`
   // means "live"; otherwise it indexes into `ticks` below. Ticks are per-mode:
@@ -175,6 +179,27 @@ export default function NirmalaDashboard() {
     map.setZoom(MAP_ZOOM_DEFAULT);
   };
 
+  const handleProvinceSelect = (code) => {
+    setSelectedProvinceCode(code);
+    if (!code) {
+      handleReset();
+      return;
+    }
+    const province = PROVINCES.find((p) => p.code === code);
+    if (!province || !map) return;
+    map.fitBounds(new window.google.maps.LatLngBounds(
+      { lat: province.bounds.south, lng: province.bounds.west },
+      { lat: province.bounds.north, lng: province.bounds.east },
+    ));
+  };
+
+  const matchedProvinceStations = useMemo(() => {
+    if (!selectedProvinceCode) return null;
+    const province = PROVINCES.find((p) => p.code === selectedProvinceCode);
+    if (!province) return null;
+    return summarizeStations(filterStationsInBounds(SENSOR_STATIONS, province.bounds));
+  }, [selectedProvinceCode, SENSOR_STATIONS]);
+
   return (
       <Box sx={{ display: 'flex', flexDirection: 'column', width: '100vw', height: '100vh', bgcolor: 'var(--nirmala-map-bg)', overflow: 'hidden' }}>
         
@@ -194,6 +219,14 @@ export default function NirmalaDashboard() {
           activeTab={activeTab}
           onTabChange={setActiveTab}
         />
+
+        {activeTab === 'current' && (
+          <ProvinceFilterSelect
+            selectedCode={selectedProvinceCode}
+            onSelectCode={handleProvinceSelect}
+            matched={matchedProvinceStations}
+          />
+        )}
 
         {/* Map container */}
         <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
