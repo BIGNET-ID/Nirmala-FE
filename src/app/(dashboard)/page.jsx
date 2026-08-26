@@ -14,7 +14,7 @@ import WindParticleLayer from '@/components/map/WindParticleLayer';
 import HimawariLayer from '@/components/map/HimawariLayer';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import ProvinceFilterSelect from '@/components/dashboard/ProvinceFilterSelect';
-import MetricLayerSelector from '@/components/dashboard/MetricLayerSelector';
+import SegmentTogglePanel from '@/components/dashboard/SegmentTogglePanel';
 import ColorRampLegend from '@/components/dashboard/ColorRampLegend';
 import SensorDetailDrawer from '@/components/dashboard/SensorDetailDrawer';
 import SensorStatsCard from '@/components/dashboard/SensorStatsCard';
@@ -275,8 +275,8 @@ export default function NirmalaDashboard() {
               }}
             />
 
-            {/* Left: Layer selector */}
-            <MetricLayerSelector
+            {/* Left: Sky/Ground Segment panel */}
+            <SegmentTogglePanel
               activeLayer={activeLayer}
               onLayerChange={setActiveLayer}
               showMarkers={showMarkers}
