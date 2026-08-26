@@ -169,8 +169,8 @@ export default function HimawariLayer({ active, candidateBasetimes = [], prefetc
       // its rAF loop above means its own `outgoing` (tracked in
       // prevOverlayRef) never reaches the t>=1 branch that would remove it,
       // so it would otherwise be stranded on the map at a partial opacity
-      // forever (reachable by scrubbing across cached ticks faster than
-      // CROSSFADE_MS).
+      // forever (reachable if `basetimeKey` advances across cached ticks
+      // faster than CROSSFADE_MS).
       if (prevOverlayRef.current && prevOverlayRef.current !== outgoing) {
         removeOverlayMapType(map, prevOverlayRef.current);
       }
@@ -226,12 +226,13 @@ export default function HimawariLayer({ active, candidateBasetimes = [], prefetc
       onBasetimeResolved?.(basetime);
     };
 
-    // Debounce: scrubbing the time-travel slider can change `basetimeKey`
-    // many times per second (every intermediate drag position), and each
-    // attempt costs a probe request — skip intermediate positions instead
-    // of doing that work for frames the user never settles on. This also
-    // shrinks (though doesn't by itself eliminate — see the crossfadeIn
-    // finalize step above) the window for two crossfades to overlap.
+    // Debounce: `basetimeKey` can change in quick succession (e.g. switching
+    // layers back and forth, or the tick-refresh interval rolling the ticks
+    // forward), and each attempt costs a probe request — skip transient
+    // intermediate values instead of doing that work for a basetime we're
+    // about to move past anyway. This also shrinks (though doesn't by
+    // itself eliminate — see the crossfadeIn finalize step above) the
+    // window for two crossfades to overlap.
     const debounceId = setTimeout(() => tryCandidate(0), 200);
 
     return () => {
@@ -239,8 +240,8 @@ export default function HimawariLayer({ active, candidateBasetimes = [], prefetc
       clearTimeout(debounceId);
       // Deliberately does NOT touch overlayRef/prevOverlayRef/fadeRafRef
       // here — this cleanup runs on every re-render where basetimeKey
-      // changes (e.g. the user scrubbing to a new tick), and the
-      // currently-visible map type (and any crossfade already in progress)
+      // changes (e.g. the tick-refresh interval rolling to a new tick), and
+      // the currently-visible map type (and any crossfade already in progress)
       // must keep showing until the NEXT tick's own tryCandidate/crossfadeIn
       // explicitly takes over as `outgoing`. See the two branches above
       // (inactive/no candidates, and exhausted candidates) for the only

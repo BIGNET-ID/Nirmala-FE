@@ -1,5 +1,5 @@
-// Pure helpers for the global time-travel timeline. Kept dependency-free so
-// the tick math is easy to reason about/test without React or Maps state.
+// A single pure helper, nearestTickIndex. Kept dependency-free so the tick
+// math is easy to reason about/test without React or Maps state.
 //
 // This file used to also hold buildRainTicks/parseSensorHistoryLabel for the
 // Current-tab rain-history scrubber, which was removed (see

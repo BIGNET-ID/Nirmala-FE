@@ -74,6 +74,16 @@ export default function NirmalaDashboard() {
   // candidates when the newest hasn't published yet, so this is the only
   // reliable source for "as of" time. null = nothing currently shown.
   const [himawariResolvedBasetime, setHimawariResolvedBasetime] = useState(null);
+  // Clear the resolved basetime as soon as we leave Himawari mode.
+  // HimawariLayer unmounts and stops reporting, but this state would
+  // otherwise keep its stale value — and since himawari.ticks is a rolling
+  // 24h window, that stale basetime can still match a tick on re-entry,
+  // making himawariLastSynced briefly show a genuinely stale "as of" time
+  // until HimawariLayer resolves a fresh one. Clearing it here means the
+  // badge hides itself (per its own no-stale-time rule) instead.
+  useEffect(() => {
+    if (activeLayer !== 'himawari') setHimawariResolvedBasetime(null);
+  }, [activeLayer]);
 
   // Current tab is a static live snapshot (PRD §4.1: no Play/scrubber for
   // any mode) — no timelineIndex/isPlaying state here. himawariBasetimeCandidates

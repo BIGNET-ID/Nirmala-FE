@@ -9,12 +9,12 @@ import { JMA_TICK_COUNT, JMA_TICK_STEP_MINUTES, JMA_PUBLISH_LAG_MINUTES, roundDo
 // client-side math (no network call), so a short interval is cheap.
 const REFRESH_MS = 60 * 1000;
 
-// NOTE: if the user has scrubbed to a specific historical tick when the
-// 10-minute bucket rolls, that index now points 10 minutes further back in
-// absolute time — visible via the updated displayed timestamp, not silent,
-// and the old bignet-backed hook drifted the same way. Freezing ticks while
-// scrubbed would require this hook to know about page.jsx's timelineIndex
-// state; left as-is to avoid that coupling for a cosmetic issue.
+// NOTE: when the 10-minute bucket rolls, every tick's absolute time shifts
+// 10 minutes further back — visible via the updated displayed timestamp,
+// not silent, and the old bignet-backed hook drifted the same way. This is
+// a cosmetic drift, not a bug: the Current tab always tracks "most recent,
+// with fallback" rather than a frozen historical point, so there is no
+// state elsewhere that needs to be kept in sync with the rolling ticks.
 function buildTicks() {
   const latest = roundDownToStep(new Date(Date.now() - JMA_PUBLISH_LAG_MINUTES * 60 * 1000));
   const out = [];
