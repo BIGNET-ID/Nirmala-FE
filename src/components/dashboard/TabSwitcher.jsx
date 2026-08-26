@@ -41,10 +41,10 @@ export default function TabSwitcher({ activeTab, onChange }) {
               fontWeight: 700,
               textTransform: 'none',
               borderRadius: 'var(--radius-full, 9999px)',
-              color: active ? '#04141a' : 'var(--color-text-muted)',
-              background: active ? 'var(--nirmala-cyan)' : 'transparent',
+              color: active ? 'var(--nirmala-cyan)' : 'var(--color-text-muted)',
+              background: active ? 'var(--nirmala-cyan-dim)' : 'transparent',
               transition: 'color var(--duration-fast,150ms) var(--ease-standard), background var(--duration-fast,150ms) var(--ease-standard)',
-              '&:hover': { background: active ? 'var(--nirmala-cyan)' : 'rgba(255,255,255,0.06)' },
+              '&:hover': { background: active ? 'var(--nirmala-cyan-dim)' : 'rgba(255,255,255,0.06)' },
             }}
           >
             {tab.label}

@@ -154,6 +154,13 @@ export default function NirmalaDashboard() {
   const appliedDefaultMapRef = useRef(false);
   useEffect(() => {
     if (appliedDefaultMapRef.current || !map || !defaultMap) return;
+    // If the user has already picked a province by the time the manifest
+    // resolves, don't yank the viewport back to the default view — but
+    // don't mark the ref as done either, so this can still apply later
+    // once the province selection is cleared (checked in the effect body,
+    // not the dependency array, so clearing the province alone doesn't
+    // re-run this effect and isn't required to).
+    if (selectedProvinceCode) return;
     map.setCenter({ lat: defaultMap.lat, lng: defaultMap.lng });
     // Never let the manifest zoom in tighter than our national-view floor —
     // it may only zoom out further.
@@ -175,9 +182,22 @@ export default function NirmalaDashboard() {
   };
 
   const handleReset = () => {
+    setSelectedProvinceCode(null);
     if (!map) return;
     map.setCenter(MAP_CENTER);
     map.setZoom(MAP_ZOOM_DEFAULT);
+  };
+
+  // Shared by handleProvinceSelect and the "map became ready after a
+  // province was already selected" effect below, so the LatLngBounds
+  // construction only lives in one place.
+  const fitBoundsToProvince = (targetMap, code) => {
+    const province = PROVINCES.find((p) => p.code === code);
+    if (!province || !targetMap) return;
+    targetMap.fitBounds(new window.google.maps.LatLngBounds(
+      { lat: province.bounds.south, lng: province.bounds.west },
+      { lat: province.bounds.north, lng: province.bounds.east },
+    ));
   };
 
   const handleProvinceSelect = (code) => {
@@ -186,13 +206,17 @@ export default function NirmalaDashboard() {
       handleReset();
       return;
     }
-    const province = PROVINCES.find((p) => p.code === code);
-    if (!province || !map) return;
-    map.fitBounds(new window.google.maps.LatLngBounds(
-      { lat: province.bounds.south, lng: province.bounds.west },
-      { lat: province.bounds.north, lng: province.bounds.east },
-    ));
+    fitBoundsToProvince(map, code);
   };
+
+  // Race guard: if the user picks a province before the map has finished
+  // loading, handleProvinceSelect's fitBounds call above is a no-op (no
+  // `map` yet) and never retries. Re-apply the fit once `map` becomes
+  // available while a province is still selected.
+  useEffect(() => {
+    if (!map || !selectedProvinceCode) return;
+    fitBoundsToProvince(map, selectedProvinceCode);
+  }, [map, selectedProvinceCode]);
 
   const matchedProvinceStations = useMemo(() => {
     if (!selectedProvinceCode) return null;
