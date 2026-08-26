@@ -2,25 +2,23 @@
 
 import { useEffect, useMemo, useRef } from 'react';
 import { useMap } from '@vis.gl/react-google-maps';
-import { buildNearestNeighborEdges } from '@/lib/meshTopology';
-import { statusColor } from '@/lib/sensorColor';
+import { buildMinimumSpanningTree } from '@/lib/meshTopology';
+import { edgeDistanceToColor } from '@/lib/algorithms/colorScales';
 
 /**
- * "Mesh Map" mode: edges connecting sensors to their nearest neighbours, each
- * edge a 2-stop gradient between the two endpoints' status colours (a "rain
- * front" reads as a gradient boundary between wet/dry sensors). Draws edges
- * ONLY — the dots themselves are SensorDotLayer's job (it owns click/select),
- * mounted on top of this layer in page.jsx.
- *
- * Edges are only drawn once the map is zoomed in past MESH_ZOOM_THRESHOLD —
- * at national zoom there are ~9-14k edges nationwide, which would just be a
- * solid smear. Below the threshold no edges render (dots only, via
- * SensorDotLayer).
+ * "Mesh Map" mode: a Minimum Spanning Tree connecting every sensor — every
+ * sensor has at least one edge, and the tree's longest edges are exactly
+ * the biggest sensor-coverage gaps nationwide (see meshTopology.js for why
+ * an MST, not a plain nearest-neighbour graph or a full complete graph).
+ * Edge colour+thickness scale with distance (short = thin/cool, long =
+ * thick/hot) so gaps are visible at a glance, at any zoom level — unlike
+ * the old nearest-neighbour mesh, there is no zoom threshold here; this is
+ * meant to be read nationally first, then zoomed in for local detail.
+ * Draws edges ONLY — the dots themselves are SensorDotLayer's job (it owns
+ * click/select), mounted on top of this layer in page.jsx.
  */
 
-const MESH_ZOOM_THRESHOLD = 7;
-
-export default function MeshLayer({ stations = [] }) {
+export default function MeshLayer({ stations = [], onDistanceRangeChange }) {
   const map = useMap();
   const overlayRef = useRef(null);
   const canvasRef = useRef(null);
@@ -29,14 +27,25 @@ export default function MeshLayer({ stations = [] }) {
   // Topology depends only on station positions/ids, not on isRaining, which
   // changes every live tick — so it's memoized on the id set, not `stations`.
   const stationIdKey = stations.map((s) => s.id).join(',');
-  const edges = useMemo(
-    () => buildNearestNeighborEdges(stations, 2),
+  const { edges, minDistanceKm, maxDistanceKm } = useMemo(
+    () => buildMinimumSpanningTree(stations),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [stationIdKey],
   );
   const edgesRef = useRef(edges);
+  const rangeRef = useRef({ minDistanceKm, maxDistanceKm });
 
-  useEffect(() => { edgesRef.current = edges; }, [edges]);
+  useEffect(() => {
+    edgesRef.current = edges;
+    rangeRef.current = { minDistanceKm, maxDistanceKm };
+  }, [edges, minDistanceKm, maxDistanceKm]);
+
+  // The legend (ColorRampLegend, in page.jsx) needs the same min/max this
+  // layer just computed, to label the gradient with real km numbers —
+  // report it up rather than recomputing the MST a second time there.
+  useEffect(() => {
+    onDistanceRangeChange?.({ minDistanceKm, maxDistanceKm });
+  }, [minDistanceKm, maxDistanceKm, onDistanceRangeChange]);
 
   useEffect(() => {
     if (!map || !window.google) return;
@@ -63,23 +72,22 @@ export default function MeshLayer({ stations = [] }) {
       };
       const inBounds = (p) => p.x >= -pad && p.x <= W + pad && p.y >= -pad && p.y <= H + pad;
 
-      if (map.getZoom() >= MESH_ZOOM_THRESHOLD) {
-        for (const { a, b } of edgesRef.current) {
-          const pa = toPx(a), pb = toPx(b);
-          if (!inBounds(pa) && !inBounds(pb)) continue;
-          const g = ctx.createLinearGradient(pa.x, pa.y, pb.x, pb.y);
-          g.addColorStop(0, statusColor(a));
-          g.addColorStop(1, statusColor(b));
-          ctx.strokeStyle = g;
-          ctx.lineWidth = 1;
-          ctx.globalAlpha = 0.55;
-          ctx.beginPath();
-          ctx.moveTo(pa.x, pa.y);
-          ctx.lineTo(pb.x, pb.y);
-          ctx.stroke();
-        }
-        ctx.globalAlpha = 1;
+      const { minDistanceKm: minKm, maxDistanceKm: maxKm } = rangeRef.current;
+      const span = Math.max(maxKm - minKm, 1e-6);
+
+      for (const { a, b, distanceKm } of edgesRef.current) {
+        const pa = toPx(a), pb = toPx(b);
+        if (!inBounds(pa) && !inBounds(pb)) continue;
+        const t = Math.min(1, Math.max(0, (distanceKm - minKm) / span));
+        ctx.strokeStyle = edgeDistanceToColor(t);
+        ctx.lineWidth = 1 + t * 3; // 1px shortest edge -> 4px longest edge
+        ctx.globalAlpha = 0.65;
+        ctx.beginPath();
+        ctx.moveTo(pa.x, pa.y);
+        ctx.lineTo(pb.x, pb.y);
+        ctx.stroke();
       }
+      ctx.globalAlpha = 1;
     };
 
     const scheduleDraw = () => {

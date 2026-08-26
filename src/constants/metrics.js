@@ -20,11 +20,14 @@ export const METRICS = {
     key: 'mesh',
     label: 'Mesh Map',
     icon: 'material-symbols:hub-outline-rounded',
-    // Rain-front gradient: dry (neutral) -> raining (blue), same pair used per-edge.
-    colorRamp: 'linear-gradient(to right, #4b5563, #34d399, #60a5fa)',
-    minLabel: 'Kering',
-    maxLabel: 'Hujan',
-    legendNote: 'Garis menghubungkan tiap sensor ke tetangga terdekatnya; warna gradien mengikuti status hujan kedua ujung.',
+    // Same ramp as 'rain' — reused for edge distance instead of rain
+    // intensity, so "cool short, hot long" reads consistently. minLabel/
+    // maxLabel here are just a loading-state fallback; ColorRampLegend
+    // overrides them with the actual km range once MeshLayer computes it.
+    colorRamp: 'linear-gradient(to right, #60a5fa, #34d399, #eab308, #fb923c, #ef4444, #c084fc)',
+    minLabel: 'Dekat',
+    maxLabel: 'Jauh',
+    legendNote: 'Minimum Spanning Tree — setiap sensor terhubung minimal satu garis. Makin merah & tebal, makin jauh jaraknya: garis ini menandai celah cakupan sensor terbesar.',
   },
   node: {
     key: 'node',

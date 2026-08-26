@@ -14,9 +14,19 @@ const NODE_STATUS_ITEMS = [
   { color: SENSOR_STATUS_COLOR.inactive, label: 'Nonaktif' },
 ];
 
-export default function ColorRampLegend({ activeLayer, showCoverage = false }) {
+export default function ColorRampLegend({ activeLayer, showCoverage = false, meshDistanceRange = null }) {
   const metric = METRICS[activeLayer];
   if (!metric) return null;
+
+  // Mesh Map's min/max depend on the actual national sensor layout, so
+  // they're computed by MeshLayer and passed down here rather than a fixed
+  // label in METRICS — real km numbers, not a static "Dekat"/"Jauh" guess.
+  const minLabel = activeLayer === 'mesh' && meshDistanceRange
+    ? `${meshDistanceRange.minDistanceKm.toFixed(1)} km`
+    : metric.minLabel;
+  const maxLabel = activeLayer === 'mesh' && meshDistanceRange
+    ? `${meshDistanceRange.maxDistanceKm.toFixed(1)} km`
+    : metric.maxLabel;
 
   return (
     <Box
@@ -41,8 +51,8 @@ export default function ColorRampLegend({ activeLayer, showCoverage = false }) {
         <>
           <Box sx={{ height: 12, borderRadius: 999, background: metric.colorRamp, mb: 0.75, border: '1px solid rgba(148,163,184,0.12)' }} />
           <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.66rem', color: 'text.secondary' }}>
-            <span>{metric.minLabel}</span>
-            <span>{metric.maxLabel}</span>
+            <span>{minLabel}</span>
+            <span>{maxLabel}</span>
           </Box>
         </>
       ) : activeLayer === 'node' ? (

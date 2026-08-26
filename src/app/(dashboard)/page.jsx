@@ -76,6 +76,10 @@ export default function NirmalaDashboard() {
   const [map, setMap] = useState(null);
   const [activeTab, setActiveTab] = useState('current'); // 'current' | 'timeline' — PRD §4.1 Dual-Tab
   const [selectedProvinceCode, setSelectedProvinceCode] = useState(null);
+  // Reported by MeshLayer once it computes the Mesh Map MST, so
+  // ColorRampLegend can label its gradient with the real km range instead
+  // of recomputing the same tree a second time.
+  const [meshDistanceRange, setMeshDistanceRange] = useState(null);
 
   const himawari = useJmaHimawariTicks(activeLayer === 'himawari');
   const [himawariStatus, setHimawariStatus] = useState('ok'); // 'ok' | 'loading' | 'unavailable' — only 'unavailable' has UI today (see the notice box below); 'loading' is reserved for a future spinner.
@@ -249,7 +253,9 @@ export default function NirmalaDashboard() {
               {activeLayer === 'rain' && (
                 <CanvasHeatmapOverlay stations={SENSOR_STATIONS} showCoverage={showCoverage} />
               )}
-              {activeLayer === 'mesh' && <MeshLayer stations={SENSOR_STATIONS} />}
+              {activeLayer === 'mesh' && (
+                <MeshLayer stations={SENSOR_STATIONS} onDistanceRangeChange={setMeshDistanceRange} />
+              )}
               {activeLayer === 'himawari' && (
                 <HimawariLayer
                   active
@@ -313,7 +319,7 @@ export default function NirmalaDashboard() {
             />
 
             {/* Right: Legend */}
-            <ColorRampLegend activeLayer={activeLayer} showCoverage={showCoverage} />
+            <ColorRampLegend activeLayer={activeLayer} showCoverage={showCoverage} meshDistanceRange={meshDistanceRange} />
 
             {/* Top-center: contextual info pill */}
             <MapInfoPill raining={stats.raining} total={stats.total} loading={loading && stats.total === 0} />
