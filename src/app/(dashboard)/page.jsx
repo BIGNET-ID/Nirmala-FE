@@ -13,13 +13,15 @@ import ThunderstormLayer from '@/components/map/ThunderstormLayer';
 import WindParticleLayer from '@/components/map/WindParticleLayer';
 import HimawariLayer from '@/components/map/HimawariLayer';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
-import MetricLayerSelector from '@/components/dashboard/MetricLayerSelector';
+import ProvinceFilterSelect from '@/components/dashboard/ProvinceFilterSelect';
+import SegmentTogglePanel from '@/components/dashboard/SegmentTogglePanel';
 import ColorRampLegend from '@/components/dashboard/ColorRampLegend';
 import SensorDetailDrawer from '@/components/dashboard/SensorDetailDrawer';
 import SensorStatsCard from '@/components/dashboard/SensorStatsCard';
 import MapInfoPill from '@/components/dashboard/MapInfoPill';
 import MapControls from '@/components/map/MapControls';
 import TimeTravelBar from '@/components/dashboard/TimeTravelBar';
+import TimelineComingSoon from '@/components/dashboard/TimelineComingSoon';
 import { usePlatformData } from '@/hooks/usePlatformData';
 import { useSensorStream } from '@/hooks/useSensorStream';
 import { useLightningStream } from '@/hooks/useLightningStream';
@@ -32,7 +34,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { METRICS } from '@/constants/metrics';
 import { MAP_CENTER, MAP_ZOOM_DEFAULT } from '@/constants/mapConfig';
 import { LAYER_STATUS } from '@/constants/layerStatus';
+import { PROVINCES } from '@/constants/provinces';
 import { buildRainTicks } from '@/lib/timeTravelRange';
+import { filterStationsInBounds, summarizeStations } from '@/lib/provinceFilter';
 
 // SSE streams report 'connecting'/'live'/'reconnecting'; a toggle also needs
 // to say "connected but nothing to show right now" — this maps both signals
@@ -62,6 +66,8 @@ export default function NirmalaDashboard() {
   const [owmLayer, setOwmLayer] = useState(null); // OpenWeather tile layer id or null
   const [selectedStation, setSelectedStation] = useState(null);
   const [map, setMap] = useState(null);
+  const [activeTab, setActiveTab] = useState('current'); // 'current' | 'timeline' — PRD §4.1 Dual-Tab
+  const [selectedProvinceCode, setSelectedProvinceCode] = useState(null);
 
   // Global time-travel control (Play + scrubber). `timelineIndex === null`
   // means "live"; otherwise it indexes into `ticks` below. Ticks are per-mode:
@@ -148,6 +154,13 @@ export default function NirmalaDashboard() {
   const appliedDefaultMapRef = useRef(false);
   useEffect(() => {
     if (appliedDefaultMapRef.current || !map || !defaultMap) return;
+    // If the user has already picked a province by the time the manifest
+    // resolves, don't yank the viewport back to the default view — but
+    // don't mark the ref as done either, so this can still apply later
+    // once the province selection is cleared (checked in the effect body,
+    // not the dependency array, so clearing the province alone doesn't
+    // re-run this effect and isn't required to).
+    if (selectedProvinceCode) return;
     map.setCenter({ lat: defaultMap.lat, lng: defaultMap.lng });
     // Never let the manifest zoom in tighter than our national-view floor —
     // it may only zoom out further.
@@ -169,10 +182,48 @@ export default function NirmalaDashboard() {
   };
 
   const handleReset = () => {
+    setSelectedProvinceCode(null);
     if (!map) return;
     map.setCenter(MAP_CENTER);
     map.setZoom(MAP_ZOOM_DEFAULT);
   };
+
+  // Shared by handleProvinceSelect and the "map became ready after a
+  // province was already selected" effect below, so the LatLngBounds
+  // construction only lives in one place.
+  const fitBoundsToProvince = (targetMap, code) => {
+    const province = PROVINCES.find((p) => p.code === code);
+    if (!province || !targetMap) return;
+    targetMap.fitBounds(new window.google.maps.LatLngBounds(
+      { lat: province.bounds.south, lng: province.bounds.west },
+      { lat: province.bounds.north, lng: province.bounds.east },
+    ));
+  };
+
+  const handleProvinceSelect = (code) => {
+    setSelectedProvinceCode(code);
+    if (!code) {
+      handleReset();
+      return;
+    }
+    fitBoundsToProvince(map, code);
+  };
+
+  // Race guard: if the user picks a province before the map has finished
+  // loading, handleProvinceSelect's fitBounds call above is a no-op (no
+  // `map` yet) and never retries. Re-apply the fit once `map` becomes
+  // available while a province is still selected.
+  useEffect(() => {
+    if (!map || !selectedProvinceCode) return;
+    fitBoundsToProvince(map, selectedProvinceCode);
+  }, [map, selectedProvinceCode]);
+
+  const matchedProvinceStations = useMemo(() => {
+    if (!selectedProvinceCode) return null;
+    const province = PROVINCES.find((p) => p.code === selectedProvinceCode);
+    if (!province) return null;
+    return summarizeStations(filterStationsInBounds(SENSOR_STATIONS, province.bounds));
+  }, [selectedProvinceCode, SENSOR_STATIONS]);
 
   return (
       <Box sx={{ display: 'flex', flexDirection: 'column', width: '100vw', height: '100vh', bgcolor: 'var(--nirmala-map-bg)', overflow: 'hidden' }}>
@@ -186,151 +237,169 @@ export default function NirmalaDashboard() {
           sx={{ position: 'fixed', inset: 0, bgcolor: '#eef5ff', pointerEvents: 'none', zIndex: 3000 }}
         />
 
-        <DashboardHeader stats={stats} health={health} streamStatus={sensorStreamStatus} />
+        <DashboardHeader
+          stats={stats}
+          health={health}
+          streamStatus={sensorStreamStatus}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
+
+        {activeTab === 'current' && (
+          <ProvinceFilterSelect
+            selectedCode={selectedProvinceCode}
+            onSelectCode={handleProvinceSelect}
+            matched={matchedProvinceStations}
+          />
+        )}
 
         {/* Map container */}
         <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-          <GoogleMapWrapper onMapLoad={setMap}>
-            <OpenWeatherLayer layer={owmLayer} />
-            {activeLayer === 'rain' && (
-              <CanvasHeatmapOverlay stations={rainStations} showCoverage={showCoverage} />
-            )}
-            {activeLayer === 'mesh' && <MeshLayer stations={SENSOR_STATIONS} />}
-            {activeLayer === 'himawari' && (
-              <HimawariLayer
-                active
-                candidateBasetimes={himawariBasetimeCandidates}
-                prefetchBasetime={himawariPrefetchBasetime}
-                onStatus={setHimawariStatus}
-                onZoomRangeChange={setHimawariZoomInRange}
+          <Box sx={{ position: 'absolute', inset: 0, display: activeTab === 'current' ? 'block' : 'none' }}>
+            <GoogleMapWrapper onMapLoad={setMap}>
+              <OpenWeatherLayer layer={owmLayer} />
+              {activeLayer === 'rain' && (
+                <CanvasHeatmapOverlay stations={rainStations} showCoverage={showCoverage} />
+              )}
+              {activeLayer === 'mesh' && <MeshLayer stations={SENSOR_STATIONS} />}
+              {activeLayer === 'himawari' && (
+                <HimawariLayer
+                  active
+                  candidateBasetimes={himawariBasetimeCandidates}
+                  prefetchBasetime={himawariPrefetchBasetime}
+                  onStatus={setHimawariStatus}
+                  onZoomRangeChange={setHimawariZoomInRange}
+                />
+              )}
+              <ThunderstormLayer storms={thunderstorm} show={showStorms} />
+              <LightningLayer strikes={lightning} show={showLightning} />
+              <WindParticleLayer show={showWind} field={windField} />
+              <SensorDotLayer
+                stations={SENSOR_STATIONS}
+                showMarkers={activeLayer === 'rain' ? showMarkers : true}
+                selectedId={selectedStation?.id ?? null}
+                onSelect={setSelectedStation}
+                focus={activeLayer === 'node'}
               />
-            )}
-            <ThunderstormLayer storms={thunderstorm} show={showStorms} />
-            <LightningLayer strikes={lightning} show={showLightning} />
-            <WindParticleLayer show={showWind} field={windField} />
-            <SensorDotLayer
-              stations={SENSOR_STATIONS}
-              showMarkers={activeLayer === 'rain' ? showMarkers : true}
-              selectedId={selectedStation?.id ?? null}
-              onSelect={setSelectedStation}
-              focus={activeLayer === 'node'}
-            />
-          </GoogleMapWrapper>
+            </GoogleMapWrapper>
 
-          {/* Soften the Google attribution strip to match the theme, without
-              covering or reducing the legibility of the logo/Terms link. */}
-          <Box
-            sx={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: 40,
-              pointerEvents: 'none',
-              zIndex: 1,
-              background: 'linear-gradient(to top, var(--nirmala-map-bg) 0%, transparent 100%)',
-              opacity: 0.55,
-            }}
-          />
-
-          {/* Left: Layer selector */}
-          <MetricLayerSelector
-            activeLayer={activeLayer}
-            onLayerChange={setActiveLayer}
-            showMarkers={showMarkers}
-            onToggleMarkers={setShowMarkers}
-            showCoverage={showCoverage}
-            onToggleCoverage={setShowCoverage}
-            showLightning={showLightning}
-            onToggleLightning={setShowLightning}
-            lightningCount={lightning?.length || 0}
-            lightningStatus={streamStatus(lightningStreamStatus, lightning?.length || 0)}
-            showStorms={showStorms}
-            onToggleStorms={setShowStorms}
-            stormCount={thunderstorm?.length || 0}
-            stormStatus={streamStatus(thunderstormStreamStatus, thunderstorm?.length || 0)}
-            showWind={showWind}
-            onToggleWind={setShowWind}
-            windStatus={windFieldStatus}
-            owmLayer={owmLayer}
-            onOwmChange={setOwmLayer}
-            permissions={permissions}
-          />
-
-          {/* Right: Legend */}
-          <ColorRampLegend activeLayer={activeLayer} showCoverage={showCoverage} />
-
-          {/* Top-center: contextual info pill */}
-          <MapInfoPill raining={stats.raining} total={stats.total} loading={loading && stats.total === 0} />
-
-          {/* Top-center, below the info pill: Himawari notice — either "zoom
-              out of range" (JMA only serves this product at zoom 3-5; takes
-              priority since it explains why nothing shows regardless of data
-              status) or the load-failure notice (rare: JMA hasn't published
-              any of the last 4 frames, or a specifically-scrubbed frame
-              doesn't exist). Neither needs a permanent slot the way
-              MapInfoPill does. Hidden below the `sm` breakpoint like
-              TimeTravelBar itself — on mobile a failed overlay shows a blank
-              map with no explanation, but the legend note still
-              communicates the data's limitations regardless. */}
-          {activeLayer === 'himawari' && (!himawariZoomInRange || himawariStatus === 'unavailable') && (
+            {/* Soften the Google attribution strip to match the theme, without
+                covering or reducing the legibility of the logo/Terms link. */}
             <Box
               sx={{
                 position: 'absolute',
-                top: 128,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                zIndex: 'var(--z-overlay, 100)',
-                px: 1.75,
-                py: 0.75,
-                display: { xs: 'none', sm: 'block' },
-                backdropFilter: 'blur(20px)',
-                background: 'var(--nirmala-glass-bg)',
-                border: '1px solid var(--nirmala-glass-border)',
-                borderRadius: 'var(--radius-full, 9999px)',
-                fontSize: '0.78rem',
-                color: 'text.primary',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: 40,
+                pointerEvents: 'none',
+                zIndex: 1,
+                background: 'linear-gradient(to top, var(--nirmala-map-bg) 0%, transparent 100%)',
+                opacity: 0.55,
               }}
-            >
-              {himawariZoomInRange
-                ? 'Citra tidak tersedia untuk waktu ini'
-                : 'Perbesar/perkecil peta ke level zoom 3–5 untuk melihat citra satelit'}
-            </Box>
-          )}
-
-          {/* Bottom-left: sensor statistics */}
-          <SensorStatsCard stats={stats} />
-
-          {/* Bottom-center: time-travel player. Rain-history mode replays sensors
-              (viewport-capped, see useHistoricalSensorSnapshot for why); Himawari
-              mode scrubs real satellite frames. Not shown for Mesh/Node — no time
-              dimension there. */}
-          {(activeLayer === 'rain' || activeLayer === 'himawari') && (
-            <TimeTravelBar
-              ticks={ticks}
-              index={timelineIndex}
-              isPlaying={isPlaying}
-              onScrub={handleTimelineScrub}
-              onPlayPause={handleTimelinePlayPause}
-              onGoLive={handleTimelineGoLive}
-              loading={(activeLayer === 'himawari' && himawari.loading) || (activeLayer === 'rain' && rainHistory.loading)}
-              caveat={activeLayer === 'himawari' ? 'Citra infrared awan (suhu puncak awan) · Sumber: JMA (Japan Meteorological Agency)' : null}
             />
-          )}
 
-          {/* Map Controls */}
-          <MapControls
-            onZoomIn={() => handleZoom(1)}
-            onZoomOut={() => handleZoom(-1)}
-            onReset={handleReset}
-          />
+            {/* Left: Sky/Ground Segment panel */}
+            <SegmentTogglePanel
+              activeLayer={activeLayer}
+              onLayerChange={setActiveLayer}
+              showMarkers={showMarkers}
+              onToggleMarkers={setShowMarkers}
+              showCoverage={showCoverage}
+              onToggleCoverage={setShowCoverage}
+              showLightning={showLightning}
+              onToggleLightning={setShowLightning}
+              lightningCount={lightning?.length || 0}
+              lightningStatus={streamStatus(lightningStreamStatus, lightning?.length || 0)}
+              showStorms={showStorms}
+              onToggleStorms={setShowStorms}
+              stormCount={thunderstorm?.length || 0}
+              stormStatus={streamStatus(thunderstormStreamStatus, thunderstorm?.length || 0)}
+              showWind={showWind}
+              onToggleWind={setShowWind}
+              windStatus={windFieldStatus}
+              owmLayer={owmLayer}
+              onOwmChange={setOwmLayer}
+              permissions={permissions}
+            />
 
-          {/* Detail drawer */}
-          <SensorDetailDrawer
-            station={selectedStation}
-            open={Boolean(selectedStation)}
-            onClose={() => setSelectedStation(null)}
-          />
+            {/* Right: Legend */}
+            <ColorRampLegend activeLayer={activeLayer} showCoverage={showCoverage} />
+
+            {/* Top-center: contextual info pill */}
+            <MapInfoPill raining={stats.raining} total={stats.total} loading={loading && stats.total === 0} />
+
+            {/* Top-center, below the info pill: Himawari notice — either "zoom
+                out of range" (JMA only serves this product at zoom 3-5; takes
+                priority since it explains why nothing shows regardless of data
+                status) or the load-failure notice (rare: JMA hasn't published
+                any of the last 4 frames, or a specifically-scrubbed frame
+                doesn't exist). Neither needs a permanent slot the way
+                MapInfoPill does. Hidden below the `sm` breakpoint like
+                TimeTravelBar itself — on mobile a failed overlay shows a blank
+                map with no explanation, but the legend note still
+                communicates the data's limitations regardless. */}
+            {activeLayer === 'himawari' && (!himawariZoomInRange || himawariStatus === 'unavailable') && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 128,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  zIndex: 'var(--z-overlay, 100)',
+                  px: 1.75,
+                  py: 0.75,
+                  display: { xs: 'none', sm: 'block' },
+                  backdropFilter: 'blur(20px)',
+                  background: 'var(--nirmala-glass-bg)',
+                  border: '1px solid var(--nirmala-glass-border)',
+                  borderRadius: 'var(--radius-full, 9999px)',
+                  fontSize: '0.78rem',
+                  color: 'text.primary',
+                }}
+              >
+                {himawariZoomInRange
+                  ? 'Citra tidak tersedia untuk waktu ini'
+                  : 'Perbesar/perkecil peta ke level zoom 3–5 untuk melihat citra satelit'}
+              </Box>
+            )}
+
+            {/* Bottom-left: sensor statistics */}
+            <SensorStatsCard stats={stats} />
+
+            {/* Bottom-center: time-travel player. Rain-history mode replays sensors
+                (viewport-capped, see useHistoricalSensorSnapshot for why); Himawari
+                mode scrubs real satellite frames. Not shown for Mesh/Node — no time
+                dimension there. */}
+            {(activeLayer === 'rain' || activeLayer === 'himawari') && (
+              <TimeTravelBar
+                ticks={ticks}
+                index={timelineIndex}
+                isPlaying={isPlaying}
+                onScrub={handleTimelineScrub}
+                onPlayPause={handleTimelinePlayPause}
+                onGoLive={handleTimelineGoLive}
+                loading={(activeLayer === 'himawari' && himawari.loading) || (activeLayer === 'rain' && rainHistory.loading)}
+                caveat={activeLayer === 'himawari' ? 'Citra infrared awan (suhu puncak awan) · Sumber: JMA (Japan Meteorological Agency)' : null}
+              />
+            )}
+
+            {/* Map Controls */}
+            <MapControls
+              onZoomIn={() => handleZoom(1)}
+              onZoomOut={() => handleZoom(-1)}
+              onReset={handleReset}
+            />
+
+            {/* Detail drawer */}
+            <SensorDetailDrawer
+              station={selectedStation}
+              open={Boolean(selectedStation)}
+              onClose={() => setSelectedStation(null)}
+            />
+          </Box>
+
+          {activeTab === 'timeline' && <TimelineComingSoon />}
         </Box>
       </Box>
   );
