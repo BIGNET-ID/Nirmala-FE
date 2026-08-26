@@ -62,6 +62,7 @@ export default function NirmalaDashboard() {
   const [owmLayer, setOwmLayer] = useState(null); // OpenWeather tile layer id or null
   const [selectedStation, setSelectedStation] = useState(null);
   const [map, setMap] = useState(null);
+  const [activeTab, setActiveTab] = useState('current'); // 'current' | 'timeline' — PRD §4.1 Dual-Tab
 
   // Global time-travel control (Play + scrubber). `timelineIndex === null`
   // means "live"; otherwise it indexes into `ticks` below. Ticks are per-mode:
@@ -186,7 +187,13 @@ export default function NirmalaDashboard() {
           sx={{ position: 'fixed', inset: 0, bgcolor: '#eef5ff', pointerEvents: 'none', zIndex: 3000 }}
         />
 
-        <DashboardHeader stats={stats} health={health} streamStatus={sensorStreamStatus} />
+        <DashboardHeader
+          stats={stats}
+          health={health}
+          streamStatus={sensorStreamStatus}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
 
         {/* Map container */}
         <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>

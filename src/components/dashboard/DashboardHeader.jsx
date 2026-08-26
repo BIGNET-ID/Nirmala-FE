@@ -7,6 +7,7 @@ import { Box, Button, IconButton, Menu, MenuItem, Divider, Typography, Tooltip }
 import { Icon } from '@iconify/react';
 import { useAuth } from '@/hooks/useAuth';
 import { useThemeMode } from '@/context/ThemeModeContext';
+import TabSwitcher from '@/components/dashboard/TabSwitcher';
 
 const NAV = [
   { label: 'Peta Radar', href: '/', icon: 'material-symbols:radar-rounded', exact: true },
@@ -20,7 +21,7 @@ function isActive(pathname, item) {
   return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
 
-export default function DashboardHeader({ stats, health, streamStatus }) {
+export default function DashboardHeader({ stats, health, streamStatus, activeTab, onTabChange }) {
   const pathname = usePathname() || '/';
   const router = useRouter();
   const { user, logout } = useAuth() || {};
@@ -108,6 +109,10 @@ export default function DashboardHeader({ stats, health, streamStatus }) {
           );
         })}
       </Box>
+
+      <Box sx={{ width: '1px', height: 20, background: 'var(--nirmala-glass-border)', flexShrink: 0 }} />
+
+      <TabSwitcher activeTab={activeTab} onChange={onTabChange} />
 
       {/* Right group — pinned right, never shrinks */}
       <Box sx={{ ml: 'auto', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 1.5 }}>
