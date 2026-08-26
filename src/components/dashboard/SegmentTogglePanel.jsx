@@ -88,7 +88,7 @@ function VendorCard({ title, accent, active = true, children }) {
       sx={{
         p: 1.25,
         borderRadius: 'var(--radius-md, 8px)',
-        borderLeft: `2px solid ${active ? accent : 'var(--nirmala-glass-border)'}`,
+        borderLeft: `2px solid ${accent}`,
         background: 'rgba(255,255,255,0.02)',
         opacity: active ? 1 : 0.5,
         display: 'flex',
