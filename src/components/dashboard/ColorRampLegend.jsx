@@ -45,7 +45,11 @@ export default function ColorRampLegend({ activeLayer, showCoverage = false }) {
             <span>{metric.maxLabel}</span>
           </Box>
         </>
-      ) : (
+      ) : activeLayer === 'node' ? (
+        // Sensor-status dots only make sense for the Node layer (each dot IS
+        // a sensor). Himawari also has no colorRamp (it's a raw JMA tile
+        // image, not our own value scale) but must not fall into this
+        // branch — there's no sensor status to show for a satellite image.
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.6 }}>
           {NODE_STATUS_ITEMS.map((item) => (
             <Box key={item.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
@@ -56,7 +60,7 @@ export default function ColorRampLegend({ activeLayer, showCoverage = false }) {
             </Box>
           ))}
         </Box>
-      )}
+      ) : null}
 
       {metric.legendNote && (
         <Typography variant="caption" sx={{ display: 'block', mt: 1, color: 'text.secondary', fontSize: '0.62rem', lineHeight: 1.4 }}>
