@@ -81,6 +81,18 @@ export default function NirmalaDashboard() {
   // of recomputing the same tree a second time.
   const [meshDistanceRange, setMeshDistanceRange] = useState(null);
 
+  // Dismiss state for the two top-center status pills — manual close only,
+  // never a timer (this is ongoing status, not a one-off toast; see the
+  // components' own doc comments). Resetting on mode/tab change means a
+  // user who dismissed one for "Kerapatan Hujan" still sees it again after
+  // switching to "Himawari", since the content underneath is genuinely new.
+  const [infoPillDismissed, setInfoPillDismissed] = useState(false);
+  const [timestampBadgeDismissed, setTimestampBadgeDismissed] = useState(false);
+  useEffect(() => {
+    setInfoPillDismissed(false);
+    setTimestampBadgeDismissed(false);
+  }, [activeLayer, activeTab]);
+
   const himawari = useJmaHimawariTicks(activeLayer === 'himawari');
   const [himawariStatus, setHimawariStatus] = useState('ok'); // 'ok' | 'loading' | 'unavailable' — only 'unavailable' has UI today (see the notice box below); 'loading' is reserved for a future spinner.
   const [himawariZoomInRange, setHimawariZoomInRange] = useState(true); // JMA only serves this product at zoom 3-5 — see HimawariLayer's onZoomRangeChange
@@ -322,15 +334,25 @@ export default function NirmalaDashboard() {
             <ColorRampLegend activeLayer={activeLayer} showCoverage={showCoverage} meshDistanceRange={meshDistanceRange} />
 
             {/* Top-center: contextual info pill */}
-            <MapInfoPill raining={stats.raining} total={stats.total} loading={loading && stats.total === 0} />
+            {!infoPillDismissed && (
+              <MapInfoPill
+                raining={stats.raining}
+                total={stats.total}
+                loading={loading && stats.total === 0}
+                onClose={() => setInfoPillDismissed(true)}
+              />
+            )}
 
             {/* Top-center, below the info pill: Live Timestamp Badge (PRD §4.1) —
                 when each mode's data was actually last synced. Renders nothing
                 until a real timestamp is known (see LiveTimestampBadge). */}
-            <LiveTimestampBadge
-              label={METRICS[activeLayer]?.label ?? ''}
-              timestamp={activeLayerLastSynced}
-            />
+            {!timestampBadgeDismissed && (
+              <LiveTimestampBadge
+                label={METRICS[activeLayer]?.label ?? ''}
+                timestamp={activeLayerLastSynced}
+                onClose={() => setTimestampBadgeDismissed(true)}
+              />
+            )}
 
             {/* Top-center, below the timestamp badge: Himawari notice — either
                 "zoom out of range" (JMA only serves this product at zoom 3-5;

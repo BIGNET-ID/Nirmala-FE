@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material';
+import { Box, IconButton, Typography } from '@mui/material';
 import { Icon } from '@iconify/react';
 
 const monoSx = { fontFamily: 'var(--font-family-mono)', fontWeight: 700 };
@@ -6,8 +6,16 @@ const monoSx = { fontFamily: 'var(--font-family-mono)', fontWeight: 700 };
 /**
  * Contextual info pill, top-centre over the map. Summarises the active layer
  * (rain density) using real counts — no fabricated values.
+ *
+ * Dismissible via `onClose`, but never auto-hides on a timer: this is
+ * ongoing status (how many sensors report rain right now), not a one-off
+ * toast — a fixed-time disappearance would silently remove information a
+ * user might still be reading (WCAG 2.2.1 Timing Adjustable exists for
+ * exactly this reason). If `onClose` is provided, the parent owns
+ * re-showing it (e.g. on mode/tab change) — this component only reports
+ * the dismiss intent.
  */
-export default function MapInfoPill({ raining, total, loading }) {
+export default function MapInfoPill({ raining, total, loading, onClose }) {
   return (
     <Box
       sx={{
@@ -19,7 +27,8 @@ export default function MapInfoPill({ raining, total, loading }) {
         display: 'flex',
         alignItems: 'center',
         gap: 1,
-        px: 1.75,
+        pl: 1.75,
+        pr: onClose ? 0.5 : 1.75,
         py: 0.75,
         maxWidth: 'min(420px, calc(100vw - 32px))',
         display: { xs: 'none', sm: 'flex' },
@@ -40,6 +49,16 @@ export default function MapInfoPill({ raining, total, loading }) {
           </>
         )}
       </Typography>
+      {onClose && (
+        <IconButton
+          onClick={onClose}
+          size="small"
+          aria-label="Tutup"
+          sx={{ p: 0.5, color: 'text.secondary', flexShrink: 0, '&:hover': { color: 'text.primary' } }}
+        >
+          <Icon icon="material-symbols:close-rounded" width={14} />
+        </IconButton>
+      )}
     </Box>
   );
 }
