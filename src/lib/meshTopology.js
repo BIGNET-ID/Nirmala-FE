@@ -1,24 +1,21 @@
-// Minimum Spanning Tree topology for the "Mesh Map" mode (sensor-coverage
-// gap analysis).
+// Sensor mesh graph for the "Mesh Map" mode (sensor-coverage gap analysis).
 //
 // Pure, framework-free: takes station objects ({id, lat, lng, ...}) and
-// returns an MST — every station connected via edges whose total length is
-// minimal. Every station is guaranteed reachable (no isolated nodes), and
-// the tree's LONGEST edges are exactly the biggest sensor-coverage gaps
-// nationwide — that's why an MST, not a plain k-nearest-neighbour graph
-// (which can miss the true national picture) or a naive complete graph
-// (O(n^2) — ~10.5M edges at ~4.5k stations, computationally and visually
-// unusable).
+// returns a MESH GRAPH — every station connected to its k nearest
+// neighbours, forming a dense grid with cells/loops (not a sparse tree).
+// Every station is guaranteed reachable — no isolated nodes, even a lone
+// station far from everything else — because a bridge pass connects any
+// remaining disconnected component to the rest of the network.
 //
-// Algorithm: Kruskal's MST restricted to a k-nearest-neighbour CANDIDATE
-// graph (built via a coarse spatial grid) instead of the full O(n^2) edge
-// set — the true MST is almost always found within a "few nearest
-// neighbours" candidate graph, keeping candidate generation near-linear.
-// If the candidate graph still leaves stations disconnected (e.g. a small
-// cluster far from every other station, so no candidate edge ever crosses
-// between them), a bridge pass connects the remaining components using
-// their nearest cross-component station pair, so the result is always one
-// connected tree spanning every input station.
+// Algorithm: build a k-nearest-neighbour CANDIDATE graph (via a coarse
+// spatial grid) instead of the full O(n^2) edge set (~10.5M edges at
+// ~4.5k stations, computationally and visually unusable) — the candidate
+// graph itself, not a reduction of it, IS the rendered mesh. If the
+// candidate graph still leaves stations disconnected (e.g. a small
+// cluster, or a single outlier, far from every other station, so no
+// candidate edge ever crosses between them), a bridge pass connects the
+// remaining components using their nearest cross-component station pair,
+// so the result always spans every input station.
 //
 // Topology depends only on station POSITIONS, which are static — callers
 // should cache the result keyed on the station id set, not recompute on
@@ -67,8 +64,10 @@ function buildSpatialGrid(pts) {
 }
 
 // k nearest candidates per station, searched over a `radius`-cell
-// neighbourhood — generous enough that the true MST almost always lives
-// inside this candidate set, without ever building the full O(n^2) graph.
+// neighbourhood — generous enough that each station's true k nearest
+// neighbours almost always live inside this candidate set, without ever
+// building the full O(n^2) graph. This candidate set IS the mesh — it is
+// not reduced further.
 function buildCandidateEdges(pts, k, radius) {
   const { grid, cellOf } = buildSpatialGrid(pts);
   const seen = new Set();
@@ -129,17 +128,13 @@ class DisjointSet {
   }
 }
 
-// Kruskal's MST over a given candidate edge set. Returns the MST edges
-// plus the DisjointSet so the caller can tell whether the result already
-// spans every station or is still a forest that needs bridging.
-function kruskal(pts, candidateEdges) {
+// Groups candidate edges into connected components via union-find, purely
+// to find out which stations (if any) the candidate graph left isolated —
+// the candidate edges themselves are kept as-is, not reduced.
+function findComponents(pts, edges) {
   const dsu = new DisjointSet(pts.map((p) => String(p.id)));
-  const sorted = [...candidateEdges].sort((x, y) => x.distanceKm - y.distanceKm);
-  const mst = [];
-  for (const edge of sorted) {
-    if (dsu.union(String(edge.a.id), String(edge.b.id))) mst.push(edge);
-  }
-  return { mst, dsu };
+  for (const edge of edges) dsu.union(String(edge.a.id), String(edge.b.id));
+  return dsu;
 }
 
 // Bridges any remaining disconnected components (only happens when a
@@ -195,20 +190,21 @@ function bridgeComponents(pts, dsu) {
 }
 
 /**
- * Build a Minimum Spanning Tree connecting every station — every station
- * has at least one edge, total edge length is minimal, and the tree's
- * longest edges are the biggest sensor-coverage gaps. Returns
+ * Build a dense sensor mesh graph — every station connected to its k
+ * nearest neighbours (forming a grid with cells/loops, not a sparse
+ * tree), plus bridge edges so every station is reachable, even a lone
+ * outlier far from everything else. Returns
  * `{ edges, minDistanceKm, maxDistanceKm }`; `edges` items are
  * `{ a, b, distanceKm }`.
  */
-export function buildMinimumSpanningTree(stations, { k = 8, radius = 2 } = {}) {
+export function buildSensorMeshGraph(stations, { k = 8, radius = 2 } = {}) {
   const pts = stations.filter((s) => typeof s.lat === 'number' && typeof s.lng === 'number');
   if (pts.length < 2) return { edges: [], minDistanceKm: 0, maxDistanceKm: 0 };
 
   const candidates = buildCandidateEdges(pts, k, radius);
-  const { mst, dsu } = kruskal(pts, candidates);
+  const dsu = findComponents(pts, candidates);
   const bridges = bridgeComponents(pts, dsu);
-  const edges = mst.concat(bridges);
+  const edges = candidates.concat(bridges);
 
   let minDistanceKm = Infinity;
   let maxDistanceKm = 0;

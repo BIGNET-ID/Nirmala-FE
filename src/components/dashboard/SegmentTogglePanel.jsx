@@ -245,7 +245,7 @@ export default function SegmentTogglePanel({
       <Divider sx={{ borderColor: 'var(--nirmala-glass-border)' }} />
 
       <SegmentGroup title="Ground Segment">
-        <VendorCard title="Rainvision" accent="var(--status-active, #34d399)">
+        <VendorCard title="Databourg" accent="var(--status-active, #34d399)">
           <ModeButton active={activeLayer === 'rain'} icon={METRICS.rain.icon} label={METRICS.rain.label} onClick={() => onLayerChange('rain')} />
           <ModeButton active={activeLayer === 'mesh'} icon={METRICS.mesh.icon} label={METRICS.mesh.label} onClick={() => onLayerChange('mesh')} />
           <ModeButton active={activeLayer === 'node'} icon={METRICS.node.icon} label={METRICS.node.label} onClick={() => onLayerChange('node')} />

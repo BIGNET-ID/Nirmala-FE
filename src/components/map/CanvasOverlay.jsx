@@ -88,12 +88,12 @@ function colourizeInto(layer, shadow, W, H, lut, maxAlpha) {
   layer.getContext('2d').putImageData(img, 0, 0);
 }
 
-function renderHeatmap(canvas, shadow, coolLayer, warmLayer, stations, projection, map, showCoverage) {
+function renderHeatmap(canvas, shadow, coolLayer, warmLayer, stations, projection, map, showCoverage, visible) {
   const W = canvas.width, H = canvas.height;
   if (W <= 0 || H <= 0) return;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, W, H);
-  if (!stations.length || !map) return;
+  if (!visible || !stations.length || !map) return;
 
   const zoom = map.getZoom();
   const lat = map.getCenter()?.lat() ?? 0;
@@ -130,7 +130,7 @@ function renderHeatmap(canvas, shadow, coolLayer, warmLayer, stations, projectio
   }
 }
 
-export default function CanvasHeatmapOverlay({ stations, showCoverage = true }) {
+export default function CanvasHeatmapOverlay({ stations, showCoverage = true, visible = true }) {
   const map = useMap();
   const overlayRef = useRef(null);
   const canvasRef = useRef(null);
@@ -139,10 +139,12 @@ export default function CanvasHeatmapOverlay({ stations, showCoverage = true }) 
   const warmRef = useRef(null);
   const stationsRef = useRef(stations);
   const coverageRef = useRef(showCoverage);
+  const visibleRef = useRef(visible);
   const rafRef = useRef(0);
 
   useEffect(() => { stationsRef.current = stations; }, [stations]);
   useEffect(() => { coverageRef.current = showCoverage; }, [showCoverage]);
+  useEffect(() => { visibleRef.current = visible; }, [visible]);
 
   useEffect(() => {
     if (!map || !window.google) return;
@@ -183,7 +185,7 @@ export default function CanvasHeatmapOverlay({ stations, showCoverage = true }) 
         canvas._offsetY = top;
         scheduleDraw(() =>
           renderHeatmap(canvas, shadowRef.current, coolRef.current, warmRef.current,
-            stationsRef.current, projection, map, coverageRef.current)
+            stationsRef.current, projection, map, coverageRef.current, visibleRef.current)
         );
       }
 
@@ -201,7 +203,7 @@ export default function CanvasHeatmapOverlay({ stations, showCoverage = true }) 
     };
   }, [map]);
 
-  useEffect(() => { overlayRef.current?.draw(); }, [stations, showCoverage]);
+  useEffect(() => { overlayRef.current?.draw(); }, [stations, showCoverage, visible]);
 
   return null;
 }

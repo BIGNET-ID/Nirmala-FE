@@ -263,7 +263,11 @@ export default function NirmalaDashboard() {
                   matching note in SegmentTogglePanel). */}
               <OpenWeatherLayer layer={owmLayer} opacity={activeLayer === 'himawari' ? 0.4 : 0.75} />
               {activeLayer === 'rain' && (
-                <CanvasHeatmapOverlay stations={SENSOR_STATIONS} showCoverage={showCoverage} />
+                <CanvasHeatmapOverlay
+                  stations={SENSOR_STATIONS}
+                  showCoverage={showCoverage}
+                  visible={showCoverage || showMarkers}
+                />
               )}
               {activeLayer === 'mesh' && (
                 <MeshLayer stations={SENSOR_STATIONS} onDistanceRangeChange={setMeshDistanceRange} />
