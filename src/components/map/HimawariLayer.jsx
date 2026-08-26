@@ -88,7 +88,7 @@ function probeBasetime(basetime) {
   });
 }
 
-export default function HimawariLayer({ active, candidateBasetimes = [], prefetchBasetime = null, opacity = 0.7, onStatus, onZoomRangeChange }) {
+export default function HimawariLayer({ active, candidateBasetimes = [], prefetchBasetime = null, opacity = 0.7, onStatus, onZoomRangeChange, onBasetimeResolved }) {
   const map = useMap();
   const overlayRef = useRef(null);
   const prevOverlayRef = useRef(null);
@@ -155,6 +155,7 @@ export default function HimawariLayer({ active, candidateBasetimes = [], prefetc
       overlayRef.current = null;
       prevOverlayRef.current = null;
       onStatus?.('ok'); // nothing to show is not a failure — hide any stale "unavailable" message
+      onBasetimeResolved?.(null);
       return;
     }
 
@@ -209,6 +210,7 @@ export default function HimawariLayer({ active, candidateBasetimes = [], prefetc
         overlayRef.current = null;
         prevOverlayRef.current = null;
         onStatus?.('unavailable');
+        onBasetimeResolved?.(null);
         if (process.env.NODE_ENV !== 'production') {
           console.warn('[HimawariLayer] all candidate basetimes failed to probe:', candidateBasetimes);
         }
@@ -221,6 +223,7 @@ export default function HimawariLayer({ active, candidateBasetimes = [], prefetc
       if (!ok) { tryCandidate(i + 1); return; }
       crossfadeIn(basetime);
       onStatus?.('ok');
+      onBasetimeResolved?.(basetime);
     };
 
     // Debounce: scrubbing the time-travel slider can change `basetimeKey`
