@@ -19,8 +19,8 @@ import ColorRampLegend from '@/components/dashboard/ColorRampLegend';
 import SensorDetailDrawer from '@/components/dashboard/SensorDetailDrawer';
 import SensorStatsCard from '@/components/dashboard/SensorStatsCard';
 import MapInfoPill from '@/components/dashboard/MapInfoPill';
+import LiveTimestampBadge from '@/components/dashboard/LiveTimestampBadge';
 import MapControls from '@/components/map/MapControls';
-import TimeTravelBar from '@/components/dashboard/TimeTravelBar';
 import TimelineComingSoon from '@/components/dashboard/TimelineComingSoon';
 import { usePlatformData } from '@/hooks/usePlatformData';
 import { useSensorStream } from '@/hooks/useSensorStream';
@@ -28,14 +28,11 @@ import { useLightningStream } from '@/hooks/useLightningStream';
 import { useThunderstormStream } from '@/hooks/useThunderstormStream';
 import { useWindField } from '@/hooks/useWindField';
 import { useJmaHimawariTicks } from '@/hooks/useJmaHimawariTicks';
-import { useRainHistoryRange } from '@/hooks/useRainHistoryRange';
-import { useHistoricalSensorSnapshot } from '@/hooks/useHistoricalSensorSnapshot';
 import { useAuth } from '@/hooks/useAuth';
 import { METRICS } from '@/constants/metrics';
 import { MAP_CENTER, MAP_ZOOM_DEFAULT } from '@/constants/mapConfig';
 import { LAYER_STATUS } from '@/constants/layerStatus';
 import { PROVINCES } from '@/constants/provinces';
-import { buildRainTicks } from '@/lib/timeTravelRange';
 import { filterStationsInBounds, summarizeStations } from '@/lib/provinceFilter';
 
 // SSE streams report 'connecting'/'live'/'reconnecting'; a toggle also needs
@@ -69,77 +66,43 @@ export default function NirmalaDashboard() {
   const [activeTab, setActiveTab] = useState('current'); // 'current' | 'timeline' — PRD §4.1 Dual-Tab
   const [selectedProvinceCode, setSelectedProvinceCode] = useState(null);
 
-  // Global time-travel control (Play + scrubber). `timelineIndex === null`
-  // means "live"; otherwise it indexes into `ticks` below. Ticks are per-mode:
-  // rain history's actual retained window (discovered from a reference
-  // sensor's timeseries — the backend has no fixed/contractual retention, see
-  // useRainHistoryRange), or a fixed rolling 24h/10-minute window computed
-  // client-side from JMA's Himawari image URL pattern (see useJmaHimawariTicks).
-  const [timelineIndex, setTimelineIndex] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
   const himawari = useJmaHimawariTicks(activeLayer === 'himawari');
   const [himawariStatus, setHimawariStatus] = useState('ok'); // 'ok' | 'loading' | 'unavailable' — only 'unavailable' has UI today (see the notice box below); 'loading' is reserved for a future spinner.
   const [himawariZoomInRange, setHimawariZoomInRange] = useState(true); // JMA only serves this product at zoom 3-5 — see HimawariLayer's onZoomRangeChange
-  const rainHistoryRefSensorId = SENSOR_STATIONS.find((s) => s.status === 'active')?.id ?? SENSOR_STATIONS[0]?.id;
-  const rainHistory = useRainHistoryRange(activeLayer === 'rain', rainHistoryRefSensorId);
-  // Memoized so tick Date objects keep a stable identity across renders that
-  // don't actually change the range — ticks[i].date otherwise gets a fresh
-  // Date instance every render, which fed into useHistoricalSensorSnapshot's
-  // effect deps as a "changed" value on every render and looped infinitely.
-  const ticks = useMemo(() => {
-    if (activeLayer === 'himawari') return himawari.ticks;
-    if (!rainHistory.start || !rainHistory.end) return [];
-    return buildRainTicks(rainHistory.start, rainHistory.end).map((date) => ({ date }));
-  }, [activeLayer, himawari.ticks, rainHistory.start, rainHistory.end]);
+  // Which basetime HimawariLayer actually crossfaded onto the map (not just
+  // "the newest tick") — HimawariLayer falls back through up to 4 recent
+  // candidates when the newest hasn't published yet, so this is the only
+  // reliable source for "as of" time. null = nothing currently shown.
+  const [himawariResolvedBasetime, setHimawariResolvedBasetime] = useState(null);
 
-  // Switching Layer Data resets the timeline to live — each mode's range is
-  // independent (a rain-history position rarely lines up with a Himawari frame).
-  useEffect(() => { setTimelineIndex(null); setIsPlaying(false); }, [activeLayer]);
-
-  useEffect(() => {
-    if (!isPlaying) return;
-    const id = setInterval(() => {
-      setTimelineIndex((i) => {
-        const next = (i ?? 0) + 1;
-        if (next >= ticks.length) { setIsPlaying(false); return null; }
-        return next;
-      });
-    }, 1000);
-    return () => clearInterval(id);
-  }, [isPlaying, ticks.length]);
-
-  const handleTimelinePlayPause = () => {
-    setTimelineIndex((i) => (i == null ? 0 : i));
-    setIsPlaying((p) => !p);
-  };
-  const handleTimelineScrub = (v) => { setTimelineIndex(v); setIsPlaying(false); };
-  const handleTimelineGoLive = () => { setTimelineIndex(null); setIsPlaying(false); };
-
-  const selectedTimestamp = activeLayer === 'rain' && timelineIndex != null ? ticks[timelineIndex].date : null;
-  const historicalStations = useHistoricalSensorSnapshot(selectedTimestamp, SENSOR_STATIONS, map);
-  const rainStations = selectedTimestamp ? (historicalStations || SENSOR_STATIONS) : SENSOR_STATIONS;
-
-  // When "live" (no explicit scrub position), retry the last few ticks —
-  // JMA sometimes hasn't published the newest 10-minute frame yet. A
-  // user-picked historical tick gets no fallback: if that exact minute
-  // wasn't published, say so (HimawariLayer's onStatus) rather than
-  // silently substituting a different time than the one they picked.
+  // Current tab is a static live snapshot (PRD §4.1: no Play/scrubber for
+  // any mode) — no timelineIndex/isPlaying state here. himawariBasetimeCandidates
+  // always uses the "most recent, with fallback" chain; there is no
+  // scrubbed-to-a-specific-tick case to handle on this tab.
   const himawariBasetimeCandidates = useMemo(() => {
     if (activeLayer !== 'himawari' || !himawari.ticks.length) return [];
-    if (timelineIndex != null) {
-      const tick = himawari.ticks[timelineIndex];
-      return tick ? [tick.basetime] : [];
-    }
     return himawari.ticks.slice(-4).reverse().map((t) => t.basetime);
-  }, [activeLayer, himawari.ticks, timelineIndex]);
+  }, [activeLayer, himawari.ticks]);
 
-  // While Play is running, hand HimawariLayer the *next* tick's basetime so
-  // it can warm the tile cache ahead of time (see HimawariLayer.jsx's
-  // prefetch effect) — only meaningful mid-playback with a known index.
-  const himawariPrefetchBasetime = useMemo(() => {
-    if (activeLayer !== 'himawari' || !isPlaying || timelineIndex == null) return null;
-    return himawari.ticks[timelineIndex + 1]?.basetime ?? null;
-  }, [activeLayer, isPlaying, timelineIndex, himawari.ticks]);
+  // Live Timestamp Badge (PRD §4.1) sources, per mode:
+  // - Himawari: the tick matching whichever basetime actually rendered
+  //   (see himawariResolvedBasetime above) — null while nothing has
+  //   resolved yet, or when every fallback candidate failed to probe.
+  const himawariLastSynced = useMemo(() => {
+    const tick = himawari.ticks.find((t) => t.basetime === himawariResolvedBasetime);
+    return tick?.date ?? null;
+  }, [himawari.ticks, himawariResolvedBasetime]);
+  // - Rainvision (rain/mesh/node all read the same sensor stream): the most
+  //   recent `lastUpdate` across all stations, not a fake "now".
+  const rainvisionLastSynced = useMemo(() => {
+    if (!SENSOR_STATIONS.length) return null;
+    const times = SENSOR_STATIONS
+      .map((s) => new Date(s.lastUpdate))
+      .filter((d) => !Number.isNaN(d.getTime()));
+    if (!times.length) return null;
+    return new Date(Math.max(...times.map((d) => d.getTime())));
+  }, [SENSOR_STATIONS]);
+  const activeLayerLastSynced = activeLayer === 'himawari' ? himawariLastSynced : rainvisionLastSynced;
 
   // Manifest resolves async, after activeLayer's initial state and (likely) after
   // the map has already mounted with the hardcoded MAP_CENTER/MAP_ZOOM_DEFAULT —
@@ -227,7 +190,7 @@ export default function NirmalaDashboard() {
 
   return (
       <Box sx={{ display: 'flex', flexDirection: 'column', width: '100vw', height: '100vh', bgcolor: 'var(--nirmala-map-bg)', overflow: 'hidden' }}>
-        
+
         {/* Emerge-from-the-light reveal (continues the login fly-through flash) */}
         <Box
           component={motion.div}
@@ -259,16 +222,16 @@ export default function NirmalaDashboard() {
             <GoogleMapWrapper onMapLoad={setMap}>
               <OpenWeatherLayer layer={owmLayer} />
               {activeLayer === 'rain' && (
-                <CanvasHeatmapOverlay stations={rainStations} showCoverage={showCoverage} />
+                <CanvasHeatmapOverlay stations={SENSOR_STATIONS} showCoverage={showCoverage} />
               )}
               {activeLayer === 'mesh' && <MeshLayer stations={SENSOR_STATIONS} />}
               {activeLayer === 'himawari' && (
                 <HimawariLayer
                   active
                   candidateBasetimes={himawariBasetimeCandidates}
-                  prefetchBasetime={himawariPrefetchBasetime}
                   onStatus={setHimawariStatus}
                   onZoomRangeChange={setHimawariZoomInRange}
+                  onBasetimeResolved={setHimawariResolvedBasetime}
                 />
               )}
               <ThunderstormLayer storms={thunderstorm} show={showStorms} />
@@ -329,21 +292,28 @@ export default function NirmalaDashboard() {
             {/* Top-center: contextual info pill */}
             <MapInfoPill raining={stats.raining} total={stats.total} loading={loading && stats.total === 0} />
 
-            {/* Top-center, below the info pill: Himawari notice — either "zoom
-                out of range" (JMA only serves this product at zoom 3-5; takes
-                priority since it explains why nothing shows regardless of data
-                status) or the load-failure notice (rare: JMA hasn't published
-                any of the last 4 frames, or a specifically-scrubbed frame
-                doesn't exist). Neither needs a permanent slot the way
-                MapInfoPill does. Hidden below the `sm` breakpoint like
-                TimeTravelBar itself — on mobile a failed overlay shows a blank
-                map with no explanation, but the legend note still
+            {/* Top-center, below the info pill: Live Timestamp Badge (PRD §4.1) —
+                when each mode's data was actually last synced. Renders nothing
+                until a real timestamp is known (see LiveTimestampBadge). */}
+            <LiveTimestampBadge
+              label={METRICS[activeLayer]?.label ?? ''}
+              timestamp={activeLayerLastSynced}
+            />
+
+            {/* Top-center, below the timestamp badge: Himawari notice — either
+                "zoom out of range" (JMA only serves this product at zoom 3-5;
+                takes priority since it explains why nothing shows regardless of
+                data status) or the load-failure notice (rare: JMA hasn't
+                published any of the last 4 frames). Neither needs a permanent
+                slot the way MapInfoPill/LiveTimestampBadge do. Hidden below the
+                `sm` breakpoint like those — on mobile a failed overlay shows a
+                blank map with no explanation, but the legend note still
                 communicates the data's limitations regardless. */}
             {activeLayer === 'himawari' && (!himawariZoomInRange || himawariStatus === 'unavailable') && (
               <Box
                 sx={{
                   position: 'absolute',
-                  top: 128,
+                  top: 152,
                   left: '50%',
                   transform: 'translateX(-50%)',
                   zIndex: 'var(--z-overlay, 100)',
@@ -366,23 +336,6 @@ export default function NirmalaDashboard() {
 
             {/* Bottom-left: sensor statistics */}
             <SensorStatsCard stats={stats} />
-
-            {/* Bottom-center: time-travel player. Rain-history mode replays sensors
-                (viewport-capped, see useHistoricalSensorSnapshot for why); Himawari
-                mode scrubs real satellite frames. Not shown for Mesh/Node — no time
-                dimension there. */}
-            {(activeLayer === 'rain' || activeLayer === 'himawari') && (
-              <TimeTravelBar
-                ticks={ticks}
-                index={timelineIndex}
-                isPlaying={isPlaying}
-                onScrub={handleTimelineScrub}
-                onPlayPause={handleTimelinePlayPause}
-                onGoLive={handleTimelineGoLive}
-                loading={(activeLayer === 'himawari' && himawari.loading) || (activeLayer === 'rain' && rainHistory.loading)}
-                caveat={activeLayer === 'himawari' ? 'Citra infrared awan (suhu puncak awan) · Sumber: JMA (Japan Meteorological Agency)' : null}
-              />
-            )}
 
             {/* Map Controls */}
             <MapControls
