@@ -4,12 +4,15 @@ import { useEffect, useRef } from 'react';
 import { useMap } from '@vis.gl/react-google-maps';
 
 /**
- * Rain-density heatmap with an optional coverage base (BIGNET DS v19).
+ * Rain-density heatmap with a coverage base, both gated by `showCoverage`
+ * (BIGNET DS v19) — this whole overlay is the "Cakupan Sensor" toggle's
+ * layer; "Titik Sensor" (SensorDotLayer) is a fully independent dot layer
+ * with no heatmap involvement.
  *
  * The live feed is BINARY (is_raining) — no numeric intensity to interpolate.
  * Two honest density layers, each one hue = one meaning:
- *  - COVERAGE (optional, subtle teal): every ACTIVE, non-raining sensor emits a
- *    faint kernel → shows the live sensor network even when it isn't raining.
+ *  - COVERAGE (subtle teal): every ACTIVE, non-raining sensor emits a faint
+ *    kernel → shows the live sensor network even when it isn't raining.
  *  - RAIN (dominant, cool→hot): every RAINING sensor emits a stronger kernel;
  *    overlaps accumulate → isolated rain = modest, clustered rain = hot core.
  * Coverage is drawn first, rain composited on top so rain always reads clearly.
@@ -88,12 +91,12 @@ function colourizeInto(layer, shadow, W, H, lut, maxAlpha) {
   layer.getContext('2d').putImageData(img, 0, 0);
 }
 
-function renderHeatmap(canvas, shadow, coolLayer, warmLayer, stations, projection, map, showCoverage, visible) {
+function renderHeatmap(canvas, shadow, coolLayer, warmLayer, stations, projection, map, showCoverage) {
   const W = canvas.width, H = canvas.height;
   if (W <= 0 || H <= 0) return;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, W, H);
-  if (!visible || !stations.length || !map) return;
+  if (!showCoverage || !stations.length || !map) return;
 
   const zoom = map.getZoom();
   const lat = map.getCenter()?.lat() ?? 0;
@@ -105,19 +108,19 @@ function renderHeatmap(canvas, shadow, coolLayer, warmLayer, stations, projectio
   const wet = [], dry = [];
   for (const st of stations) {
     const isActive = !st.blacklisted && !st.inactive && !st.unavailable && st.status === 'active';
-    if (!st.isRaining && !(showCoverage && isActive)) continue;
+    if (!st.isRaining && !isActive) continue;
     const p = projection.fromLatLngToDivPixel(new window.google.maps.LatLng(st.lat, st.lng));
     const x = p.x - canvas._offsetX, y = p.y - canvas._offsetY;
     if (x < -pad || x > W + pad || y < -pad || y > H + pad) continue;
     if (st.isRaining) wet.push([x, y]);
-    else if (showCoverage && isActive) dry.push([x, y]);
+    else if (isActive) dry.push([x, y]);
   }
 
   shadow.width = W; shadow.height = H;
   const sctx = shadow.getContext('2d');
 
   // 1) coverage base (teal, subtle) — drawn first, underneath.
-  if (showCoverage && dry.length) {
+  if (dry.length) {
     drawKernels(sctx, W, H, dry, coverR);
     colourizeInto(coolLayer, shadow, W, H, COVER_LUT, COVER_MAX_ALPHA);
     ctx.drawImage(coolLayer, 0, 0);
@@ -130,7 +133,7 @@ function renderHeatmap(canvas, shadow, coolLayer, warmLayer, stations, projectio
   }
 }
 
-export default function CanvasHeatmapOverlay({ stations, showCoverage = true, visible = true }) {
+export default function CanvasHeatmapOverlay({ stations, showCoverage = true }) {
   const map = useMap();
   const overlayRef = useRef(null);
   const canvasRef = useRef(null);
@@ -139,12 +142,10 @@ export default function CanvasHeatmapOverlay({ stations, showCoverage = true, vi
   const warmRef = useRef(null);
   const stationsRef = useRef(stations);
   const coverageRef = useRef(showCoverage);
-  const visibleRef = useRef(visible);
   const rafRef = useRef(0);
 
   useEffect(() => { stationsRef.current = stations; }, [stations]);
   useEffect(() => { coverageRef.current = showCoverage; }, [showCoverage]);
-  useEffect(() => { visibleRef.current = visible; }, [visible]);
 
   useEffect(() => {
     if (!map || !window.google) return;
@@ -185,7 +186,7 @@ export default function CanvasHeatmapOverlay({ stations, showCoverage = true, vi
         canvas._offsetY = top;
         scheduleDraw(() =>
           renderHeatmap(canvas, shadowRef.current, coolRef.current, warmRef.current,
-            stationsRef.current, projection, map, coverageRef.current, visibleRef.current)
+            stationsRef.current, projection, map, coverageRef.current)
         );
       }
 
@@ -203,7 +204,7 @@ export default function CanvasHeatmapOverlay({ stations, showCoverage = true, vi
     };
   }, [map]);
 
-  useEffect(() => { overlayRef.current?.draw(); }, [stations, showCoverage, visible]);
+  useEffect(() => { overlayRef.current?.draw(); }, [stations, showCoverage]);
 
   return null;
 }
