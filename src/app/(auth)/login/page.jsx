@@ -26,8 +26,10 @@ export default function LoginPage() {
   const { mode } = useThemeMode();
   const dark = mode !== 'light';
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  // Single fixed demo account (see src/app/api/auth/login/route.js TEMP_USERS)
+  // — fields are pre-filled and disabled below so the user only clicks "Masuk".
+  const [email] = useState('appgenius@bignet.id');
+  const [password] = useState('D(1u@>R6V_Ig&gu?nL]wD~Uk');
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -114,8 +116,8 @@ export default function LoginPage() {
             border: '1px solid var(--nirmala-glass-border)',
             borderRadius: 'var(--radius-xl, 16px)',
             boxShadow: dark
-              ? '0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,229,255,0.06)'
-              : '0 20px 56px rgba(16,50,95,0.18), 0 0 0 1px rgba(16,50,95,0.05)',
+              ? '0 24px 64px rgba(0,0,0,0.5)'
+              : '0 20px 56px rgba(16,50,95,0.18)',
             pointerEvents: launching ? 'none' : 'auto',
           }}
         >
@@ -123,7 +125,7 @@ export default function LoginPage() {
             <Box component="img" src={dark ? '/nirmala-brand-dark.png' : '/nirmala-brand.png'} alt="Nirmala" sx={{ height: 56 }} />
           </Box>
           <Typography sx={{ ...eyebrowSx, textAlign: 'center', display: 'block' }}>
-            Platform Telemetri Cuaca
+            Prakiraan &amp; Pemantauan Cuaca Real-time
           </Typography>
           <Typography variant="h5" fontWeight={700} sx={{ textAlign: 'center', mt: 0.5, mb: 3, color: 'var(--color-text)' }}>
             Masuk
@@ -136,8 +138,7 @@ export default function LoginPage() {
           )}
 
           <TextField
-            fullWidth label="Email" type="email" value={email} required
-            onChange={(e) => setEmail(e.target.value)}
+            fullWidth label="Email" type="email" value={email} required disabled
             sx={{ mb: 2 }}
             slotProps={{
               input: {
@@ -150,8 +151,7 @@ export default function LoginPage() {
             }}
           />
           <TextField
-            fullWidth label="Password" type={showPw ? 'text' : 'password'} value={password} required
-            onChange={(e) => setPassword(e.target.value)}
+            fullWidth label="Password" type={showPw ? 'text' : 'password'} value={password} required disabled
             sx={{ mb: 3 }}
             slotProps={{
               input: {
