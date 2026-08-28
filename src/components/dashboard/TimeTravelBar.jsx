@@ -3,8 +3,6 @@
 import { Box, IconButton, Slider, Tooltip, Typography, CircularProgress, Autocomplete, TextField } from '@mui/material';
 import { Icon } from '@iconify/react';
 
-const monoSx = { fontFamily: 'var(--font-family-mono)' };
-
 function fmt(date) {
   if (!date) return '—';
   return date.toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -106,7 +104,7 @@ export default function TimeTravelBar({
         )}
         sx={{
           width: 176,
-          '& .MuiInputBase-input': { ...monoSx, fontSize: '0.75rem', color: 'text.secondary', textAlign: 'right' },
+          '& .MuiInputBase-input': { fontSize: '0.75rem', color: 'text.secondary', textAlign: 'right' },
         }}
       />
 

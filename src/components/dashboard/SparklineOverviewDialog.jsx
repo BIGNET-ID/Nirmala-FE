@@ -4,8 +4,6 @@ import { Box, Dialog, IconButton, Stack, Typography } from '@mui/material';
 import { Icon } from '@iconify/react';
 import Sparkline from '@/components/common/Sparkline';
 
-const monoSx = { fontFamily: 'var(--font-family-mono)' };
-
 export default function SparklineOverviewDialog({ open, onClose, stationId, rain, signal, rainMax, signalLast }) {
   return (
     <Dialog
@@ -34,7 +32,7 @@ export default function SparklineOverviewDialog({ open, onClose, stationId, rain
             <Typography sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'text.secondary' }}>
               Overview
             </Typography>
-            <Typography variant="h6" fontWeight={700} sx={{ ...monoSx, lineHeight: 1.2 }}>
+            <Typography variant="h6" fontWeight={700} sx={{ lineHeight: 1.2 }}>
               {stationId}
             </Typography>
           </Box>
@@ -47,7 +45,7 @@ export default function SparklineOverviewDialog({ open, onClose, stationId, rain
           <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 0.75 }}>
               <Typography variant="caption" sx={{ color: 'text.secondary' }}>Curah Hujan · mm (5 min)</Typography>
-              <Typography variant="caption" sx={{ ...monoSx, color: '#60a5fa', fontWeight: 700 }}>
+              <Typography variant="caption" sx={{ color: '#60a5fa', fontWeight: 700 }}>
                 {rainMax != null ? `${rainMax.toFixed(2)} mm` : '—'}
               </Typography>
             </Box>
@@ -59,7 +57,7 @@ export default function SparklineOverviewDialog({ open, onClose, stationId, rain
               <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                 Sinyal{signal?.label ? ` · ${signal.label}` : ''}
               </Typography>
-              <Typography variant="caption" sx={{ ...monoSx, color: 'var(--nirmala-cyan)', fontWeight: 700 }}>
+              <Typography variant="caption" sx={{ color: 'var(--nirmala-cyan)', fontWeight: 700 }}>
                 {signalLast != null ? signalLast.toFixed(2) : '—'}
               </Typography>
             </Box>

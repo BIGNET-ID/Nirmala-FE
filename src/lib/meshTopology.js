@@ -197,7 +197,7 @@ function bridgeComponents(pts, dsu) {
  * `{ edges, minDistanceKm, maxDistanceKm }`; `edges` items are
  * `{ a, b, distanceKm }`.
  */
-export function buildSensorMeshGraph(stations, { k = 8, radius = 2 } = {}) {
+export function buildSensorMeshGraph(stations, { k = 8, radius = 3 } = {}) {
   const pts = stations.filter((s) => typeof s.lat === 'number' && typeof s.lng === 'number');
   if (pts.length < 2) return { edges: [], minDistanceKm: 0, maxDistanceKm: 0 };
 

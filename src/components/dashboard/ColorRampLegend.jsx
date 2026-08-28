@@ -14,7 +14,8 @@ const NODE_STATUS_ITEMS = [
   { color: SENSOR_STATUS_COLOR.inactive, label: 'Nonaktif' },
 ];
 
-export default function ColorRampLegend({ activeLayer, showCoverage = false, meshDistanceRange = null }) {
+/** Bare legend content — shared by the desktop floating card and the mobile bottom sheet. */
+export function ColorRampLegendContent({ activeLayer, showCoverage = false, meshDistanceRange = null }) {
   const metric = METRICS[activeLayer];
   if (!metric) return null;
 
@@ -29,20 +30,7 @@ export default function ColorRampLegend({ activeLayer, showCoverage = false, mes
     : metric.maxLabel;
 
   return (
-    <Box
-      sx={{
-        position: 'absolute',
-        bottom: 24,
-        right: 16,
-        zIndex: 'var(--z-overlay, 100)',
-        p: 1.75,
-        width: 218,
-        backdropFilter: 'blur(20px)',
-        background: 'var(--nirmala-glass-bg)',
-        border: '1px solid var(--nirmala-glass-border)',
-        borderRadius: 'var(--radius-lg, 12px)',
-      }}
-    >
+    <Box>
       <Typography sx={{ ...eyebrowSx, display: 'block', mb: 1 }}>
         {metric.label}
       </Typography>
@@ -86,6 +74,26 @@ export default function ColorRampLegend({ activeLayer, showCoverage = false, mes
           </Typography>
         </Box>
       )}
+    </Box>
+  );
+}
+
+/** Desktop/tablet-landscape floating card — positions ColorRampLegendContent over the map. */
+export default function ColorRampLegend(props) {
+  const metric = METRICS[props.activeLayer];
+  if (!metric) return null;
+  return (
+    <Box
+      sx={{
+        p: 1.75,
+        width: 218,
+        backdropFilter: 'blur(20px)',
+        background: 'var(--nirmala-glass-bg)',
+        border: '1px solid var(--nirmala-glass-border)',
+        borderRadius: 'var(--radius-lg, 12px)',
+      }}
+    >
+      <ColorRampLegendContent {...props} />
     </Box>
   );
 }

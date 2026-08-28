@@ -187,7 +187,7 @@ export default function LoginPage() {
             {submitting ? <CircularProgress size={20} sx={{ color: '#ffffff' }} /> : 'Masuk'}
           </Button>
 
-          <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 2.5, color: 'var(--color-text-muted)', ...{ fontFamily: 'var(--font-family-mono)' } }}>
+          <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 2.5, color: 'var(--color-text-muted)' }}>
             Nirmala · Secure Login
           </Typography>
         </Box>

@@ -14,10 +14,11 @@ import WindParticleLayer from '@/components/map/WindParticleLayer';
 import HimawariLayer from '@/components/map/HimawariLayer';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import ProvinceFilterSelect from '@/components/dashboard/ProvinceFilterSelect';
-import SegmentTogglePanel from '@/components/dashboard/SegmentTogglePanel';
+import { SkySegmentPanel, GroundSegmentPanel } from '@/components/dashboard/SegmentTogglePanel';
 import ColorRampLegend from '@/components/dashboard/ColorRampLegend';
 import SensorDetailDrawer from '@/components/dashboard/SensorDetailDrawer';
 import SensorStatsCard from '@/components/dashboard/SensorStatsCard';
+import MobileControlSheet from '@/components/dashboard/MobileControlSheet';
 import MapInfoPill from '@/components/dashboard/MapInfoPill';
 import LiveTimestampBadge from '@/components/dashboard/LiveTimestampBadge';
 import MapControls from '@/components/map/MapControls';
@@ -29,6 +30,7 @@ import { useThunderstormStream } from '@/hooks/useThunderstormStream';
 import { useWindField } from '@/hooks/useWindField';
 import { useJmaHimawariTicks } from '@/hooks/useJmaHimawariTicks';
 import { useAuth } from '@/hooks/useAuth';
+import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 import { METRICS } from '@/constants/metrics';
 import { MAP_CENTER, MAP_ZOOM_DEFAULT } from '@/constants/mapConfig';
 import { LAYER_STATUS } from '@/constants/layerStatus';
@@ -45,6 +47,7 @@ function streamStatus(sseStatus, count) {
 }
 
 export default function NirmalaDashboard() {
+  const { isCompact } = useResponsiveLayout();
   const { sensors: apiSensors, lightning: apiLightning, thunderstorm: apiThunderstorm, health, loading, error } = usePlatformData();
   const { permissions, defaultMap, defaultLayer } = useAuth();
 
@@ -52,8 +55,6 @@ export default function NirmalaDashboard() {
   const { stations: SENSOR_STATIONS, status: sensorStreamStatus } = useSensorStream(apiSensors);
   const { strikes: lightning, status: lightningStreamStatus } = useLightningStream(apiLightning);
   const { storms: thunderstorm, status: thunderstormStreamStatus } = useThunderstormStream(apiThunderstorm);
-  const { field: windField, status: windFieldStatus } = useWindField();
-
   const [activeLayer, setActiveLayer] = useState('rain');
   // The last-selected ground mode (rain/mesh/node) — restored when the
   // Himawari switch turns off, so leaving Himawari mode never dead-ends on
@@ -168,6 +169,30 @@ export default function NirmalaDashboard() {
     appliedDefaultMapRef.current = true;
   }, [map, defaultMap]);
 
+  // Tracks the map's current viewport so useWindField can fetch a wind grid
+  // over wherever the user is actually looking (see route.js/useWindField.js
+  // for why: a fixed world-sized bbox would spread the same 54 OpenWeather
+  // points too thin to look like anything). Debounced on `idle` (fires once
+  // pan/zoom settles) rather than on every drag frame.
+  const [mapBounds, setMapBounds] = useState(null);
+  useEffect(() => {
+    if (!map) return;
+    let timer = null;
+    const listener = map.addListener('idle', () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        const b = map.getBounds();
+        if (!b) return;
+        const ne = b.getNorthEast();
+        const sw = b.getSouthWest();
+        setMapBounds({ north: ne.lat(), south: sw.lat(), east: ne.lng(), west: sw.lng() });
+      }, 800);
+    });
+    return () => { clearTimeout(timer); listener.remove(); };
+  }, [map]);
+
+  const { field: windField, ambientField: windAmbientField, status: windFieldStatus } = useWindField(mapBounds);
+
   const stats = {
     total: SENSOR_STATIONS.length,
     active: SENSOR_STATIONS.filter((s) => s.status === 'active').length,
@@ -238,7 +263,6 @@ export default function NirmalaDashboard() {
         />
 
         <DashboardHeader
-          stats={stats}
           health={health}
           streamStatus={sensorStreamStatus}
           activeTab={activeTab}
@@ -279,7 +303,7 @@ export default function NirmalaDashboard() {
               )}
               <ThunderstormLayer storms={thunderstorm} show={showStorms} />
               <LightningLayer strikes={lightning} show={showLightning} />
-              <WindParticleLayer show={showWind} field={windField} />
+              <WindParticleLayer show={showWind} field={windField} ambientField={windAmbientField} />
               <SensorDotLayer
                 stations={SENSOR_STATIONS}
                 showMarkers={activeLayer === 'rain' ? showMarkers : true}
@@ -305,33 +329,53 @@ export default function NirmalaDashboard() {
               }}
             />
 
-            {/* Left: Sky/Ground Segment panel */}
-            <SegmentTogglePanel
-              activeLayer={activeLayer}
-              onLayerChange={handleLayerChange}
-              onToggleHimawari={handleHimawariToggle}
-              showMarkers={showMarkers}
-              onToggleMarkers={setShowMarkers}
-              showCoverage={showCoverage}
-              onToggleCoverage={setShowCoverage}
-              showLightning={showLightning}
-              onToggleLightning={setShowLightning}
-              lightningCount={lightning?.length || 0}
-              lightningStatus={streamStatus(lightningStreamStatus, lightning?.length || 0)}
-              showStorms={showStorms}
-              onToggleStorms={setShowStorms}
-              stormCount={thunderstorm?.length || 0}
-              stormStatus={streamStatus(thunderstormStreamStatus, thunderstorm?.length || 0)}
-              showWind={showWind}
-              onToggleWind={setShowWind}
-              windStatus={windFieldStatus}
-              owmLayer={owmLayer}
-              onOwmChange={setOwmLayer}
-              permissions={permissions}
-            />
+            {(() => {
+              const segmentProps = {
+                activeLayer, onLayerChange: handleLayerChange, onToggleHimawari: handleHimawariToggle,
+                showMarkers, onToggleMarkers: setShowMarkers, showCoverage, onToggleCoverage: setShowCoverage,
+                showLightning, onToggleLightning: setShowLightning, lightningCount: lightning?.length || 0,
+                lightningStatus: streamStatus(lightningStreamStatus, lightning?.length || 0),
+                showStorms, onToggleStorms: setShowStorms, stormCount: thunderstorm?.length || 0,
+                stormStatus: streamStatus(thunderstormStreamStatus, thunderstorm?.length || 0),
+                showWind, onToggleWind: setShowWind, windStatus: windFieldStatus,
+                owmLayer, onOwmChange: setOwmLayer, permissions,
+              };
+              const legendProps = { activeLayer, showCoverage, meshDistanceRange };
+              const statsProps = { stats };
 
-            {/* Right: Legend */}
-            <ColorRampLegend activeLayer={activeLayer} showCoverage={showCoverage} meshDistanceRange={meshDistanceRange} />
+              if (isCompact) {
+                return (
+                  <MobileControlSheet
+                    segmentProps={segmentProps}
+                    legendProps={legendProps}
+                    statsProps={statsProps}
+                  />
+                );
+              }
+              return (
+                <>
+                  {/* Left: Sky Segment panel above Ground Segment panel — centred
+                      vertically in the space between the header and the bottom
+                      edge (not top-anchored), so the pair never hangs low when
+                      both are expanded. */}
+                  <Box sx={{
+                    position: 'absolute', top: 72, bottom: 16, left: 16, zIndex: 'var(--z-overlay, 100)',
+                    display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1.5,
+                  }}>
+                    <SkySegmentPanel {...segmentProps} />
+                    <GroundSegmentPanel {...segmentProps} />
+                  </Box>
+                  {/* Right: sensor statistics above the rain-density legend */}
+                  <Box sx={{
+                    position: 'absolute', bottom: 24, right: 16, zIndex: 'var(--z-overlay, 100)',
+                    display: 'flex', flexDirection: 'column', gap: 1.5, alignItems: 'flex-end',
+                  }}>
+                    <SensorStatsCard {...statsProps} />
+                    <ColorRampLegend {...legendProps} />
+                  </Box>
+                </>
+              );
+            })()}
 
             {/* Top-center: contextual info pill */}
             {!infoPillDismissed && (
@@ -359,10 +403,8 @@ export default function NirmalaDashboard() {
                 takes priority since it explains why nothing shows regardless of
                 data status) or the load-failure notice (rare: JMA hasn't
                 published any of the last 4 frames). Neither needs a permanent
-                slot the way MapInfoPill/LiveTimestampBadge do. Hidden below the
-                `sm` breakpoint like those — on mobile a failed overlay shows a
-                blank map with no explanation, but the legend note still
-                communicates the data's limitations regardless. */}
+                slot the way MapInfoPill/LiveTimestampBadge do — always shown
+                (including on phones), text just wraps below `sm`. */}
             {activeLayer === 'himawari' && (!himawariZoomInRange || himawariStatus === 'unavailable') && (
               <Box
                 sx={{
@@ -373,12 +415,13 @@ export default function NirmalaDashboard() {
                   zIndex: 'var(--z-overlay, 100)',
                   px: 1.75,
                   py: 0.75,
-                  display: { xs: 'none', sm: 'block' },
+                  maxWidth: 'calc(100vw - 32px)',
+                  textAlign: 'center',
                   backdropFilter: 'blur(20px)',
                   background: 'var(--nirmala-glass-bg)',
                   border: '1px solid var(--nirmala-glass-border)',
-                  borderRadius: 'var(--radius-full, 9999px)',
-                  fontSize: '0.78rem',
+                  borderRadius: 'var(--radius-lg, 12px)',
+                  fontSize: { xs: '0.7rem', sm: '0.78rem' },
                   color: 'text.primary',
                 }}
               >
@@ -387,9 +430,6 @@ export default function NirmalaDashboard() {
                   : 'Perbesar/perkecil peta ke level zoom 3–5 untuk melihat citra satelit'}
               </Box>
             )}
-
-            {/* Bottom-left: sensor statistics */}
-            <SensorStatsCard stats={stats} />
 
             {/* Map Controls */}
             <MapControls

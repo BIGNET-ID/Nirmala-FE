@@ -137,7 +137,7 @@ export default function SensorDotLayer({ stations, showMarkers = true, selectedI
           ctx.lineWidth = 1;
           ctx.stroke();
 
-          ctx.font = "700 12px 'Roboto Mono', monospace";
+          ctx.font = "700 12px 'Google Sans Flex', Arial, sans-serif";
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           ctx.fillStyle = '#ffffff';
