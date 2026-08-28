@@ -11,9 +11,7 @@
 export const dynamic = 'force-dynamic';
 
 const TEMP_USERS = [
-  { email: 'ITBDI@bignet.id', password: 'admin' },
-  { email: 'rendra@bignet.id', password: 'UV%a5u[8f:+@uS2(YgQ0Dl3]lPWh66lO' },
-  { email: 'bony.muslimin@bignet.id', password: '5JKetJX{UcUBf(UF?@kblvup:CfBQR13' },
+  { email: 'appgenius@bignet.id', password: 'D(1u@>R6V_Ig&gu?nL]wD~Uk' },
 ];
 
 export async function POST(request) {
