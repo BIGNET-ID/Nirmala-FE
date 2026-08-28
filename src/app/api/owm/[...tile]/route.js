@@ -11,8 +11,7 @@
 
 export const dynamic = 'force-dynamic';
 
-const KEY = '9458ca69741cda706dec8092eb22610e' || '';
-// const KEY = process.env.OPENWEATHER_API_KEY || '';
+const KEY = process.env.OPENWEATHER_API_KEY || '';
 const LAYERS = new Set(['precipitation_new', 'clouds_new', 'wind_new', 'temp_new', 'pressure_new']);
 
 export async function GET(request, ctx) {
