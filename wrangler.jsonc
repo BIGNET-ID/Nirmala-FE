@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "nirmala",
+  "name": "nirmala-fe",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-08-25",
   "compatibility_flags": ["nodejs_compat"],
@@ -9,7 +9,7 @@
     "binding": "ASSETS"
   },
   "services": [
-    { "binding": "WORKER_SELF_REFERENCE", "service": "nirmala" }
+    { "binding": "WORKER_SELF_REFERENCE", "service": "nirmala-fe" }
   ],
   "observability": { "enabled": true }
 }
