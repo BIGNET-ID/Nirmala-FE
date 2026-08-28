@@ -5,7 +5,6 @@
    =========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,1..1000&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap');
 
 /* ── Primitive Tokens ── */
@@ -65,7 +64,6 @@
   /* Typography */
   --font-family-heading: 'Google Sans Flex', Arial, Helvetica, sans-serif;
   --font-family-body: 'Google Sans Flex', Arial, Helvetica, sans-serif;
-  --font-family-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, monospace;
 
   --font-h1: clamp(2rem, 1.502vw + 1.648rem, 3rem);
   --font-h2: clamp(1.75rem, 0.376vw + 1.662rem, 2rem);
@@ -200,9 +198,6 @@ body {
   outline: var(--focus-ring-width) solid var(--color-focus-ring);
   outline-offset: var(--focus-ring-offset);
 }
-
-/* Mono utility for numeric/technical values */
-.mono, .num { font-family: var(--font-family-mono); }
 
 /* Micro-label pattern */
 .eyebrow {

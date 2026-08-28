@@ -1,19 +1,28 @@
 import { Box, IconButton, Tooltip } from '@mui/material';
 import { Icon } from '@iconify/react';
+import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 
-const btnSx = {
-  width: 38,
-  height: 38,
-  color: 'text.primary',
-  bgcolor: 'var(--nirmala-glass-bg)',
-  border: '1px solid var(--nirmala-glass-border)',
-  backdropFilter: 'blur(20px)',
-  borderRadius: 'var(--radius-md, 8px)',
-  transition: 'background var(--duration-fast, 150ms) var(--ease-standard)',
-  '&:hover': { bgcolor: 'rgba(0,229,255,0.10)', color: '#00e5ff' },
-};
+// 44×44 meets the WCAG/touch-target minimum on phones/tablets; desktop
+// pointers don't need it, so the smaller 38px box stays for lg+ (mouse).
+function makeBtnSx(size) {
+  return {
+    width: size,
+    height: size,
+    color: 'text.primary',
+    bgcolor: 'var(--nirmala-glass-bg)',
+    border: '1px solid var(--nirmala-glass-border)',
+    backdropFilter: 'blur(20px)',
+    borderRadius: 'var(--radius-md, 8px)',
+    transition: 'background var(--duration-fast, 150ms) var(--ease-standard)',
+    '&:hover': { bgcolor: 'rgba(0,229,255,0.10)', color: '#00e5ff' },
+  };
+}
 
 export default function MapControls({ onZoomIn, onZoomOut, onReset }) {
+  const { isCompact, isWallTV } = useResponsiveLayout();
+  const size = isCompact ? 44 : isWallTV ? 44 : 38;
+  const btnSx = makeBtnSx(size);
+
   return (
     <Box
       sx={{
@@ -28,17 +37,17 @@ export default function MapControls({ onZoomIn, onZoomOut, onReset }) {
     >
       <Tooltip title="Perbesar" placement="left">
         <IconButton onClick={onZoomIn} sx={btnSx} aria-label="Perbesar">
-          <Icon icon="material-symbols:add-rounded" />
+          <Icon icon="material-symbols:add-rounded" width={isWallTV ? 22 : undefined} />
         </IconButton>
       </Tooltip>
       <Tooltip title="Perkecil" placement="left">
         <IconButton onClick={onZoomOut} sx={btnSx} aria-label="Perkecil">
-          <Icon icon="material-symbols:remove-rounded" />
+          <Icon icon="material-symbols:remove-rounded" width={isWallTV ? 22 : undefined} />
         </IconButton>
       </Tooltip>
       <Tooltip title="Tampilan Nasional" placement="left">
         <IconButton onClick={onReset} sx={btnSx} aria-label="Reset tampilan">
-          <Icon icon="material-symbols:my-location-rounded" />
+          <Icon icon="material-symbols:my-location-rounded" width={isWallTV ? 22 : undefined} />
         </IconButton>
       </Tooltip>
     </Box>

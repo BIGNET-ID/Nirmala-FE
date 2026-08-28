@@ -26,12 +26,13 @@ export default function LiveTimestampBadge({ label, timestamp, onClose }) {
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 'var(--z-overlay, 100)',
-        display: { xs: 'none', sm: 'flex' },
+        display: 'flex',
         alignItems: 'center',
         gap: 0.75,
-        pl: 1.5,
-        pr: onClose ? 0.5 : 1.5,
+        pl: { xs: 1.25, sm: 1.5 },
+        pr: onClose ? 0.5 : { xs: 1.25, sm: 1.5 },
         py: 0.5,
+        maxWidth: 'calc(100vw - 32px)',
         backdropFilter: 'blur(20px)',
         background: 'var(--nirmala-glass-bg)',
         border: '1px solid var(--nirmala-glass-border)',
@@ -39,9 +40,9 @@ export default function LiveTimestampBadge({ label, timestamp, onClose }) {
       }}
     >
       <Icon icon="material-symbols:schedule-rounded" width={14} style={{ color: 'var(--nirmala-cyan)', flexShrink: 0 }} />
-      <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary', whiteSpace: 'nowrap' }}>
+      <Typography variant="caption" sx={{ fontSize: { xs: '0.62rem', sm: '0.7rem' }, color: 'text.secondary', whiteSpace: 'nowrap' }}>
         {label} · diperbarui{' '}
-        <Box component="span" sx={{ fontFamily: 'var(--font-family-mono)', color: 'text.primary', fontWeight: 700 }}>
+        <Box component="span" sx={{ color: 'text.primary', fontWeight: 700 }}>
           {formatted}
         </Box>{' '}
         WIB

@@ -130,16 +130,13 @@ export default function Sparkline({
     </Box>
     {hasLabels && (
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.25 }}>
-        <Typography variant="caption" sx={{ fontSize: 10, lineHeight: 1.4, color: 'text.secondary',
-          fontFamily: 'var(--font-family-mono)' }}>
+        <Typography variant="caption" sx={{ fontSize: 10, lineHeight: 1.4, color: 'text.secondary' }}>
           {formatTimeLabel(pickLabel(labels, 0))}
         </Typography>
-        <Typography variant="caption" sx={{ fontSize: 10, lineHeight: 1.4, color: 'text.secondary',
-          fontFamily: 'var(--font-family-mono)' }}>
+        <Typography variant="caption" sx={{ fontSize: 10, lineHeight: 1.4, color: 'text.secondary' }}>
           {formatTimeLabel(pickLabel(labels, 0.5))}
         </Typography>
-        <Typography variant="caption" sx={{ fontSize: 10, lineHeight: 1.4, color: 'text.secondary',
-          fontFamily: 'var(--font-family-mono)' }}>
+        <Typography variant="caption" sx={{ fontSize: 10, lineHeight: 1.4, color: 'text.secondary' }}>
           {formatTimeLabel(pickLabel(labels, 1))}
         </Typography>
       </Box>

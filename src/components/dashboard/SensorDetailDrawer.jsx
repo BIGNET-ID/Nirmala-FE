@@ -6,6 +6,7 @@ import { Icon } from '@iconify/react';
 import Sparkline from '@/components/common/Sparkline';
 import SparklineOverviewDialog from '@/components/dashboard/SparklineOverviewDialog';
 import { nirmalaApiService, normalizeTimeseries } from '@/lib/nirmalaApi';
+import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 
 const STATUS_META = {
   blacklisted: { label: 'Blacklist', color: '#ef4444' },
@@ -23,8 +24,6 @@ const eyebrowSx = {
   fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
   letterSpacing: '0.1em', color: 'text.secondary',
 };
-const monoSx = { fontFamily: 'var(--font-family-mono)' };
-
 function fmtTime(iso) {
   if (!iso) return '—';
   try {
@@ -34,11 +33,11 @@ function fmtTime(iso) {
   } catch { return iso; }
 }
 
-function Meta({ label, value, mono }) {
+function Meta({ label, value }) {
   return (
     <Box>
       <Typography sx={eyebrowSx}>{label}</Typography>
-      <Typography variant="body2" sx={mono ? monoSx : undefined}>{value}</Typography>
+      <Typography variant="body2">{value}</Typography>
     </Box>
   );
 }
@@ -51,6 +50,7 @@ function last(arr) {
 }
 
 export default function SensorDetailDrawer({ station, open, onClose }) {
+  const { isCompact } = useResponsiveLayout();
   const [series, setSeries] = useState(null);
   const [loading, setLoading] = useState(false);
   const [overviewOpen, setOverviewOpen] = useState(false);
@@ -83,19 +83,31 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
 
   return (
     <Drawer
-      anchor="right"
+      anchor={isCompact ? 'bottom' : 'right'}
       open={open}
       onClose={onClose}
       sx={{ zIndex: 'var(--z-modal, 1400)' }}
       slotProps={{
         paper: {
-          sx: {
-            width: 328,
-            bgcolor: 'var(--nirmala-glass-bg)',
-            backdropFilter: 'blur(20px)',
-            borderLeft: '1px solid var(--nirmala-glass-border)',
-            backgroundImage: 'none',
-          },
+          sx: isCompact
+            ? {
+                width: '100%',
+                maxHeight: '75vh',
+                bgcolor: 'var(--nirmala-glass-bg)',
+                backdropFilter: 'blur(20px)',
+                borderTop: '1px solid var(--nirmala-glass-border)',
+                borderTopLeftRadius: 'var(--radius-lg, 12px)',
+                borderTopRightRadius: 'var(--radius-lg, 12px)',
+                backgroundImage: 'none',
+                pb: 'env(safe-area-inset-bottom)',
+              }
+            : {
+                width: 328,
+                bgcolor: 'var(--nirmala-glass-bg)',
+                backdropFilter: 'blur(20px)',
+                borderLeft: '1px solid var(--nirmala-glass-border)',
+                backgroundImage: 'none',
+              },
         },
       }}
     >
@@ -104,7 +116,7 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
           <Box>
             <Typography sx={eyebrowSx}>Stasiun Sensor</Typography>
-            <Typography variant="h6" fontWeight={700} sx={{ ...monoSx, lineHeight: 1.2 }}>
+            <Typography variant="h6" fontWeight={700} sx={{ lineHeight: 1.2 }}>
               {station.id}
             </Typography>
           </Box>
@@ -125,10 +137,10 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
 
         {/* Metadata */}
         <Stack spacing={1.75} sx={{ mb: 2 }}>
-          <Meta label="Koordinat" mono value={`${station.lat.toFixed(4)}, ${station.lng.toFixed(4)}`} />
+          <Meta label="Koordinat" value={`${station.lat.toFixed(4)}, ${station.lng.toFixed(4)}`} />
           <Box sx={{ display: 'flex', gap: 3 }}>
             <Meta label="Sedang Hujan" value={station.isRaining ? 'Ya' : 'Tidak'} />
-            <Meta label="Update Terakhir" mono value={fmtTime(station.lastUpdate)} />
+            <Meta label="Update Terakhir" value={fmtTime(station.lastUpdate)} />
           </Box>
         </Stack>
 
@@ -146,14 +158,14 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
             <Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 0.75 }}>
                 <Typography sx={eyebrowSx}>Curah Hujan · mm (5 min)</Typography>
-                <Typography variant="caption" sx={{ ...monoSx, color: '#60a5fa', fontWeight: 700 }}>
+                <Typography variant="caption" sx={{ color: '#60a5fa', fontWeight: 700 }}>
                   {rainMax != null ? `${rainMax.toFixed(2)} mm` : '—'}
                 </Typography>
               </Box>
               <Sparkline data={rainData} labels={rain?.labels} variant="bar" color="#60a5fa" height={58}
                 ariaLabel={`Curah hujan, puncak ${rainMax ?? 0} mm`} />
               <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Terakhir: <Box component="span" sx={monoSx}>{rainLast != null ? `${rainLast.toFixed(2)} mm` : '—'}</Box>
+                Terakhir: <Box component="span">{rainLast != null ? `${rainLast.toFixed(2)} mm` : '—'}</Box>
               </Typography>
             </Box>
 
@@ -161,7 +173,7 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
             <Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 0.75 }}>
                 <Typography sx={eyebrowSx}>Sinyal{signal?.label ? ` · ${signal.label}` : ''}</Typography>
-                <Typography variant="caption" sx={{ ...monoSx, color: 'var(--nirmala-cyan)', fontWeight: 700 }}>
+                <Typography variant="caption" sx={{ color: 'var(--nirmala-cyan)', fontWeight: 700 }}>
                   {signalLast != null ? signalLast.toFixed(2) : '—'}
                 </Typography>
               </Box>

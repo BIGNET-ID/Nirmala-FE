@@ -29,6 +29,7 @@ function speedColor(spd, a) {
 }
 
 function sampleField(field, lat, lng) {
+  if (!field) return null;
   const { bounds: B, nx, ny, u, v } = field;
   const gx = ((lng - B.west) / (B.east - B.west)) * (nx - 1);
   const gy = ((lat - B.south) / (B.north - B.south)) * (ny - 1);
@@ -45,17 +46,19 @@ function sampleField(field, lat, lng) {
   return { u: lerp(uTop, uBot, fy), v: lerp(vTop, vBot, fy) };
 }
 
-export default function WindParticleLayer({ show = true, field = null }) {
+export default function WindParticleLayer({ show = true, field = null, ambientField = null }) {
   const map = useMap();
   const overlayRef = useRef(null);
   const canvasRef = useRef(null);
   const fieldRef = useRef(field);
+  const ambientFieldRef = useRef(ambientField);
   const showRef = useRef(show);
   const rafRef = useRef(0);
   const particlesRef = useRef([]);
 
   useEffect(() => { showRef.current = show; }, [show]);
   useEffect(() => { fieldRef.current = field; }, [field]);
+  useEffect(() => { ambientFieldRef.current = ambientField; }, [ambientField]);
 
   useEffect(() => {
     if (!map || !window.google) return;
@@ -88,6 +91,7 @@ export default function WindParticleLayer({ show = true, field = null }) {
       const c = canvasRef.current;
       const ctx = c.getContext('2d');
       const field = fieldRef.current;
+      const ambient = ambientFieldRef.current;
 
       // fade existing trails without painting a background (keeps map visible)
       ctx.globalCompositeOperation = 'destination-in';
@@ -95,11 +99,14 @@ export default function WindParticleLayer({ show = true, field = null }) {
       ctx.fillRect(0, 0, c.width, c.height);
       ctx.globalCompositeOperation = 'source-over';
 
-      if (field && showRef.current) {
+      if ((field || ambient) && showRef.current) {
         const parts = particlesRef.current;
         for (const p of parts) {
           const ll = latlngAt(p.x, p.y);
-          const w = ll ? sampleField(field, ll.lat(), ll.lng()) : null;
+          // Prefer the dense viewport-following field; fall back to the
+          // sparse near-global ambient field wherever the dense one doesn't
+          // reach (e.g. far outside wherever the user has actually panned).
+          const w = ll ? (sampleField(field, ll.lat(), ll.lng()) ?? sampleField(ambient, ll.lat(), ll.lng())) : null;
           if (!w) { p.x = Math.random() * c.width; p.y = Math.random() * c.height; p.age = 0; continue; }
           const nx = p.x + w.u * VELOCITY_SCALE;
           const ny = p.y - w.v * VELOCITY_SCALE; // screen y is down; +v is north

@@ -4,8 +4,6 @@ import { Box, Select, MenuItem, IconButton, Tooltip, Typography } from '@mui/mat
 import { Icon } from '@iconify/react';
 import { PROVINCES } from '@/constants/provinces';
 
-const monoSx = { fontFamily: 'var(--font-family-mono)' };
-
 /**
  * Provincial Boundary Filter (PRD §4.3). Selecting a province pans/zooms the
  * map to its bounding box (handled by the parent's onSelectCode) and shows
@@ -22,8 +20,8 @@ export default function ProvinceFilterSelect({ selectedCode, onSelectCode, match
         flexShrink: 0,
         display: 'flex',
         alignItems: 'center',
-        gap: 1.5,
-        px: 2,
+        gap: { xs: 0.75, sm: 1.5 },
+        px: { xs: 1.25, sm: 2 },
         background: 'var(--nirmala-glass-bg-header)',
         borderBottom: '1px solid var(--nirmala-glass-border)',
         backdropFilter: 'blur(20px)',
@@ -38,7 +36,7 @@ export default function ProvinceFilterSelect({ selectedCode, onSelectCode, match
         variant="standard"
         disableUnderline
         size="small"
-        sx={{ fontSize: '0.78rem', fontWeight: 600, minWidth: 180, color: 'text.primary' }}
+        sx={{ fontSize: '0.78rem', fontWeight: 600, minWidth: { xs: 110, sm: 180 }, maxWidth: { xs: 140, sm: 'none' }, color: 'text.primary' }}
       >
         <MenuItem value="">Semua Provinsi</MenuItem>
         {PROVINCES.map((p) => (
@@ -55,15 +53,21 @@ export default function ProvinceFilterSelect({ selectedCode, onSelectCode, match
       )}
 
       {selected && matched && (
-        <Typography variant="caption" sx={{ ml: 'auto', color: 'text.secondary', fontSize: '0.72rem' }}>
+        <Typography
+          variant="caption"
+          sx={{
+            ml: 'auto', color: 'text.secondary', fontSize: '0.72rem',
+            minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}
+        >
           {matched.total === 0 ? (
             'Belum ada data sensor terdeteksi di wilayah ini'
           ) : (
             <>
-              <Box component="span" sx={{ ...monoSx, color: 'var(--nirmala-cyan)' }}>{matched.total}</Box>
+              <Box component="span" sx={{ color: 'var(--nirmala-cyan)' }}>{matched.total}</Box>
               {' '}sensor di {selected.name}
               {' · '}
-              <Box component="span" sx={monoSx}>{matched.raining}</Box> melapor hujan
+              <Box component="span">{matched.raining}</Box> melapor hujan
             </>
           )}
         </Typography>

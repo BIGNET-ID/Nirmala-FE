@@ -1,7 +1,7 @@
 import { Box, IconButton, Typography } from '@mui/material';
 import { Icon } from '@iconify/react';
 
-const monoSx = { fontFamily: 'var(--font-family-mono)', fontWeight: 700 };
+const numSx = { fontWeight: 700 };
 
 /**
  * Contextual info pill, top-centre over the map. Summarises the active layer
@@ -27,11 +27,10 @@ export default function MapInfoPill({ raining, total, loading, onClose }) {
         display: 'flex',
         alignItems: 'center',
         gap: 1,
-        pl: 1.75,
-        pr: onClose ? 0.5 : 1.75,
-        py: 0.75,
+        pl: { xs: 1.25, sm: 1.75 },
+        pr: onClose ? 0.5 : { xs: 1.25, sm: 1.75 },
+        py: { xs: 0.5, sm: 0.75 },
         maxWidth: 'min(420px, calc(100vw - 32px))',
-        display: { xs: 'none', sm: 'flex' },
         backdropFilter: 'blur(20px)',
         background: 'var(--nirmala-glass-bg)',
         border: '1px solid var(--nirmala-glass-border)',
@@ -39,13 +38,13 @@ export default function MapInfoPill({ raining, total, loading, onClose }) {
       }}
     >
       <Icon icon="material-symbols:rainy-rounded" width={16} style={{ color: '#60a5fa', flexShrink: 0 }} />
-      <Typography variant="body2" sx={{ fontSize: '0.78rem', color: 'text.primary', whiteSpace: 'nowrap' }}>
+      <Typography variant="body2" sx={{ fontSize: { xs: '0.7rem', sm: '0.78rem' }, color: 'text.primary', whiteSpace: { xs: 'normal', sm: 'nowrap' } }}>
         {loading ? (
           'Memuat data sensor…'
         ) : (
           <>
-            Kerapatan Hujan · <Box component="span" sx={{ ...monoSx, color: '#60a5fa' }}>{raining.toLocaleString('id-ID')}</Box>
-            {' '}dari <Box component="span" sx={monoSx}>{total.toLocaleString('id-ID')}</Box> sensor melapor hujan
+            Kerapatan Hujan · <Box component="span" sx={{ ...numSx, color: '#60a5fa' }}>{raining.toLocaleString('id-ID')}</Box>
+            {' '}dari <Box component="span" sx={numSx}>{total.toLocaleString('id-ID')}</Box> sensor melapor hujan
           </>
         )}
       </Typography>

@@ -28,7 +28,7 @@ export default function MeshLayer({ stations = [], onDistanceRangeChange }) {
   // changes every live tick — so it's memoized on the id set, not `stations`.
   const stationIdKey = stations.map((s) => s.id).join(',');
   const { edges, minDistanceKm, maxDistanceKm } = useMemo(
-    () => buildSensorMeshGraph(stations, { k: 12 }),
+    () => buildSensorMeshGraph(stations, { k: 24 }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [stationIdKey],
   );
