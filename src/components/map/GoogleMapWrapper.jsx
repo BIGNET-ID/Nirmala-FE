@@ -2,7 +2,9 @@
 
 import React from 'react';
 import { APIProvider, Map } from '@vis.gl/react-google-maps';
-import { MAP_CENTER, MAP_ZOOM_DEFAULT } from '@/constants/mapConfig';
+import {
+  MAP_CENTER, MAP_ZOOM_DEFAULT, MAP_BOUNDS_ASIA, MAP_MIN_ZOOM, MAP_MAX_ZOOM,
+} from '@/constants/mapConfig';
 import { useThemeMode } from '@/context/ThemeModeContext';
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -30,24 +32,224 @@ const MAP_STYLE_LIGHT = [
   { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#8ea3c2' }] },
 ];
 
+// SnazzyMaps custom style (user-provided), used verbatim for dark mode.
 const MAP_STYLE_DARK = [
-  { elementType: 'geometry', stylers: [{ color: '#0a1120' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#4a5a72' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#050811' }] },
-  { elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
-  { featureType: 'administrative', elementType: 'geometry', stylers: [{ color: '#16213a' }] },
-  { featureType: 'administrative.country', elementType: 'labels.text.fill', stylers: [{ color: '#7f93b0' }] },
-  { featureType: 'administrative.land_parcel', stylers: [{ visibility: 'off' }] },
-  { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#8ea3c2' }] },
-  { featureType: 'administrative.province', elementType: 'geometry.stroke', stylers: [{ color: '#1a2740' }] },
-  { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#141d30' }] },
-  { featureType: 'road', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#1b2d47' }] },
-  { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#050811' }] },
-  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#26364f' }] },
-  { featureType: 'water', elementType: 'labels.text.stroke', stylers: [{ color: '#050811' }] },
+    {
+        "featureType": "all",
+        "elementType": "labels.text.fill",
+        "stylers": [
+            {
+                "saturation": 36
+            },
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 40
+            }
+        ]
+    },
+    {
+        "featureType": "all",
+        "elementType": "labels.text.stroke",
+        "stylers": [
+            {
+                "visibility": "on"
+            },
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 16
+            }
+        ]
+    },
+    {
+        "featureType": "all",
+        "elementType": "labels.icon",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "administrative",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 20
+            }
+        ]
+    },
+    {
+        "featureType": "administrative",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 17
+            },
+            {
+                "weight": 1.2
+            }
+        ]
+    },
+    {
+        "featureType": "administrative.country",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "gamma": "2.4"
+            },
+            {
+                "color": "#6e6e6e"
+            },
+            {
+                "invert_lightness": true
+            }
+        ]
+    },
+    {
+        "featureType": "administrative.province",
+        "elementType": "labels.text.fill",
+        "stylers": [
+            {
+                "color": "#fbfbfb"
+            }
+        ]
+    },
+    {
+        "featureType": "landscape",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 20
+            }
+        ]
+    },
+    {
+        "featureType": "landscape.natural.landcover",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "color": "#4f4f4f"
+            }
+        ]
+    },
+    {
+        "featureType": "poi",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 21
+            }
+        ]
+    },
+    {
+        "featureType": "road.highway",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "color": "#252525"
+            },
+            {
+                "lightness": 17
+            }
+        ]
+    },
+    {
+        "featureType": "road.highway",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 29
+            },
+            {
+                "weight": 0.2
+            }
+        ]
+    },
+    {
+        "featureType": "road.arterial",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 18
+            }
+        ]
+    },
+    {
+        "featureType": "road.local",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 16
+            }
+        ]
+    },
+    {
+        "featureType": "transit",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 19
+            }
+        ]
+    },
+    {
+        "featureType": "transit.line",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "color": "#aba3a3"
+            }
+        ]
+    },
+    {
+        "featureType": "water",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 17
+            }
+        ]
+    },
+    {
+        "featureType": "water",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "color": "#02011a"
+            }
+        ]
+    }
 ];
 
 export default function GoogleMapWrapper({ children, onMapLoad }) {
@@ -61,10 +263,18 @@ export default function GoogleMapWrapper({ children, onMapLoad }) {
         <Map
           defaultCenter={MAP_CENTER}
           defaultZoom={MAP_ZOOM_DEFAULT}
+          minZoom={MAP_MIN_ZOOM}
+          maxZoom={MAP_MAX_ZOOM}
           styles={mode === 'dark' ? MAP_STYLE_DARK : MAP_STYLE_LIGHT}
           disableDefaultUI={true}
           gestureHandling="greedy"
           onIdle={(e) => onMapLoad?.(e.map)}
+          // Regional restriction (Indonesia + wider Asia) — also keeps the
+          // world from wrapping into repeated copies at low zoom.
+          restriction={{
+            latLngBounds: MAP_BOUNDS_ASIA,
+            strictBounds: true,
+          }}
           style={{ width: '100%', height: '100%' }}
         >
           {children}

@@ -137,41 +137,47 @@
 :root {
   --nirmala-map-bg: #e9eef5;
   --nirmala-map-bg-2: #dbe3ee;
-  --nirmala-glass-bg: rgba(255, 255, 255, 0.82);
-  --nirmala-glass-bg-header: rgba(255, 255, 255, 0.9);
-  --nirmala-glass-bg-timeline: rgba(255, 255, 255, 0.85);
-  --nirmala-glass-border: rgba(16, 50, 95, 0.12);
-  --nirmala-glass-blur: 20px;
-  --nirmala-cyan: #0e7490;                 /* deeper cyan — readable on light */
-  --nirmala-cyan-dim: rgba(14, 116, 144, 0.12);
-  --nirmala-focus-glow: 0 0 0 3px rgba(14, 116, 144, 0.15);
+  /* Solid panel surfaces (no blur/translucency — see AGENTS.md design guardrails) */
+  --nirmala-glass-bg: #ffffff;
+  --nirmala-glass-bg-header: #ffffff;
+  --nirmala-glass-bg-timeline: #ffffff;
+  --nirmala-glass-border: rgba(16, 50, 95, 0.14);
+  --nirmala-glass-blur: 0px;
+  --nirmala-cyan: #0d47a1;                 /* brand blue-primary, replaces neon cyan */
+  --nirmala-cyan-dim: rgba(13, 71, 161, 0.10);
+  --nirmala-focus-glow: 0 0 0 3px rgba(13, 71, 161, 0.18);
 
-  /* Rain density ramp (heatmap + legend) — shared both modes */
-  --rain-1: #60a5fa;
-  --rain-2: #34d399;
-  --rain-3: #eab308;
-  --rain-4: #fb923c;
-  --rain-5: #ef4444;
-  --rain-6: #c084fc;
+  /* Rain density ramp (heatmap + legend) — full meteorological spectrum
+     (Windy/BMKG-style precipitation scale), see AGENTS.md design
+     guardrails for why this is an approved exception to "no rainbow".
+     Not a general-purpose "rain blue" accent — use --status-raining for
+     that (icons, charts) so those don't shift when this ramp changes. */
+  --rain-1: #3b82f6;
+  --rain-2: #22d3ee;
+  --rain-3: #22c55e;
+  --rain-4: #eab308;
+  --rain-5: #f97316;
+  --rain-6: #dc2626;
 
   /* Sensor status */
-  --status-active: #34d399;
-  --status-raining: #60a5fa;
+  --status-active: #3cba54;
+  --status-raining: #3b82f6;
   --status-inactive: #4b5563;
-  --status-blacklisted: #ef4444;
+  --status-blacklisted: #dc2626;
 }
 
 /* ── Nirmala Command-Center Tokens — DARK override ── */
 :root[data-theme="dark"] {
   --nirmala-map-bg: #050811;
   --nirmala-map-bg-2: #0a1628;
-  --nirmala-glass-bg: rgba(10, 16, 36, 0.88);
-  --nirmala-glass-bg-header: rgba(5, 8, 17, 0.96);
-  --nirmala-glass-bg-timeline: rgba(10, 16, 36, 0.92);
-  --nirmala-glass-border: rgba(255, 255, 255, 0.07);
-  --nirmala-cyan: #00e5ff;
-  --nirmala-cyan-dim: rgba(0, 229, 255, 0.15);
-  --nirmala-focus-glow: 0 0 0 3px rgba(0, 229, 255, 0.12);
+  /* Solid panel surfaces (no blur/translucency — see AGENTS.md design guardrails) */
+  --nirmala-glass-bg: #0c1220;
+  --nirmala-glass-bg-header: #0a0f1c;
+  --nirmala-glass-bg-timeline: #0c1220;
+  --nirmala-glass-border: rgba(255, 255, 255, 0.10);
+  --nirmala-cyan: #5b8def;                 /* muted brand blue, replaces neon cyan */
+  --nirmala-cyan-dim: rgba(91, 141, 239, 0.16);
+  --nirmala-focus-glow: 0 0 0 3px rgba(91, 141, 239, 0.20);
 }
 
 /* ── Global Reset & Base ── */

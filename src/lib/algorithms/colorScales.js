@@ -17,17 +17,19 @@ export function tempToColor(celsius) {
   return hslToRgba(hue, 0.85, 0.5, 0.55);
 }
 
-// Same 6-stop scale as the app's existing --rain-1..--rain-6 CSS tokens
-// (already used by the rain-density legend gradient) — reused here for
-// Mesh Map's edge distance instead of a new palette, so "cool = short/low,
-// hot = long/high" reads consistently across metrics.
+// Same 6-stop scale as the app's --rain-1..--rain-6 CSS tokens (already
+// used by the rain-density legend gradient) — reused here for Mesh Map's
+// edge distance instead of a new palette, so "cool = short/low, hot =
+// long/high (coverage gap)" reads consistently across metrics. Sequential
+// blue, with the final stop reserved as a red "alert" tier for the largest
+// gaps — no rainbow/jet colormap (see AGENTS.md design guardrails).
 const DISTANCE_STOPS = [
-  [96, 165, 250],  // --rain-1 #60a5fa
-  [52, 211, 153],  // --rain-2 #34d399
-  [234, 179, 8],   // --rain-3 #eab308
-  [251, 146, 60],  // --rain-4 #fb923c
-  [239, 68, 68],   // --rain-5 #ef4444
-  [192, 132, 252], // --rain-6 #c084fc
+  [219, 234, 254], // --rain-1 #dbeafe
+  [147, 197, 253], // --rain-2 #93c5fd
+  [59, 130, 246],  // --rain-3 #3b82f6
+  [29, 78, 216],   // --rain-4 #1d4ed8
+  [30, 58, 138],   // --rain-5 #1e3a8a
+  [220, 38, 38],   // --rain-6 (alert) #dc2626
 ];
 
 /** Maps a normalized [0,1] value to an RGBA colour along the shared distance/intensity scale. */

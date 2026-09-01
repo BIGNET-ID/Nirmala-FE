@@ -48,7 +48,6 @@ export default function TimeTravelBar({
         width: 'min(720px, calc(100vw - 32px))',
         p: 1.25,
         pl: 1.5,
-        backdropFilter: 'blur(20px)',
         background: 'var(--nirmala-glass-bg)',
         border: '1px solid var(--nirmala-glass-border)',
         borderRadius: 'var(--radius-full, 9999px)',

@@ -37,37 +37,20 @@ export const nirmalaApiService = {
     }
   },
 
-  /** GET /api/lightning — sambaran petir. Refresh ~10s. */
-  async getLightning() {
-    try {
-      return await nirmalaApi.get('/api/lightning');
-    } catch (error) {
-      console.warn('[Nirmala API] /api/lightning unavailable, using fixture:', error.message);
-      return (await loadFixture('lightning')) || { content: [] };
-    }
-  },
-
-  /** GET /api/thunderstorm — GeoJSON poligon sel badai. Refresh ~30s. */
-  async getThunderstorm() {
-    try {
-      return await nirmalaApi.get('/api/thunderstorm');
-    } catch (error) {
-      console.warn('[Nirmala API] /api/thunderstorm unavailable, using fixture:', error.message);
-      return (await loadFixture('thunderstorm')) || { content: [] };
-    }
-  },
-
   /**
-   * GET /api/timeseries/{sensor_id} — deret rain (mm, 5min avg) + signal per sensor.
-   * Backend ignores any `n_days`/limit param and always returns its full
-   * retained history (confirmed against the live API), so this always
-   * requests the plain endpoint with no query string.
+   * GET /api/timeseries/{sensor_id}/latest?minutes={minutes} — rain (mm,
+   * 5min avg) + signal for just the last N minutes, already windowed
+   * server-side (confirmed against the live API: returns the flat
+   * `{ points: [{ ts, value }] }` shape, `ts` already carrying the
+   * account's local offset). Used instead of the plain (unwindowed,
+   * full-history) `/api/timeseries/{id}` endpoint since the dashboard only
+   * ever shows the last hour — see SensorDetailDrawer.
    */
-  async getTimeseries(sensorId) {
+  async getLatestTimeseries(sensorId, minutes) {
     try {
-      return await nirmalaApi.get(`/api/timeseries/${sensorId}`);
+      return await nirmalaApi.get(`/api/timeseries/${sensorId}/latest?minutes=${minutes}`);
     } catch (error) {
-      console.warn(`[Nirmala API] /api/timeseries/${sensorId} unavailable, using fixture:`, error.message);
+      console.warn(`[Nirmala API] /api/timeseries/${sensorId}/latest unavailable, using fixture:`, error.message);
       return await loadFixture('timeseries');
     }
   },
@@ -136,41 +119,6 @@ export function normalizeSensors(apiResponse) {
   return apiResponse.sensors.map(normalizeSensor);
 }
 
-/** Normalize a single raw lightning strike. Shared by normalizeLightning and useLightningStream. */
-export function normalizeLightningStrike(strike) {
-  if (!strike) return null;
-  return {
-    id: `${strike.lat}_${strike.long}_${strike.time}`,
-    lat: strike.lat,
-    lng: strike.long,
-    signalStrength: strike.signalStrengthKA,
-    isCloud: strike.cloud,
-    time: strike.time,
-  };
-}
-
-export function normalizeLightning(apiResponse) {
-  if (!apiResponse || !apiResponse.content) return [];
-  return apiResponse.content.map(normalizeLightningStrike);
-}
-
-/** Normalize a single raw thunderstorm cell. Shared by normalizeThunderstorm and useThunderstormStream. */
-export function normalizeThunderstormCell(storm) {
-  if (!storm) return null;
-  return {
-    id: storm.stormId,
-    centroid: storm.centroid,
-    polygon: storm.polygon,
-    severe: storm.severe,
-    referenceTime: storm.referenceTime,
-  };
-}
-
-export function normalizeThunderstorm(apiResponse) {
-  if (!apiResponse || !apiResponse.content) return [];
-  return apiResponse.content.map(normalizeThunderstormCell);
-}
-
 /** Extract the default map view from manifest (account.default_map). */
 export function getDefaultMap(manifest) {
   const dm = manifest?.account?.default_map;
@@ -180,12 +128,31 @@ export function getDefaultMap(manifest) {
 
 /**
  * Parse a timeseries response into {rain, signal} series ready for charts.
- * rain.chart_data.datasets[0] = "Rainfall (mm) - 5min average".
+ *
+ * The backend has been observed returning TWO different shapes for the same
+ * endpoint depending on query params (see docs/api/nirmala-rainvision-api-analysis.md):
+ *   - no from/to: wrapped `{ chart_data: { labels, datasets: [{ label, data }] } }`
+ *     (rain) / `{ signal_data: {...} }` (signal) — dataset label is
+ *     "Rainfall (mm) - 5min average" etc.
+ *   - explicit from/to: flat `{ points: [{ ts, value }], total_records }`,
+ *     with `ts` already carrying the account's local offset (e.g. WIB
+ *     +07:00) instead of the labels' compact "MM-DD HH:mm" strings.
+ * Both are handled explicitly here rather than assuming one — see the doc's
+ * note on confirming the contract with backend before trusting either shape
+ * silently.
  */
 export function normalizeTimeseries(apiResponse) {
   const pickSeries = (block) => {
+    if (!block) return null;
+    if (Array.isArray(block.points)) {
+      return {
+        label: block.label || '',
+        labels: block.points.map((p) => p.ts),
+        data: block.points.map((p) => p.value),
+      };
+    }
     // rain nests under chart_data; signal nests under signal_data — same shape.
-    const cd = block?.chart_data || block?.signal_data;
+    const cd = block.chart_data || block.signal_data;
     if (!cd || !Array.isArray(cd.datasets) || cd.datasets.length === 0) return null;
     const ds = cd.datasets[0];
     return {

@@ -94,7 +94,7 @@ function StatusChips({ health, streamStatus, now, stack, scale = 1 }) {
   );
 }
 
-export default function DashboardHeader({ health, streamStatus, activeTab, onTabChange }) {
+export default function DashboardHeader({ health, streamStatus, activeTab, onTabChange, mapInfo, timestampInfo, himawariNotice }) {
   const pathname = usePathname() || '/';
   const router = useRouter();
   const { user, logout } = useAuth() || {};
@@ -112,7 +112,18 @@ export default function DashboardHeader({ health, streamStatus, activeTab, onTab
 
   const [anchor, setAnchor] = useState(null);
   const [statusAnchor, setStatusAnchor] = useState(null);
+  const [notifAnchor, setNotifAnchor] = useState(null);
   const initials = (user?.name || user?.username || 'OP').slice(0, 2).toUpperCase();
+
+  // Notification bell content — live status (rain density, last-synced time,
+  // Himawari notice), not a discrete message log: all three continuously
+  // re-derive from the sensor stream/Himawari state, so a chronological
+  // history would just be near-duplicate entries every few seconds. See
+  // page.jsx for where mapInfo/timestampInfo/himawariNotice are computed.
+  const hasMapInfo = mapInfo && (mapInfo.loading || mapInfo.total > 0);
+  const hasTimestamp = Boolean(timestampInfo?.timestamp);
+  const hasHimawariNotice = Boolean(himawariNotice);
+  const hasNotifications = hasMapInfo || hasTimestamp || hasHimawariNotice;
 
   // Aggregate dot on the compact status icon — red/amber only when something
   // actually needs attention, so a glance at the closed icon still tells the
@@ -135,7 +146,6 @@ export default function DashboardHeader({ health, streamStatus, activeTab, onTab
         pl: 'max(16px, env(safe-area-inset-left))',
         pr: 'max(16px, env(safe-area-inset-right))',
         background: 'var(--nirmala-glass-bg-header)',
-        backdropFilter: 'blur(20px)',
         borderBottom: '1px solid var(--nirmala-glass-border)',
         display: 'flex',
         alignItems: 'center',
@@ -143,13 +153,14 @@ export default function DashboardHeader({ health, streamStatus, activeTab, onTab
         zIndex: 'var(--z-header, 1200)',
       }}
     >
-      {/* Brand */}
-      <Box
-        component="img"
-        src={mode === 'dark' ? '/nirmala-brand-dark.png' : '/nirmala-brand.png'}
-        alt="Nirmala"
-        sx={{ height: 48 * scale, width: 'auto', display: 'block', flexShrink: 0 }}
-      />
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0, minWidth: 0 }}>
+        <Box
+          component="img"
+          src={mode === 'dark' ? '/nirmala-brand-dark.png' : '/nirmala-brand.png'}
+          alt="Nirmala"
+          sx={{ height: 32 * scale, width: 'auto', display: 'block', flexShrink: 0 }}
+        />
+      </Box>
 
       {!isCompact && (
         <>
@@ -173,10 +184,10 @@ export default function DashboardHeader({ health, streamStatus, activeTab, onTab
                   whiteSpace: 'nowrap',
                   borderRadius: '4px 4px 0 0',
                   color: active ? 'var(--nirmala-cyan)' : 'var(--color-text-muted)',
-                  background: active ? 'rgba(0,229,255,0.10)' : 'transparent',
+                  background: active ? 'var(--nirmala-cyan-dim)' : 'transparent',
                   borderBottom: active ? '2px solid var(--nirmala-cyan)' : '2px solid transparent',
                   transition: 'color var(--duration-fast,150ms) var(--ease-standard), background var(--duration-fast,150ms) var(--ease-standard)',
-                  '&:hover': { background: active ? 'rgba(0,229,255,0.14)' : 'rgba(255,255,255,0.04)', color: active ? 'var(--nirmala-cyan)' : 'var(--color-text)' },
+                  '&:hover': { background: active ? 'var(--nirmala-cyan-dim)' : 'rgba(128,128,128,0.08)', color: active ? 'var(--nirmala-cyan)' : 'var(--color-text)' },
                 },
               };
               if (item.soon) {
@@ -292,6 +303,81 @@ export default function DashboardHeader({ health, streamStatus, activeTab, onTab
             </Tooltip>
           </>
         )}
+
+        {/* Notification bell — live status (rain density, last-synced,
+            Himawari notice), replacing the old floating top-center pills. */}
+        <Tooltip title="Notifikasi">
+          <IconButton
+            onClick={(e) => setNotifAnchor(e.currentTarget)}
+            aria-label="Notifikasi"
+            sx={{
+              width: (isCompact ? 40 : 34 * scale), height: (isCompact ? 40 : 34 * scale), color: 'var(--color-text-muted)',
+              border: '1px solid var(--nirmala-glass-border)', borderRadius: 'var(--radius-md,8px)',
+              transition: 'color var(--duration-fast,150ms) var(--ease-standard)',
+              '&:hover': { color: 'var(--nirmala-cyan)' },
+            }}
+          >
+            <Badge
+              variant="dot"
+              overlap="circular"
+              invisible={!hasNotifications}
+              sx={{ '& .MuiBadge-badge': { bgcolor: 'var(--nirmala-cyan)' } }}
+            >
+              <Icon icon="material-symbols:notifications-outline-rounded" width={18 * scale} />
+            </Badge>
+          </IconButton>
+        </Tooltip>
+        <Menu
+          anchorEl={notifAnchor}
+          open={Boolean(notifAnchor)}
+          onClose={() => setNotifAnchor(null)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          slotProps={{ paper: { sx: {
+            mt: 1, width: 300, bgcolor: 'var(--color-surface, #1e1e1e)',
+            border: '1px solid var(--nirmala-glass-border)', borderRadius: 'var(--radius-md,8px)',
+          } } }}
+        >
+          <Typography sx={{ px: 2, pt: 1, pb: 0.5, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'text.secondary' }}>
+            Notifikasi
+          </Typography>
+
+          {!hasNotifications && (
+            <Typography variant="body2" sx={{ px: 2, py: 1.5, color: 'text.secondary', fontSize: '0.82rem' }}>
+              Tidak ada info saat ini.
+            </Typography>
+          )}
+
+          {hasMapInfo && (
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, px: 2, py: 1 }}>
+              <Icon icon="material-symbols:rainy-rounded" width={16} style={{ color: 'var(--status-raining)', flexShrink: 0, marginTop: 2 }} />
+              <Typography variant="body2" sx={{ fontSize: '0.82rem', color: 'text.primary' }}>
+                {mapInfo.loading ? 'Memuat data sensor…' : (
+                  <>Kerapatan Hujan · <b>{mapInfo.raining.toLocaleString('id-ID')}</b> dari <b>{mapInfo.total.toLocaleString('id-ID')}</b> sensor melapor hujan</>
+                )}
+              </Typography>
+            </Box>
+          )}
+
+          {hasTimestamp && (
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, px: 2, py: 1 }}>
+              <Icon icon="material-symbols:schedule-rounded" width={16} style={{ color: 'var(--nirmala-cyan)', flexShrink: 0, marginTop: 2 }} />
+              <Typography variant="body2" sx={{ fontSize: '0.82rem', color: 'text.primary' }}>
+                {timestampInfo.label} · diperbarui{' '}
+                <b>{timestampInfo.timestamp.toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit' })}</b> WIB
+              </Typography>
+            </Box>
+          )}
+
+          {hasHimawariNotice && (
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, px: 2, py: 1 }}>
+              <Icon icon="material-symbols:satellite-alt-rounded" width={16} style={{ color: '#f59e0b', flexShrink: 0, marginTop: 2 }} />
+              <Typography variant="body2" sx={{ fontSize: '0.82rem', color: 'text.primary' }}>
+                {himawariNotice}
+              </Typography>
+            </Box>
+          )}
+        </Menu>
 
         {/* Avatar + dropdown */}
         <IconButton

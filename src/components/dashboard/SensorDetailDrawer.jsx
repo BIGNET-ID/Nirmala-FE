@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Box, Drawer, Typography, Divider, Chip, IconButton, Button, Stack, CircularProgress } from '@mui/material';
 import { Icon } from '@iconify/react';
-import Sparkline from '@/components/common/Sparkline';
+import Sparkline, { parseLabel } from '@/components/common/Sparkline';
 import SparklineOverviewDialog from '@/components/dashboard/SparklineOverviewDialog';
+import SeriesStatsRow from '@/components/dashboard/SeriesStatsRow';
 import { nirmalaApiService, normalizeTimeseries } from '@/lib/nirmalaApi';
 import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 
@@ -42,11 +43,21 @@ function Meta({ label, value }) {
   );
 }
 
-function last(arr) {
-  for (let i = arr.length - 1; i >= 0; i--) {
-    if (typeof arr[i] === 'number' && !Number.isNaN(arr[i])) return arr[i];
-  }
-  return null;
+// How much history to request from the /latest endpoint — named so a future
+// range picker only needs to change this one constant.
+const LAST_HOUR_MINUTES = 60;
+
+// Sparkline's default 120 buckets assumes a wide (multi-day) range where
+// each bucket spans hours and is almost always populated. Squeezed into a
+// 1-hour window, 120 buckets can be far narrower than the sensor's real
+// reporting interval — a lone real point per bucket, surrounded by empty
+// buckets, breaks a line/area chart into 1-point "segments" that render
+// nothing at all (see Sparkline.jsx's segment drawing). Sizing buckets to
+// roughly match the real point count keeps neighbouring readings in
+// adjacent buckets so the line stays continuous, while genuine connectivity
+// gaps still show as an honest break.
+function bucketsForWindow(pointCount) {
+  return Math.min(120, Math.max(4, pointCount));
 }
 
 export default function SensorDetailDrawer({ station, open, onClose }) {
@@ -62,7 +73,7 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
     setLoading(true);
     setSeries(null);
     nirmalaApiService
-      .getTimeseries(station.id)
+      .getLatestTimeseries(station.id, LAST_HOUR_MINUTES)
       .then((resp) => {
         if (myReq !== reqId.current) return; // stale
         setSeries(normalizeTimeseries(resp));
@@ -75,11 +86,27 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
   const sm = statusMeta(station);
   const rain = series?.rain;
   const signal = series?.signal;
-  const rainData = rain?.data || [];
-  const signalData = signal?.data || [];
+
+  // The /latest endpoint already windows each metric to the requested
+  // minutes server-side, so the chart's range is simply the span of
+  // whatever points actually came back — rain and signal can still cover
+  // slightly different spans (independent reporting cadences), which is
+  // fine since the two charts render stacked, not overlaid on one axis.
+  const rangeOf = (labels) => {
+    const times = labels.map(parseLabel).filter(Boolean).map((d) => d.getTime());
+    if (!times.length) return { start: null, end: null };
+    return { start: new Date(Math.min(...times)), end: new Date(Math.max(...times)) };
+  };
+  const rainWindow = rain || { labels: [], data: [] };
+  const signalWindow = signal || { labels: [], data: [] };
+  const { start: rainRangeStart, end: rainRangeEnd } = rangeOf(rainWindow.labels);
+  const { start: signalRangeStart, end: signalRangeEnd } = rangeOf(signalWindow.labels);
+
+  const rainData = rainWindow.data;
+  const signalData = signalWindow.data;
+  const rainBuckets = bucketsForWindow(rainWindow.labels.length);
+  const signalBuckets = bucketsForWindow(signalWindow.labels.length);
   const rainMax = rainData.length ? Math.max(...rainData) : null;
-  const rainLast = last(rainData);
-  const signalLast = last(signalData);
 
   return (
     <Drawer
@@ -94,7 +121,6 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
                 width: '100%',
                 maxHeight: '75vh',
                 bgcolor: 'var(--nirmala-glass-bg)',
-                backdropFilter: 'blur(20px)',
                 borderTop: '1px solid var(--nirmala-glass-border)',
                 borderTopLeftRadius: 'var(--radius-lg, 12px)',
                 borderTopRightRadius: 'var(--radius-lg, 12px)',
@@ -104,7 +130,6 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
             : {
                 width: 328,
                 bgcolor: 'var(--nirmala-glass-bg)',
-                backdropFilter: 'blur(20px)',
                 borderLeft: '1px solid var(--nirmala-glass-border)',
                 backgroundImage: 'none',
               },
@@ -154,38 +179,38 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
 
         {!loading && series && (
           <Stack spacing={2.5}>
+            <Typography sx={eyebrowSx}>Data 1 jam terakhir</Typography>
+
             {/* Rain */}
             <Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 0.75 }}>
-                <Typography sx={eyebrowSx}>Curah Hujan · mm (5 min)</Typography>
-                <Typography variant="caption" sx={{ color: '#60a5fa', fontWeight: 700 }}>
-                  {rainMax != null ? `${rainMax.toFixed(2)} mm` : '—'}
-                </Typography>
-              </Box>
-              <Sparkline data={rainData} labels={rain?.labels} variant="bar" color="#60a5fa" height={58}
-                ariaLabel={`Curah hujan, puncak ${rainMax ?? 0} mm`} />
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Terakhir: <Box component="span">{rainLast != null ? `${rainLast.toFixed(2)} mm` : '—'}</Box>
-              </Typography>
+              <Typography sx={{ ...eyebrowSx, mb: 0.75, display: 'block' }}>Curah Hujan · mm (5 min)</Typography>
+              <Sparkline data={rainData} labels={rainWindow.labels} variant="area" color="var(--rain-3)" height={58}
+                rangeStart={rainRangeStart} rangeEnd={rainRangeEnd} buckets={rainBuckets}
+                ariaLabel={`Curah hujan satu jam terakhir, puncak ${rainMax ?? 0} mm`} />
+              <SeriesStatsRow data={rainData} unit="mm" />
             </Box>
 
             {/* Signal */}
             <Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 0.75 }}>
-                <Typography sx={eyebrowSx}>Sinyal{signal?.label ? ` · ${signal.label}` : ''}</Typography>
-                <Typography variant="caption" sx={{ color: 'var(--nirmala-cyan)', fontWeight: 700 }}>
-                  {signalLast != null ? signalLast.toFixed(2) : '—'}
-                </Typography>
-              </Box>
-              <Sparkline data={signalData} labels={signal?.labels} variant="area" color="#00e5ff" height={58}
-                ariaLabel="Kualitas sinyal sensor" />
+              <Typography sx={{ ...eyebrowSx, mb: 0.75, display: 'block' }}>Sinyal{signal?.label ? ` · ${signal.label}` : ''}</Typography>
+              <Sparkline data={signalData} labels={signalWindow.labels} variant="area" color="var(--nirmala-cyan)" height={58}
+                rangeStart={signalRangeStart} rangeEnd={signalRangeEnd} buckets={signalBuckets}
+                ariaLabel="Kualitas sinyal sensor, satu jam terakhir" />
+              <SeriesStatsRow data={signalData} />
             </Box>
 
             <Button
               size="small"
+              variant="contained"
+              disableElevation
               startIcon={<Icon icon="material-symbols:open-in-full-rounded" />}
               onClick={() => setOverviewOpen(true)}
-              sx={{ alignSelf: 'flex-start', color: 'text.secondary', fontSize: '0.72rem', fontWeight: 700 }}
+              sx={{
+                alignSelf: 'flex-start', fontSize: '0.72rem', fontWeight: 700,
+                bgcolor: 'var(--nirmala-cyan-dim)', color: 'var(--nirmala-cyan)',
+                boxShadow: 'none',
+                '&:hover': { bgcolor: 'var(--nirmala-cyan-dim)', boxShadow: 'none' },
+              }}
             >
               Overview
             </Button>
@@ -198,8 +223,12 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
           stationId={station.id}
           rain={rain}
           signal={signal}
-          rainMax={rainMax}
-          signalLast={signalLast}
+          rainBuckets={rainBuckets}
+          signalBuckets={signalBuckets}
+          rainRangeStart={rainRangeStart}
+          rainRangeEnd={rainRangeEnd}
+          signalRangeStart={signalRangeStart}
+          signalRangeEnd={signalRangeEnd}
         />
 
         {!loading && !series && (

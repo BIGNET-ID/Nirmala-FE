@@ -41,7 +41,6 @@ export default function MobileControlSheet({ segmentProps, legendProps, statsPro
           bgcolor: 'var(--nirmala-glass-bg)',
           color: 'var(--nirmala-cyan)',
           border: '1px solid var(--nirmala-glass-border)',
-          backdropFilter: 'blur(20px)',
           boxShadow: 'none',
           '&:hover': { bgcolor: 'var(--nirmala-cyan-dim)' },
         }}
@@ -57,13 +56,17 @@ export default function MobileControlSheet({ segmentProps, legendProps, statsPro
         onOpen={() => setOpen(true)}
         onClose={() => setOpen(false)}
         disableSwipeToOpen
+        // Matches the Paper's own --z-modal below — without this, the
+        // Modal root (backdrop included) sits at MUI's default drawer
+        // z-index (1200) instead, an inconsistency with no visible effect
+        // today but a latent trap for future stacking bugs.
+        sx={{ zIndex: 'var(--z-modal, 1400)' }}
         slotProps={{
           paper: {
             sx: {
               zIndex: 'var(--z-modal, 1400)',
               maxHeight: '75vh',
               bgcolor: 'var(--nirmala-glass-bg)',
-              backdropFilter: 'blur(20px)',
               backgroundImage: 'none',
               borderTop: '1px solid var(--nirmala-glass-border)',
               borderTopLeftRadius: 'var(--radius-lg, 12px)',

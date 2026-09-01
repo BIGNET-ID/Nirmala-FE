@@ -27,9 +27,14 @@ const POINT_ALPHA = 0.5;
 const RAIN_MAX_ALPHA = 220;
 const COVER_MAX_ALPHA = 90;   // subtle — network base, never competes with rain
 
+// Full meteorological precipitation spectrum (Windy/BMKG-style), matching
+// --rain-1..6 in globals.css and ColorRampLegend's tick labels. Approved
+// exception to "no rainbow" in AGENTS.md design guardrails — this follows
+// a recognized weather-platform convention and is always shown with a
+// qualitative tick legend (Rendah/Sedang/Tinggi/Ekstrem), not decoration.
 const RAIN_RAMP = [
-  [0.00, [96, 165, 250]], [0.18, [52, 211, 153]], [0.40, [234, 179, 8]],
-  [0.62, [251, 146, 60]], [0.82, [239, 68, 68]], [1.00, [192, 132, 252]],
+  [0.00, [59, 130, 246]], [0.20, [34, 211, 238]], [0.40, [34, 197, 94]],
+  [0.60, [234, 179, 8]], [0.80, [249, 115, 22]], [1.00, [220, 38, 38]],
 ];
 // Neutral teal for the "normal / dry sensor network".
 const COVER_RAMP = [

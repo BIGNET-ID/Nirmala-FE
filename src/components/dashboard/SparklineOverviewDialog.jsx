@@ -3,8 +3,9 @@
 import { Box, Dialog, IconButton, Stack, Typography } from '@mui/material';
 import { Icon } from '@iconify/react';
 import Sparkline from '@/components/common/Sparkline';
+import SeriesStatsRow from '@/components/dashboard/SeriesStatsRow';
 
-export default function SparklineOverviewDialog({ open, onClose, stationId, rain, signal, rainMax, signalLast }) {
+export default function SparklineOverviewDialog({ open, onClose, stationId, rain, signal, rainBuckets, signalBuckets, rainRangeStart, rainRangeEnd, signalRangeStart, signalRangeEnd }) {
   return (
     <Dialog
       open={open}
@@ -19,7 +20,6 @@ export default function SparklineOverviewDialog({ open, onClose, stationId, rain
         paper: {
           sx: {
             bgcolor: 'var(--nirmala-glass-bg)',
-            backdropFilter: 'blur(20px)',
             border: '1px solid var(--nirmala-glass-border)',
             backgroundImage: 'none',
           },
@@ -41,27 +41,25 @@ export default function SparklineOverviewDialog({ open, onClose, stationId, rain
           </IconButton>
         </Box>
 
+        <Typography sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'text.secondary', display: 'block', mb: 1.5 }}>
+          Data 1 jam terakhir
+        </Typography>
+
         <Stack spacing={3}>
           <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 0.75 }}>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>Curah Hujan · mm (5 min)</Typography>
-              <Typography variant="caption" sx={{ color: '#60a5fa', fontWeight: 700 }}>
-                {rainMax != null ? `${rainMax.toFixed(2)} mm` : '—'}
-              </Typography>
-            </Box>
-            <Sparkline data={rain?.data || []} labels={rain?.labels} variant="bar" color="#60a5fa" height={220} />
+            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.75 }}>Curah Hujan · mm (5 min)</Typography>
+            <Sparkline data={rain?.data || []} labels={rain?.labels} variant="area" color="var(--rain-3)" height={220}
+              rangeStart={rainRangeStart} rangeEnd={rainRangeEnd} buckets={rainBuckets} />
+            <SeriesStatsRow data={rain?.data} unit="mm" />
           </Box>
 
           <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 0.75 }}>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Sinyal{signal?.label ? ` · ${signal.label}` : ''}
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'var(--nirmala-cyan)', fontWeight: 700 }}>
-                {signalLast != null ? signalLast.toFixed(2) : '—'}
-              </Typography>
-            </Box>
-            <Sparkline data={signal?.data || []} labels={signal?.labels} variant="area" color="#00e5ff" height={220} />
+            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.75 }}>
+              Sinyal{signal?.label ? ` · ${signal.label}` : ''}
+            </Typography>
+            <Sparkline data={signal?.data || []} labels={signal?.labels} variant="area" color="var(--nirmala-cyan)" height={220}
+              rangeStart={signalRangeStart} rangeEnd={signalRangeEnd} buckets={signalBuckets} />
+            <SeriesStatsRow data={signal?.data} />
           </Box>
         </Stack>
       </Box>

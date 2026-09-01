@@ -3,10 +3,11 @@
 import { useEffect, useRef } from 'react';
 import { useMap } from '@vis.gl/react-google-maps';
 import { buildJmaHimawariTileUrl } from '@/lib/jmaHimawari';
+import { MAP_MIN_ZOOM } from '@/constants/mapConfig';
 
 const CROSSFADE_MS = 400;
 const TILE_SIZE = 256;
-const MIN_ZOOM = 3;
+const MIN_ZOOM = MAP_MIN_ZOOM;
 const MAX_ZOOM = 5;
 
 // Fixed probe tile used only to check whether a basetime has been published
@@ -88,7 +89,7 @@ function probeBasetime(basetime) {
   });
 }
 
-export default function HimawariLayer({ active, candidateBasetimes = [], prefetchBasetime = null, opacity = 0.55, onStatus, onZoomRangeChange, onBasetimeResolved }) {
+export default function HimawariLayer({ active, candidateBasetimes = [], prefetchBasetime = null, opacity = 0.50, onStatus, onZoomRangeChange, onBasetimeResolved }) {
   const map = useMap();
   const overlayRef = useRef(null);
   const prevOverlayRef = useRef(null);
