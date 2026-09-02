@@ -36,18 +36,18 @@ export default function SparklineOverviewDialog({ open, onClose, stationId, rain
               {stationId}
             </Typography>
           </Box>
-          <IconButton onClick={onClose} size="small" aria-label="Tutup">
+          <IconButton onClick={onClose} size="small" aria-label="Close">
             <Icon icon="material-symbols:close-rounded" />
           </IconButton>
         </Box>
 
         <Typography sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'text.secondary', display: 'block', mb: 1.5 }}>
-          Data 1 jam terakhir
+          Last hour of data
         </Typography>
 
         <Stack spacing={3}>
           <Box>
-            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.75 }}>Curah Hujan · mm (5 min)</Typography>
+            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.75 }}>Rainfall · mm (5 min)</Typography>
             <Sparkline data={rain?.data || []} labels={rain?.labels} variant="area" color="var(--rain-3)" height={220}
               rangeStart={rainRangeStart} rangeEnd={rainRangeEnd} buckets={rainBuckets} />
             <SeriesStatsRow data={rain?.data} unit="mm" />
@@ -55,7 +55,7 @@ export default function SparklineOverviewDialog({ open, onClose, stationId, rain
 
           <Box>
             <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.75 }}>
-              Sinyal{signal?.label ? ` · ${signal.label}` : ''}
+              Signal{signal?.label ? ` · ${signal.label}` : ''}
             </Typography>
             <Sparkline data={signal?.data || []} labels={signal?.labels} variant="area" color="var(--nirmala-cyan)" height={220}
               rangeStart={signalRangeStart} rangeEnd={signalRangeEnd} buckets={signalBuckets} />

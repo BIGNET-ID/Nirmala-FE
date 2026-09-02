@@ -46,7 +46,7 @@ export function AuthProvider({ children }) {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data?.token) {
-      throw new Error(data?.message || 'Login gagal.');
+      throw new Error(data?.message || 'Login failed.');
     }
     login(data.user || { email }, data.token);
     return data;

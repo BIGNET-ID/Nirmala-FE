@@ -2,7 +2,7 @@
 
 import { Box, Typography } from '@mui/material';
 
-/** Min/Maks/Rata-rata/Terakhir stats for one chart's data points. */
+/** Min/Max/Average/Last stats for one chart's data points. */
 function computeStats(data) {
   const clean = (data || []).filter((v) => typeof v === 'number' && !Number.isNaN(v));
   if (!clean.length) return null;
@@ -31,7 +31,7 @@ function Cell({ label, value, unit }) {
   );
 }
 
-/** Compact 4-cell stats row (Min/Maks/Rata-rata/Terakhir) below a chart. */
+/** Compact 4-cell stats row (Min/Max/Average/Last) below a chart. */
 export default function SeriesStatsRow({ data, unit }) {
   const stats = computeStats(data);
   return (
@@ -40,9 +40,9 @@ export default function SeriesStatsRow({ data, unit }) {
       borderTop: '1px solid var(--nirmala-glass-border)',
     }}>
       <Cell label="Min" value={stats?.min} unit={unit} />
-      <Cell label="Maks" value={stats?.max} unit={unit} />
-      <Cell label="Rata-rata" value={stats?.avg} unit={unit} />
-      <Cell label="Terakhir" value={stats?.last} unit={unit} />
+      <Cell label="Max" value={stats?.max} unit={unit} />
+      <Cell label="Average" value={stats?.avg} unit={unit} />
+      <Cell label="Last" value={stats?.last} unit={unit} />
     </Box>
   );
 }
