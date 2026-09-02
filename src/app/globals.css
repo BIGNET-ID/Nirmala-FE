@@ -159,9 +159,13 @@
   --rain-5: #f97316;
   --rain-6: #dc2626;
 
-  /* Sensor status */
+  /* Sensor status — severity order active < raining < unavailable(2h,
+     unreachable) < inactive(24h, no data at all) < blacklisted. Must stay
+     in sync with SENSOR_STATUS_COLOR in src/lib/sensorColor.js (see comment
+     there for why: canvas fillStyle can't resolve CSS vars). */
   --status-active: #3cba54;
   --status-raining: #3b82f6;
+  --status-unavailable: #f59e0b;
   --status-inactive: #4b5563;
   --status-blacklisted: #dc2626;
 }

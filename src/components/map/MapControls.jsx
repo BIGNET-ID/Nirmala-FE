@@ -21,31 +21,34 @@ export default function MapControls({ onZoomIn, onZoomOut, onReset }) {
   const { isCompact, isWallTV } = useResponsiveLayout();
   const size = isCompact ? 44 : isWallTV ? 44 : 38;
   const btnSx = makeBtnSx(size);
+  // Sits below MapExtrasCluster.jsx's horizontal row (also right:16,
+  // top:16, same button size), so the two floating clusters never overlap.
+  const top = 16 + size + 16;
 
   return (
     <Box
       sx={{
         position: 'absolute',
         right: 16,
-        top: 72,
+        top,
         zIndex: 'var(--z-overlay, 100)',
         display: 'flex',
         flexDirection: 'column',
         gap: 1,
       }}
     >
-      <Tooltip title="Perbesar" placement="left">
-        <IconButton onClick={onZoomIn} sx={btnSx} aria-label="Perbesar">
+      <Tooltip title="Zoom in" placement="left">
+        <IconButton onClick={onZoomIn} sx={btnSx} aria-label="Zoom in">
           <Icon icon="material-symbols:add-rounded" width={isWallTV ? 22 : undefined} />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Perkecil" placement="left">
-        <IconButton onClick={onZoomOut} sx={btnSx} aria-label="Perkecil">
+      <Tooltip title="Zoom out" placement="left">
+        <IconButton onClick={onZoomOut} sx={btnSx} aria-label="Zoom out">
           <Icon icon="material-symbols:remove-rounded" width={isWallTV ? 22 : undefined} />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Tampilan Nasional" placement="left">
-        <IconButton onClick={onReset} sx={btnSx} aria-label="Reset tampilan">
+      <Tooltip title="National view" placement="left">
+        <IconButton onClick={onReset} sx={btnSx} aria-label="Reset view">
           <Icon icon="material-symbols:my-location-rounded" width={isWallTV ? 22 : undefined} />
         </IconButton>
       </Tooltip>

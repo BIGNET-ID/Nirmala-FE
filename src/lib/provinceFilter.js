@@ -1,3 +1,5 @@
+import { statusBucket } from './sensorColor.js';
+
 /**
  * Client-side province filtering (PRD §4.3). /api/sensors carries no
  * province_code today — this is a bounding-box approximation, not the real
@@ -13,10 +15,12 @@ export function filterStationsInBounds(stations, bounds) {
   return stations.filter((s) => isPointInBounds(s.lat, s.lng, bounds));
 }
 
-export function summarizeStations(stations) {
+// active/raining are mutually-exclusive statusBucket() buckets — a raining
+// sensor counts as raining, not also active (see sensorColor.js).
+export function summarizeStations(stations, now = Date.now()) {
   return {
     total: stations.length,
-    active: stations.filter((s) => s.status === 'active').length,
-    raining: stations.filter((s) => s.isRaining).length,
+    active: stations.filter((s) => statusBucket(s, now) === 'active').length,
+    raining: stations.filter((s) => statusBucket(s, now) === 'raining').length,
   };
 }

@@ -1,24 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { Box, Button, IconButton, Menu, MenuItem, Divider, Typography, Tooltip, Badge } from '@mui/material';
+import { useRouter } from 'next/navigation';
+import { Box, IconButton, Menu, MenuItem, Divider, Typography, Tooltip, Badge } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { useAuth } from '@/hooks/useAuth';
 import { useThemeMode } from '@/context/ThemeModeContext';
 import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 import TabSwitcher from '@/components/dashboard/TabSwitcher';
-
-const NAV = [
-  { label: 'Peta Radar', href: '/', icon: 'material-symbols:radar-rounded', exact: true },
-  { label: 'Pengaturan', href: '/settings', icon: 'material-symbols:settings-rounded', soon: true },
-];
-
-function isActive(pathname, item) {
-  if (item.exact) return pathname === item.href;
-  return pathname === item.href || pathname.startsWith(`${item.href}/`);
-}
 
 /**
  * Status chips (Kafka health — only when down, LIVE, SSE stream — only when
@@ -53,7 +42,7 @@ function StatusChips({ health, streamStatus, now, stack, scale = 1 }) {
           clutter, but a down pipeline still needs a visible signal
           somewhere — same pattern as the SSE stream chip below. */}
       {health && !health.connected && (
-        <Tooltip title="Kafka pipeline tidak terhubung" placement={stack ? 'left' : 'bottom'}>
+        <Tooltip title="Kafka pipeline disconnected" placement={stack ? 'left' : 'bottom'}>
           <Box sx={{ ...chipSx, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)' }}>
             <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: '#ef4444', flexShrink: 0 }} />
             <Box sx={{ ...textSx, color: '#ef4444' }}>BACKEND DOWN</Box>
@@ -73,7 +62,7 @@ function StatusChips({ health, streamStatus, now, stack, scale = 1 }) {
 
       {/* SSE connection status — only surfaced when not nominal, to avoid clutter */}
       {streamStatus && streamStatus !== 'live' && (
-        <Tooltip title={`Koneksi stream sensor: ${streamStatus}`} placement={stack ? 'left' : 'bottom'}>
+        <Tooltip title={`Sensor stream connection: ${streamStatus}`} placement={stack ? 'left' : 'bottom'}>
           <Box sx={{ ...chipSx, background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)' }}>
             <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: '#fbbf24', flexShrink: 0 }} />
             <Box sx={{ ...textSx, color: '#fbbf24' }}>
@@ -95,10 +84,9 @@ function StatusChips({ health, streamStatus, now, stack, scale = 1 }) {
 }
 
 export default function DashboardHeader({ health, streamStatus, activeTab, onTabChange, mapInfo, timestampInfo, himawariNotice }) {
-  const pathname = usePathname() || '/';
   const router = useRouter();
   const { user, logout } = useAuth() || {};
-  const { mode, toggle } = useThemeMode();
+  const { mode } = useThemeMode();
   const { isCompact, isWallTV } = useResponsiveLayout();
   const scale = isWallTV ? 1.15 : 1;
 
@@ -163,51 +151,7 @@ export default function DashboardHeader({ health, streamStatus, activeTab, onTab
       </Box>
 
       {!isCompact && (
-        <>
-          <Box sx={{ width: '1px', height: 20, background: 'var(--nirmala-glass-border)', flexShrink: 0 }} />
-
-          {/* Nav tabs */}
-          <Box sx={{ display: 'flex', gap: 0.25, minWidth: 0 }}>
-            {NAV.map((item) => {
-              const active = isActive(pathname, item);
-              const common = {
-                disableRipple: true,
-                startIcon: <Icon icon={item.icon} width={15 * scale} />,
-                sx: {
-                  px: 1.5,
-                  py: 0.75,
-                  height: 40 * scale,
-                  gap: 0.75,
-                  fontSize: `${0.75 * scale}rem`,
-                  fontWeight: 600,
-                  textTransform: 'none',
-                  whiteSpace: 'nowrap',
-                  borderRadius: '4px 4px 0 0',
-                  color: active ? 'var(--nirmala-cyan)' : 'var(--color-text-muted)',
-                  background: active ? 'var(--nirmala-cyan-dim)' : 'transparent',
-                  borderBottom: active ? '2px solid var(--nirmala-cyan)' : '2px solid transparent',
-                  transition: 'color var(--duration-fast,150ms) var(--ease-standard), background var(--duration-fast,150ms) var(--ease-standard)',
-                  '&:hover': { background: active ? 'var(--nirmala-cyan-dim)' : 'rgba(128,128,128,0.08)', color: active ? 'var(--nirmala-cyan)' : 'var(--color-text)' },
-                },
-              };
-              if (item.soon) {
-                return (
-                  <Button key={item.href} {...common} disabled
-                    sx={{ ...common.sx, opacity: 0.5, '&.Mui-disabled': { color: 'var(--color-text-muted)' } }}>
-                    {item.label}
-                  </Button>
-                );
-              }
-              return (
-                <Button key={item.href} component={Link} href={item.href} {...common}>
-                  {item.label}
-                </Button>
-              );
-            })}
-          </Box>
-
-          <Box sx={{ width: '1px', height: 20, background: 'var(--nirmala-glass-border)', flexShrink: 0 }} />
-        </>
+        <Box sx={{ width: '1px', height: 20, background: 'var(--nirmala-glass-border)', flexShrink: 0 }} />
       )}
 
       <TabSwitcher activeTab={activeTab} onChange={onTabChange} />
@@ -216,13 +160,13 @@ export default function DashboardHeader({ health, streamStatus, activeTab, onTab
       <Box sx={{ ml: 'auto', flexShrink: 0, display: 'flex', alignItems: 'center', gap: isCompact ? 0.75 : 1.5 }}>
         {isCompact ? (
           <>
-            {/* Status & settings — collapses nav links, all status chips, and
-                the theme toggle behind one icon so the header never wraps or
-                overflows on a phone-width screen. */}
-            <Tooltip title="Status & pengaturan">
+            {/* Status & settings — collapses all status chips behind one icon
+                so the header never wraps or overflows on a phone-width
+                screen. */}
+            <Tooltip title="Status & settings">
               <IconButton
                 onClick={(e) => setStatusAnchor(e.currentTarget)}
-                aria-label="Status & pengaturan"
+                aria-label="Status & settings"
                 sx={{
                   width: 40, height: 40, color: 'var(--color-text-muted)',
                   border: '1px solid var(--nirmala-glass-border)', borderRadius: 'var(--radius-md,8px)',
@@ -249,67 +193,21 @@ export default function DashboardHeader({ health, streamStatus, activeTab, onTab
                 border: '1px solid var(--nirmala-glass-border)', borderRadius: 'var(--radius-md,8px)',
               } } }}
             >
-              {NAV.map((item) => {
-                const active = isActive(pathname, item);
-                if (item.soon) {
-                  return (
-                    <MenuItem key={item.href} disabled sx={{ gap: 1, fontSize: '0.85rem' }}>
-                      <Icon icon={item.icon} width={17} /> {item.label}
-                      <Box component="span" sx={{ ml: 'auto', fontSize: '0.62rem', color: 'text.secondary' }}>Segera</Box>
-                    </MenuItem>
-                  );
-                }
-                return (
-                  <MenuItem
-                    key={item.href}
-                    component={Link}
-                    href={item.href}
-                    onClick={() => setStatusAnchor(null)}
-                    sx={{ gap: 1, fontSize: '0.85rem', color: active ? 'var(--nirmala-cyan)' : 'inherit' }}
-                  >
-                    <Icon icon={item.icon} width={17} /> {item.label}
-                  </MenuItem>
-                );
-              })}
-              <Divider sx={{ borderColor: 'var(--nirmala-glass-border)' }} />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, py: 1 }}>
                 <StatusChips health={health} streamStatus={streamStatus} now={now} stack />
               </Box>
-              <Divider sx={{ borderColor: 'var(--nirmala-glass-border)' }} />
-              <MenuItem onClick={toggle} sx={{ gap: 1, fontSize: '0.85rem' }}>
-                <Icon icon={mode === 'dark' ? 'material-symbols:light-mode-rounded' : 'material-symbols:dark-mode-rounded'} width={17} />
-                {mode === 'dark' ? 'Mode Terang' : 'Mode Gelap'}
-              </MenuItem>
             </Menu>
           </>
         ) : (
-          <>
-            <StatusChips health={health} streamStatus={streamStatus} now={now} scale={scale} />
-
-            {/* Theme toggle */}
-            <Tooltip title={mode === 'dark' ? 'Mode Terang' : 'Mode Gelap'} placement="bottom">
-              <IconButton
-                onClick={toggle}
-                aria-label={mode === 'dark' ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'}
-                sx={{
-                  width: 34 * scale, height: 34 * scale, color: 'var(--color-text-muted)',
-                  border: '1px solid var(--nirmala-glass-border)', borderRadius: 'var(--radius-md,8px)',
-                  transition: 'color var(--duration-fast,150ms) var(--ease-standard)',
-                  '&:hover': { color: 'var(--nirmala-cyan)' },
-                }}
-              >
-                <Icon icon={mode === 'dark' ? 'material-symbols:light-mode-rounded' : 'material-symbols:dark-mode-rounded'} width={18 * scale} />
-              </IconButton>
-            </Tooltip>
-          </>
+          <StatusChips health={health} streamStatus={streamStatus} now={now} scale={scale} />
         )}
 
         {/* Notification bell — live status (rain density, last-synced,
             Himawari notice), replacing the old floating top-center pills. */}
-        <Tooltip title="Notifikasi">
+        <Tooltip title="Notifications">
           <IconButton
             onClick={(e) => setNotifAnchor(e.currentTarget)}
-            aria-label="Notifikasi"
+            aria-label="Notifications"
             sx={{
               width: (isCompact ? 40 : 34 * scale), height: (isCompact ? 40 : 34 * scale), color: 'var(--color-text-muted)',
               border: '1px solid var(--nirmala-glass-border)', borderRadius: 'var(--radius-md,8px)',
@@ -339,12 +237,12 @@ export default function DashboardHeader({ health, streamStatus, activeTab, onTab
           } } }}
         >
           <Typography sx={{ px: 2, pt: 1, pb: 0.5, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'text.secondary' }}>
-            Notifikasi
+            Notifications
           </Typography>
 
           {!hasNotifications && (
             <Typography variant="body2" sx={{ px: 2, py: 1.5, color: 'text.secondary', fontSize: '0.82rem' }}>
-              Tidak ada info saat ini.
+              No info right now.
             </Typography>
           )}
 
@@ -352,8 +250,8 @@ export default function DashboardHeader({ health, streamStatus, activeTab, onTab
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, px: 2, py: 1 }}>
               <Icon icon="material-symbols:rainy-rounded" width={16} style={{ color: 'var(--status-raining)', flexShrink: 0, marginTop: 2 }} />
               <Typography variant="body2" sx={{ fontSize: '0.82rem', color: 'text.primary' }}>
-                {mapInfo.loading ? 'Memuat data sensor…' : (
-                  <>Kerapatan Hujan · <b>{mapInfo.raining.toLocaleString('id-ID')}</b> dari <b>{mapInfo.total.toLocaleString('id-ID')}</b> sensor melapor hujan</>
+                {mapInfo.loading ? 'Loading sensor data…' : (
+                  <>Rain Density · <b>{mapInfo.raining.toLocaleString('id-ID')}</b> of <b>{mapInfo.total.toLocaleString('id-ID')}</b> sensors reporting rain</>
                 )}
               </Typography>
             </Box>
@@ -363,7 +261,7 @@ export default function DashboardHeader({ health, streamStatus, activeTab, onTab
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, px: 2, py: 1 }}>
               <Icon icon="material-symbols:schedule-rounded" width={16} style={{ color: 'var(--nirmala-cyan)', flexShrink: 0, marginTop: 2 }} />
               <Typography variant="body2" sx={{ fontSize: '0.82rem', color: 'text.primary' }}>
-                {timestampInfo.label} · diperbarui{' '}
+                {timestampInfo.label} · updated{' '}
                 <b>{timestampInfo.timestamp.toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit' })}</b> WIB
               </Typography>
             </Box>
@@ -382,7 +280,7 @@ export default function DashboardHeader({ health, streamStatus, activeTab, onTab
         {/* Avatar + dropdown */}
         <IconButton
           onClick={(e) => setAnchor(e.currentTarget)}
-          aria-label="Menu akun"
+          aria-label="Account menu"
           sx={{
             width: (isCompact ? 40 : 34 * scale), height: (isCompact ? 40 : 34 * scale), borderRadius: '50%',
             background: 'var(--color-brand-solid, #0d47a1)', color: '#fff',
@@ -411,7 +309,7 @@ export default function DashboardHeader({ health, streamStatus, activeTab, onTab
           </Box>
           <Divider sx={{ borderColor: 'var(--nirmala-glass-border)' }} />
           <MenuItem onClick={handleLogout} sx={{ color: '#e46c64', gap: 1, fontSize: '0.85rem' }}>
-            <Icon icon="material-symbols:logout-rounded" width={18} /> Keluar
+            <Icon icon="material-symbols:logout-rounded" width={18} /> Log out
           </MenuItem>
         </Menu>
       </Box>
