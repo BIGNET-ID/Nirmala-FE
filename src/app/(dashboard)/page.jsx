@@ -11,13 +11,14 @@ import OpenWeatherLayer from '@/components/map/OpenWeatherLayer';
 import WindParticleLayer from '@/components/map/WindParticleLayer';
 import HimawariLayer from '@/components/map/HimawariLayer';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
-import ProvinceFilterSelect from '@/components/dashboard/ProvinceFilterSelect';
-import { SkySegmentPanel, GroundSegmentPanel } from '@/components/dashboard/SegmentTogglePanel';
+import { SegmentPanel } from '@/components/dashboard/SegmentTogglePanel';
 import ColorRampLegend from '@/components/dashboard/ColorRampLegend';
 import SensorDetailDrawer from '@/components/dashboard/SensorDetailDrawer';
 import SensorStatsCard from '@/components/dashboard/SensorStatsCard';
 import MobileControlSheet from '@/components/dashboard/MobileControlSheet';
 import MapControls from '@/components/map/MapControls';
+import MapExtrasCluster from '@/components/map/MapExtrasCluster';
+import ThemeToggleControl from '@/components/map/ThemeToggleControl';
 import TimelineComingSoon from '@/components/dashboard/TimelineComingSoon';
 import { usePlatformData } from '@/hooks/usePlatformData';
 import { useSensorStream } from '@/hooks/useSensorStream';
@@ -25,6 +26,7 @@ import { useWindField } from '@/hooks/useWindField';
 import { useJmaHimawariTicks } from '@/hooks/useJmaHimawariTicks';
 import { useAuth } from '@/hooks/useAuth';
 import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
+import { useNow } from '@/hooks/useNow';
 import { useThemeMode } from '@/context/ThemeModeContext';
 import { METRICS } from '@/constants/metrics';
 import { MAP_CENTER, MAP_ZOOM_DEFAULT, MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@/constants/mapConfig';
@@ -82,6 +84,11 @@ export default function NirmalaDashboard() {
   };
   const [selectedStation, setSelectedStation] = useState(null);
   const [map, setMap] = useState(null);
+  const mapContainerRef = useRef(null);
+  // Master show/hide for MapControls, the merged Space/Ground panel,
+  // SensorStatsCard, and ColorRampLegend — toggled from MapExtrasCluster,
+  // which itself always stays visible so there's always a way back.
+  const [controlsVisible, setControlsVisible] = useState(true);
   const [activeTab, setActiveTab] = useState('current'); // 'current' | 'timeline' — PRD §4.1 Dual-Tab
   const [selectedProvinceCode, setSelectedProvinceCode] = useState(null);
   // Reported by MeshLayer once it computes the Mesh Map MST, so
@@ -142,8 +149,8 @@ export default function NirmalaDashboard() {
   // from the sensor stream/Himawari state rather than firing one-off events.
   const himawariNoticeMessage = activeLayer === 'himawari' && (!himawariZoomInRange || himawariStatus === 'unavailable')
     ? (himawariZoomInRange
-        ? 'Citra tidak tersedia untuk waktu ini'
-        : 'Perbesar/perkecil peta ke level zoom 3–5 untuk melihat citra satelit')
+        ? 'Imagery unavailable for this time'
+        : 'Zoom the map to level 3–5 to see satellite imagery')
     : null;
 
   // Manifest resolves async, after activeLayer's initial state and (likely) after
@@ -197,17 +204,27 @@ export default function NirmalaDashboard() {
 
   const { field: windField, ambientField: windAmbientField, status: windFieldStatus } = useWindField(mapBounds);
 
-  const stats = {
-    total: SENSOR_STATIONS.length,
-    active: SENSOR_STATIONS.filter((s) => s.status === 'active').length,
-    raining: SENSOR_STATIONS.filter((s) => s.isRaining).length,
-    blacklist: SENSOR_STATIONS.filter((s) => s.blacklisted || s.status === 'blacklisted').length,
-  };
+  // Ticks every 60s so Unavailable(2h)/Inactive(24h) status keeps advancing
+  // purely from the clock, even between sensor stream updates.
+  const now = useNow();
+
+  // Derived from statusBucket() so these counts stay mutually exclusive and
+  // in lockstep with the map dot colors and the hide/show filter below —
+  // no separate ad-hoc predicates to drift out of sync.
+  const stats = useMemo(() => {
+    const counts = { total: SENSOR_STATIONS.length, active: 0, raining: 0, unavailable: 0, inactive: 0, blacklist: 0 };
+    for (const s of SENSOR_STATIONS) {
+      const bucket = statusBucket(s, now);
+      if (bucket === 'blacklisted') counts.blacklist += 1;
+      else counts[bucket] += 1;
+    }
+    return counts;
+  }, [SENSOR_STATIONS, now]);
 
   // Stats above always reflect the true totals; only the dots drawn on the
   // map are trimmed by hiddenStatuses (see toggleStatusVisibility above).
   const visibleStations = hiddenStatuses.size
-    ? SENSOR_STATIONS.filter((s) => !hiddenStatuses.has(statusBucket(s)))
+    ? SENSOR_STATIONS.filter((s) => !hiddenStatuses.has(statusBucket(s, now)))
     : SENSOR_STATIONS;
 
   // Master reset toggles next to the Space/Ground Segment panel titles —
@@ -275,8 +292,8 @@ export default function NirmalaDashboard() {
     if (!selectedProvinceCode) return null;
     const province = PROVINCES.find((p) => p.code === selectedProvinceCode);
     if (!province) return null;
-    return summarizeStations(filterStationsInBounds(SENSOR_STATIONS, province.bounds));
-  }, [selectedProvinceCode, SENSOR_STATIONS]);
+    return summarizeStations(filterStationsInBounds(SENSOR_STATIONS, province.bounds), now);
+  }, [selectedProvinceCode, SENSOR_STATIONS, now]);
 
   return (
       <Box sx={{ display: 'flex', flexDirection: 'column', width: '100vw', height: '100vh', bgcolor: 'var(--nirmala-map-bg)', overflow: 'hidden' }}>
@@ -300,16 +317,8 @@ export default function NirmalaDashboard() {
           himawariNotice={himawariNoticeMessage}
         />
 
-        {activeTab === 'current' && (
-          <ProvinceFilterSelect
-            selectedCode={selectedProvinceCode}
-            onSelectCode={handleProvinceSelect}
-            matched={matchedProvinceStations}
-          />
-        )}
-
         {/* Map container */}
-        <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+        <Box ref={mapContainerRef} sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           <Box sx={{ position: 'absolute', inset: 0, display: activeTab === 'current' ? 'block' : 'none' }}>
             <GoogleMapWrapper onMapLoad={setMap}>
               {/* Himawari (cloud-top IR) and this tile both depict cloud/weather
@@ -383,18 +392,23 @@ export default function NirmalaDashboard() {
                   />
                 );
               }
+              if (!controlsVisible) return null;
               return (
                 <>
-                  {/* Left: Space segment panel above Ground Segment panel — centred
-                      vertically in the space between the header and the bottom
-                      edge (not top-anchored), so the pair never hangs low when
-                      both are expanded. */}
+                  {/* Left: Space/Ground segment panel, merged into one with a
+                      tab switcher — vertically centred between the header
+                      and bottom edge so it never hangs low when expanded. */}
                   <Box sx={{
                     position: 'absolute', top: 72, bottom: 16, left: 16, zIndex: 'var(--z-overlay, 100)',
                     display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1.5,
                   }}>
-                    <SkySegmentPanel {...segmentProps} skyFilterActive={skyFilterActive} onSkyFilterToggle={handleSkyFilterToggle} />
-                    <GroundSegmentPanel {...segmentProps} groundFilterActive={groundFilterActive} onGroundFilterToggle={handleGroundFilterToggle} />
+                    <SegmentPanel
+                      {...segmentProps}
+                      skyFilterActive={skyFilterActive}
+                      onSkyFilterToggle={handleSkyFilterToggle}
+                      groundFilterActive={groundFilterActive}
+                      onGroundFilterToggle={handleGroundFilterToggle}
+                    />
                   </Box>
                   {/* Right: sensor statistics above the rain-density legend */}
                   <Box sx={{
@@ -409,10 +423,25 @@ export default function NirmalaDashboard() {
             })()}
 
             {/* Map Controls */}
-            <MapControls
-              onZoomIn={() => handleZoom(1)}
-              onZoomOut={() => handleZoom(-1)}
-              onReset={handleReset}
+            {controlsVisible && (
+              <MapControls
+                onZoomIn={() => handleZoom(1)}
+                onZoomOut={() => handleZoom(-1)}
+                onReset={handleReset}
+              />
+            )}
+
+            {/* Theme toggle — top-left, standalone */}
+            <ThemeToggleControl />
+
+            {/* Province search, fullscreen, show/hide-all — top-right, always visible */}
+            <MapExtrasCluster
+              fullscreenTargetRef={mapContainerRef}
+              controlsVisible={controlsVisible}
+              onToggleControlsVisible={() => setControlsVisible((v) => !v)}
+              selectedProvinceCode={selectedProvinceCode}
+              onSelectProvinceCode={handleProvinceSelect}
+              matchedProvinceStations={matchedProvinceStations}
             />
 
             {/* Detail drawer */}

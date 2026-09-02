@@ -19,14 +19,14 @@ export async function POST(request) {
   try { body = await request.json(); } catch {}
   const { email, password } = body;
   if (!email || !password) {
-    return Response.json({ status: false, message: 'Email & password wajib diisi.' }, { status: 400 });
+    return Response.json({ status: false, message: 'Email & password are required.' }, { status: 400 });
   }
 
   const match = TEMP_USERS.find(
     (u) => u.email.toLowerCase() === email.trim().toLowerCase() && u.password === password
   );
   if (!match) {
-    return Response.json({ status: false, message: 'Email atau password salah.' }, { status: 401 });
+    return Response.json({ status: false, message: 'Incorrect email or password.' }, { status: 401 });
   }
 
   const token = crypto.randomUUID();

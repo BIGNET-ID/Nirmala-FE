@@ -1,3 +1,9 @@
+// Sensor staleness thresholds, measured against lastUpdate/scrapedAt.
+// Unavailable = unreachable for 2h; Inactive = no data at all for 24h
+// (a superset of Unavailable — see statusBucket() in src/lib/sensorColor.js).
+export const UNAVAILABLE_AFTER_MS = 2 * 60 * 60 * 1000;
+export const INACTIVE_AFTER_MS = 24 * 60 * 60 * 1000;
+
 /**
  * Live sensors report only BINARY is_raining — there is no numeric intensity or
  * temperature nationwide. So the only honest national layer is rain DENSITY
@@ -7,15 +13,15 @@
 export const METRICS = {
   rain: {
     key: 'rain',
-    label: 'Kerapatan Hujan',
+    label: 'Rain Density',
     icon: 'material-symbols:rainy-rounded',
     // Full meteorological precipitation spectrum (Windy/BMKG-style) — an
     // approved exception to "no rainbow" in AGENTS.md, always paired with
     // qualitative tickLabels below rather than fabricated mm/h numbers
     // (Nirmala has no spatial mm/h intensity data, only binary is_raining).
     colorRamp: 'linear-gradient(to right, #3b82f6, #22d3ee, #22c55e, #eab308, #f97316, #dc2626)',
-    tickLabels: ['Rendah', 'Sedang', 'Tinggi', 'Ekstrem'],
-    legendNote: 'Kerapatan sensor yang melaporkan hujan — kategori relatif, bukan pengukuran mm/jam per titik.',
+    tickLabels: ['Low', 'Moderate', 'High', 'Extreme'],
+    legendNote: 'Density of sensors reporting rain — a relative category, not a per-point mm/hour measurement.',
   },
   mesh: {
     key: 'mesh',
@@ -27,14 +33,14 @@ export const METRICS = {
     // ColorRampLegend overrides them with the actual km range once
     // MeshLayer computes it.
     colorRamp: 'linear-gradient(to right, #dbeafe, #93c5fd, #3b82f6, #1d4ed8, #1e3a8a, #dc2626)',
-    minLabel: 'Dekat',
-    maxLabel: 'Jauh',
-    legendNote: 'Jaringan sensor terdekat — setiap sensor terhubung ke sensor-sensor di sekitarnya, tidak ada yang terputus. Makin merah & tebal, makin jauh jaraknya: garis ini menandai celah cakupan sensor terbesar. Arahkan kursor ke sebuah garis untuk melihat jarak persisnya.',
+    minLabel: 'Near',
+    maxLabel: 'Far',
+    legendNote: 'Nearest-neighbor sensor network — every sensor connects to the ones around it, none are isolated. The redder and thicker a line, the greater the distance: these lines mark the largest gaps in sensor coverage. Hover over a line to see its exact distance.',
   },
   himawari: {
     key: 'himawari',
     label: 'Himawari',
     icon: 'material-symbols:satellite-alt-rounded',
-    legendNote: 'Citra suhu puncak awan (infrared enhanced) dari JMA. Cakupan: piringan penuh Himawari, termasuk Indonesia.',
+    legendNote: "Cloud-top temperature imagery (infrared enhanced) from JMA. Coverage: Himawari's full disk, including Indonesia.",
   },
 };

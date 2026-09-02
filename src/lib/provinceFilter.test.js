@@ -31,7 +31,9 @@ test('summarizeStations: counts total/active/raining correctly', () => {
     { status: 'active', isRaining: false },
     { status: 'blacklisted', isRaining: false },
   ];
-  assert.deepEqual(summarizeStations(stations), { total: 3, active: 2, raining: 1 });
+  // active and raining are mutually exclusive buckets (statusBucket()
+  // precedence) — a raining sensor is counted as raining, not also active.
+  assert.deepEqual(summarizeStations(stations), { total: 3, active: 1, raining: 1 });
 });
 
 test('summarizeStations: empty array yields all zeros', () => {

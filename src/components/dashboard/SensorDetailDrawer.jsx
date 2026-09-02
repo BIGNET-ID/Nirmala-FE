@@ -8,17 +8,18 @@ import SparklineOverviewDialog from '@/components/dashboard/SparklineOverviewDia
 import SeriesStatsRow from '@/components/dashboard/SeriesStatsRow';
 import { nirmalaApiService, normalizeTimeseries } from '@/lib/nirmalaApi';
 import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
+import { statusBucket, SENSOR_STATUS_COLOR } from '@/lib/sensorColor';
 
 const STATUS_META = {
-  blacklisted: { label: 'Blacklist', color: '#ef4444' },
-  inactive: { label: 'Inaktif', color: '#4b5563' },
-  active: { label: 'Aktif', color: '#34d399' },
+  blacklisted: { label: 'Blacklist', color: SENSOR_STATUS_COLOR.blacklisted },
+  inactive: { label: 'Inactive', color: SENSOR_STATUS_COLOR.inactive },
+  unavailable: { label: 'Unavailable', color: SENSOR_STATUS_COLOR.unavailable },
+  raining: { label: 'Raining', color: SENSOR_STATUS_COLOR.raining },
+  active: { label: 'Active', color: SENSOR_STATUS_COLOR.active },
 };
 
-function statusMeta(st) {
-  if (st.blacklisted || st.status === 'blacklisted') return STATUS_META.blacklisted;
-  if (st.inactive || st.unavailable || st.status === 'inactive') return STATUS_META.inactive;
-  return STATUS_META.active;
+function statusMeta(st, now) {
+  return STATUS_META[statusBucket(st, now)];
 }
 
 const eyebrowSx = {
@@ -140,12 +141,12 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
         {/* Header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
           <Box>
-            <Typography sx={eyebrowSx}>Stasiun Sensor</Typography>
+            <Typography sx={eyebrowSx}>Sensor Station</Typography>
             <Typography variant="h6" fontWeight={700} sx={{ lineHeight: 1.2 }}>
               {station.id}
             </Typography>
           </Box>
-          <IconButton onClick={onClose} size="small" aria-label="Tutup">
+          <IconButton onClick={onClose} size="small" aria-label="Close">
             <Icon icon="material-symbols:close-rounded" />
           </IconButton>
         </Box>
@@ -162,10 +163,10 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
 
         {/* Metadata */}
         <Stack spacing={1.75} sx={{ mb: 2 }}>
-          <Meta label="Koordinat" value={`${station.lat.toFixed(4)}, ${station.lng.toFixed(4)}`} />
+          <Meta label="Coordinates" value={`${station.lat.toFixed(4)}, ${station.lng.toFixed(4)}`} />
           <Box sx={{ display: 'flex', gap: 3 }}>
-            <Meta label="Sedang Hujan" value={station.isRaining ? 'Ya' : 'Tidak'} />
-            <Meta label="Update Terakhir" value={fmtTime(station.lastUpdate)} />
+            <Meta label="Currently Raining" value={station.isRaining ? 'Yes' : 'No'} />
+            <Meta label="Last Update" value={fmtTime(station.lastUpdate)} />
           </Box>
         </Stack>
 
@@ -179,23 +180,23 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
 
         {!loading && series && (
           <Stack spacing={2.5}>
-            <Typography sx={eyebrowSx}>Data 1 jam terakhir</Typography>
+            <Typography sx={eyebrowSx}>Last hour of data</Typography>
 
             {/* Rain */}
             <Box>
-              <Typography sx={{ ...eyebrowSx, mb: 0.75, display: 'block' }}>Curah Hujan · mm (5 min)</Typography>
+              <Typography sx={{ ...eyebrowSx, mb: 0.75, display: 'block' }}>Rainfall · mm (5 min)</Typography>
               <Sparkline data={rainData} labels={rainWindow.labels} variant="area" color="var(--rain-3)" height={58}
                 rangeStart={rainRangeStart} rangeEnd={rainRangeEnd} buckets={rainBuckets}
-                ariaLabel={`Curah hujan satu jam terakhir, puncak ${rainMax ?? 0} mm`} />
+                ariaLabel={`Rainfall over the last hour, peak ${rainMax ?? 0} mm`} />
               <SeriesStatsRow data={rainData} unit="mm" />
             </Box>
 
             {/* Signal */}
             <Box>
-              <Typography sx={{ ...eyebrowSx, mb: 0.75, display: 'block' }}>Sinyal{signal?.label ? ` · ${signal.label}` : ''}</Typography>
+              <Typography sx={{ ...eyebrowSx, mb: 0.75, display: 'block' }}>Signal{signal?.label ? ` · ${signal.label}` : ''}</Typography>
               <Sparkline data={signalData} labels={signalWindow.labels} variant="area" color="var(--nirmala-cyan)" height={58}
                 rangeStart={signalRangeStart} rangeEnd={signalRangeEnd} buckets={signalBuckets}
-                ariaLabel="Kualitas sinyal sensor, satu jam terakhir" />
+                ariaLabel="Sensor signal quality, last hour" />
               <SeriesStatsRow data={signalData} />
             </Box>
 
@@ -233,7 +234,7 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
 
         {!loading && !series && (
           <Typography variant="body2" sx={{ color: 'text.secondary', py: 2, textAlign: 'center' }}>
-            Timeseries tidak tersedia.
+            Timeseries unavailable.
           </Typography>
         )}
       </Box>

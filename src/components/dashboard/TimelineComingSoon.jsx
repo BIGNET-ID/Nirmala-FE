@@ -2,9 +2,9 @@ import { Box, Typography } from '@mui/material';
 import { Icon } from '@iconify/react';
 
 const ROADMAP_ITEMS = [
-  { icon: 'material-symbols:play-circle-rounded', text: '24-Hour Interactive Slider dengan Play/Pause dan speed multiplier (1x, 2x, 4x)' },
-  { icon: 'material-symbols:satellite-alt-rounded', text: 'Himawari 10-Minute Tick Sync — 144 frame per 24 jam (24 jam × 6 tick/jam)' },
-  { icon: 'material-symbols:sync-alt-rounded', text: 'Temporal Layer Alignment — radar darat & sensor mengikuti posisi scrubber waktu' },
+  { icon: 'material-symbols:play-circle-rounded', text: '24-hour interactive slider with play/pause and speed multiplier (1x, 2x, 4x)' },
+  { icon: 'material-symbols:satellite-alt-rounded', text: 'Himawari 10-minute tick sync — 144 frames per 24 hours (24 hours × 6 ticks/hour)' },
+  { icon: 'material-symbols:sync-alt-rounded', text: 'Temporal layer alignment — ground radar & sensors follow the time scrubber position' },
 ];
 
 /**
@@ -37,10 +37,10 @@ export default function TimelineComingSoon() {
       >
         <Icon icon="material-symbols:schedule-rounded" width={40} style={{ color: 'var(--nirmala-cyan)' }} />
         <Typography variant="h6" sx={{ fontWeight: 800, mt: 1.5 }}>
-          Fase 2 — Playback 24 Jam
+          Phase 2 — 24-Hour Playback
         </Typography>
         <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5, mb: 2.5 }}>
-          Tab Timeline sedang dalam roadmap pengembangan. Berikut yang akan dibangun:
+          The Timeline tab is on the development roadmap. Here's what's coming:
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, textAlign: 'left' }}>
           {ROADMAP_ITEMS.map((item) => (

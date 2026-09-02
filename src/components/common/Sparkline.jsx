@@ -155,7 +155,7 @@ export default function Sparkline({
       <Box sx={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center',
         color: 'text.secondary', fontSize: '0.75rem', border: '1px dashed rgba(255,255,255,0.1)',
         borderRadius: 1 }}>
-        Tidak ada data
+        No data
       </Box>
     );
   }
@@ -301,7 +301,7 @@ export default function Sparkline({
         }}
       >
         <Typography sx={{ fontSize: 10, fontWeight: 700, color: 'text.primary', lineHeight: 1.3 }}>
-          {hoveredHasValue ? hoveredValue.toFixed(2) : 'Tidak ada data'}
+          {hoveredHasValue ? hoveredValue.toFixed(2) : 'No data'}
         </Typography>
         {hoveredLabel && (
           <Typography sx={{ fontSize: 9, color: 'text.secondary', lineHeight: 1.3 }}>

@@ -53,7 +53,7 @@ export default function TimeTravelBar({
         borderRadius: 'var(--radius-full, 9999px)',
       }}
     >
-      <Tooltip title={isPlaying ? 'Pause' : 'Putar'} placement="top">
+      <Tooltip title={isPlaying ? 'Pause' : 'Play'} placement="top">
         <span>
           <IconButton
             onClick={onPlayPause}
@@ -97,7 +97,7 @@ export default function TimeTravelBar({
           <TextField
             {...params}
             variant="standard"
-            placeholder="Lompat ke waktu..."
+            placeholder="Jump to a time..."
             slotProps={{ ...params.slotProps, input: { ...params.slotProps?.input, disableUnderline: true } }}
           />
         )}
@@ -107,7 +107,7 @@ export default function TimeTravelBar({
         }}
       />
 
-      <Tooltip title="Kembali ke Live" placement="top">
+      <Tooltip title="Back to Live" placement="top">
         <span>
           <IconButton
             onClick={onGoLive}

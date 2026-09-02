@@ -26,8 +26,8 @@ const eyebrowSx = {
 };
 
 const STATUS_DOT = {
-  [LAYER_STATUS.EMPTY]: { color: '#5b6b82', title: 'Tidak ada data untuk ditampilkan saat ini.' },
-  [LAYER_STATUS.ERROR]: { color: '#f59e0b', title: 'Gagal memuat data.' },
+  [LAYER_STATUS.EMPTY]: { color: '#5b6b82', title: 'No data to display right now.' },
+  [LAYER_STATUS.ERROR]: { color: '#f59e0b', title: 'Failed to load data.' },
 };
 
 const switchSx = {
@@ -115,9 +115,9 @@ function VendorCard({ title, accent, info, active = true, children }) {
           )}
         </Box>
         {!active && (
-          <Tooltip title="Menunggu integrasi Backend" placement="top">
+          <Tooltip title="Awaiting backend integration" placement="top">
             <Chip
-              label="Segera"
+              label="Coming soon"
               size="small"
               sx={{ height: 20, fontSize: '0.62rem', fontWeight: 700, bgcolor: 'rgba(255,255,255,0.06)', color: 'text.secondary' }}
             />
@@ -141,9 +141,9 @@ function SegmentGroup({ title, hideTitle, children }) {
 }
 
 const OWM_LAYERS = [
-  { id: null, label: 'Nonaktif' },
-  { id: 'precipitation_new', label: 'Hujan' },
-  { id: 'clouds_new', label: 'Awan' },
+  { id: null, label: 'Off' },
+  { id: 'precipitation_new', label: 'Rain' },
+  { id: 'clouds_new', label: 'Clouds' },
 ];
 
 /**
@@ -173,7 +173,7 @@ export function SkySegmentContent({
       <VendorCard
         title="OpenWeather"
         accent="var(--nirmala-cyan)"
-        info="Lapisan curah hujan dari penyedia data cuaca global OpenWeather."
+        info="Rainfall layer from the OpenWeather global weather data provider."
       >
         <Box sx={{ display: 'flex', gap: 0.5 }}>
           {OWM_LAYERS.map((o) => {
@@ -206,14 +206,14 @@ export function SkySegmentContent({
             colors are fixed server-side, not something we can restyle). */}
         {himawariActive && owmLayer && (
           <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.62rem', lineHeight: 1.4 }}>
-            Opacity diturunkan otomatis karena Himawari aktif
+            Opacity automatically reduced while Himawari is active
           </Typography>
         )}
         {onToggleWind && (
-          <LayerSwitch checked={showWind} onChange={onToggleWind} label="Angin (partikel)" status={windStatus} />
+          <LayerSwitch checked={showWind} onChange={onToggleWind} label="Wind (particles)" status={windStatus} />
         )}
         <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.62rem', lineHeight: 1.4 }}>
-          Data diperbarui otomatis setiap ±10 menit.
+          Data refreshes automatically every ~10 minutes.
         </Typography>
         <Typography
           variant="caption"
@@ -223,7 +223,7 @@ export function SkySegmentContent({
           rel="noopener noreferrer"
           sx={{ color: 'text.secondary', fontSize: 10, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
         >
-          Data cuaca oleh OpenWeather
+          Weather data by OpenWeather
         </Typography>
       </VendorCard>
 
@@ -256,8 +256,8 @@ export function GroundSegmentContent({
 
         {canViewSensor && showSensorToggles && (
           <>
-            <LayerSwitch checked={showCoverage} onChange={onToggleCoverage} label="Cakupan Sensor" />
-            <LayerSwitch checked={showMarkers} onChange={onToggleMarkers} label="Titik Sensor" />
+            <LayerSwitch checked={showCoverage} onChange={onToggleCoverage} label="Sensor Coverage" />
+            <LayerSwitch checked={showMarkers} onChange={onToggleMarkers} label="Sensor Points" />
           </>
         )}
       </VendorCard>
@@ -284,7 +284,7 @@ const collapseTransition = { duration: 0.28, ease: [0.2, 0, 0, 1] }; // matches 
  * title that turns every boolean control in this panel on/off at once —
  * see handleResetFilters in page.jsx for what "default" means per segment.
  */
-function CollapsiblePanel({ icon, title, children, resetActive, onResetToggle }) {
+function CollapsiblePanel({ icon, title, titleContent, children, resetActive, onResetToggle }) {
   const [open, setOpen] = useState(true);
 
   return (
@@ -321,7 +321,14 @@ function CollapsiblePanel({ icon, title, children, resetActive, onResetToggle })
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
-          <Icon icon={icon} width={20} style={{ color: 'var(--nirmala-cyan)', flexShrink: 0 }} />
+          {/* When titleContent (the tab switcher) is shown, its own per-tab
+              icon already identifies the segment — a second leading icon
+              here just stacked/cluttered against it. Only show this one
+              when collapsed (titleContent is unmounted then) or in plain
+              title mode. */}
+          {(!titleContent || !open) && (
+            <Icon icon={icon} width={20} style={{ color: 'var(--nirmala-cyan)', flexShrink: 0 }} />
+          )}
           <AnimatePresence>
             {open && (
               <Box
@@ -330,9 +337,9 @@ function CollapsiblePanel({ icon, title, children, resetActive, onResetToggle })
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
-                sx={{ ...eyebrowSx, whiteSpace: 'nowrap', overflow: 'hidden' }}
+                sx={titleContent ? { overflow: 'hidden' } : { ...eyebrowSx, whiteSpace: 'nowrap', overflow: 'hidden' }}
               >
-                {title}
+                {titleContent ?? title}
               </Box>
             )}
           </AnimatePresence>
@@ -340,7 +347,7 @@ function CollapsiblePanel({ icon, title, children, resetActive, onResetToggle })
         {open && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, flexShrink: 0 }}>
             {onResetToggle && (
-              <Tooltip title={resetActive ? 'Matikan semua filter' : 'Aktifkan semua filter'}>
+              <Tooltip title={resetActive ? 'Turn off all filters' : 'Turn on all filters'}>
                 <Switch
                   checked={resetActive}
                   onChange={(e) => { e.stopPropagation(); onResetToggle(e.target.checked); }}
@@ -350,7 +357,7 @@ function CollapsiblePanel({ icon, title, children, resetActive, onResetToggle })
                 />
               </Tooltip>
             )}
-            <Tooltip title="Sembunyikan panel">
+            <Tooltip title="Hide panel">
               <IconButton size="small" disableRipple sx={{ p: 0.25, color: 'text.secondary', flexShrink: 0 }}>
                 <Icon icon="material-symbols:chevron-left-rounded" width={18} />
               </IconButton>
@@ -379,20 +386,65 @@ function CollapsiblePanel({ icon, title, children, resetActive, onResetToggle })
   );
 }
 
-/** Desktop/tablet-landscape floating panel — collapsible chrome around SkySegmentContent. */
-export function SkySegmentPanel({ skyFilterActive, onSkyFilterToggle, ...props }) {
+const SEGMENT_TABS = [
+  { key: 'sky', label: 'Space', icon: 'material-symbols:satellite-alt-rounded' },
+  { key: 'ground', label: 'Ground', icon: 'material-symbols:sensors-rounded' },
+];
+
+// Pill switcher filling CollapsiblePanel's 44px-tall header row — same
+// visual language as TabSwitcher.jsx (Current/Timeline). Sized larger now
+// that it no longer shares the row with a separate leading panel icon (see
+// CollapsiblePanel above), so it reads as the header's main content.
+function SegmentTabSwitcher({ activeTab, onChange }) {
   return (
-    <CollapsiblePanel icon="material-symbols:satellite-alt-rounded" title="Space segment" resetActive={skyFilterActive} onResetToggle={onSkyFilterToggle}>
-      <SkySegmentContent {...props} hideTitle />
-    </CollapsiblePanel>
+    <Box sx={{ display: 'flex', gap: 0.25, p: 0.25, borderRadius: 'var(--radius-full, 9999px)', background: 'rgba(255,255,255,0.03)' }}>
+      {SEGMENT_TABS.map((tab) => {
+        const active = activeTab === tab.key;
+        return (
+          <Button
+            key={tab.key}
+            onClick={(e) => { e.stopPropagation(); onChange(tab.key); }}
+            disableRipple
+            startIcon={<Icon icon={tab.icon} width={17} />}
+            sx={{
+              px: 1.5, height: 36, gap: 0.75, minWidth: 0,
+              fontSize: '0.8rem', fontWeight: 700, textTransform: 'none',
+              borderRadius: 'var(--radius-full, 9999px)',
+              color: active ? 'var(--nirmala-cyan)' : 'var(--color-text-muted)',
+              background: active ? 'var(--nirmala-cyan-dim)' : 'transparent',
+              transition: 'color var(--duration-fast,150ms) var(--ease-standard), background var(--duration-fast,150ms) var(--ease-standard)',
+              '&:hover': { background: active ? 'var(--nirmala-cyan-dim)' : 'rgba(255,255,255,0.06)' },
+            }}
+          >
+            {tab.label}
+          </Button>
+        );
+      })}
+    </Box>
   );
 }
 
-/** Desktop/tablet-landscape floating panel — collapsible chrome around GroundSegmentContent. */
-export function GroundSegmentPanel({ groundFilterActive, onGroundFilterToggle, ...props }) {
+/**
+ * Desktop/tablet-landscape floating panel — Space and Ground segment
+ * content merged into a single collapsible panel, switched by tab instead
+ * of being two separate panels. Each tab keeps its own independent
+ * reset/show-hide master toggle (skyFilterActive/groundFilterActive) — see
+ * handleSkyFilterToggle/handleGroundFilterToggle in page.jsx — so no
+ * control is lost by merging the chrome.
+ */
+export function SegmentPanel({ skyFilterActive, onSkyFilterToggle, groundFilterActive, onGroundFilterToggle, ...contentProps }) {
+  const [activeSegment, setActiveSegment] = useState('sky');
+  const isSky = activeSegment === 'sky';
+
   return (
-    <CollapsiblePanel icon="material-symbols:sensors-rounded" title="Ground Segment" resetActive={groundFilterActive} onResetToggle={onGroundFilterToggle}>
-      <GroundSegmentContent {...props} hideTitle />
+    <CollapsiblePanel
+      icon={isSky ? 'material-symbols:satellite-alt-rounded' : 'material-symbols:sensors-rounded'}
+      title={isSky ? 'Space segment' : 'Ground Segment'}
+      titleContent={<SegmentTabSwitcher activeTab={activeSegment} onChange={setActiveSegment} />}
+      resetActive={isSky ? skyFilterActive : groundFilterActive}
+      onResetToggle={isSky ? onSkyFilterToggle : onGroundFilterToggle}
+    >
+      {isSky ? <SkySegmentContent {...contentProps} hideTitle /> : <GroundSegmentContent {...contentProps} hideTitle />}
     </CollapsiblePanel>
   );
 }

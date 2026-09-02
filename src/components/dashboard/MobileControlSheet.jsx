@@ -10,8 +10,8 @@ import { SensorStatsCardContent } from '@/components/dashboard/SensorStatsCard';
 const SUB_TABS = [
   { key: 'sky', label: 'Sky', icon: 'material-symbols:satellite-alt-rounded' },
   { key: 'ground', label: 'Ground', icon: 'material-symbols:sensors-rounded' },
-  { key: 'stats', label: 'Statistik', icon: 'material-symbols:bar-chart-rounded' },
-  { key: 'legend', label: 'Legenda', icon: 'material-symbols:palette-rounded' },
+  { key: 'stats', label: 'Stats', icon: 'material-symbols:bar-chart-rounded' },
+  { key: 'legend', label: 'Legend', icon: 'material-symbols:palette-rounded' },
 ];
 
 /**
@@ -30,7 +30,7 @@ export default function MobileControlSheet({ segmentProps, legendProps, statsPro
     <>
       <Fab
         onClick={() => setOpen(true)}
-        aria-label="Buka kontrol peta"
+        aria-label="Open map controls"
         sx={{
           position: 'absolute',
           right: 16,

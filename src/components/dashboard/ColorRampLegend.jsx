@@ -95,7 +95,7 @@ export function ColorRampLegendContent({ activeLayer, showCoverage = false, mesh
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 1, pt: 1, borderTop: '1px solid var(--nirmala-glass-border)' }}>
           <Box sx={{ width: 12, height: 12, borderRadius: '3px', background: 'linear-gradient(135deg, #14466e, #40b4cd)', flexShrink: 0 }} />
           <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.62rem', lineHeight: 1.3 }}>
-            Jaringan sensor aktif (tidak hujan)
+            Active sensor network (not raining)
           </Typography>
         </Box>
       )}
@@ -132,7 +132,7 @@ export default function ColorRampLegend(props) {
           height: 32, px: open ? 0.5 : 0, cursor: 'pointer',
         }}
       >
-        <Tooltip title={open ? 'Sembunyikan legenda' : 'Tampilkan legenda'}>
+        <Tooltip title={open ? 'Hide legend' : 'Show legend'}>
           <IconButton size="small" disableRipple sx={{ p: 0.25, color: 'text.secondary' }}>
             <Icon icon={open ? 'material-symbols:chevron-right-rounded' : metric.icon} width={18} style={!open ? { color: 'var(--nirmala-cyan)' } : undefined} />
           </IconButton>

@@ -36,7 +36,7 @@ function Row({ icon, color, label, value, bucket, hidden, onToggle }) {
   );
   if (!clickable) return content;
   return (
-    <Tooltip title={hidden ? `Tampilkan sensor ${label} di peta` : `Sembunyikan sensor ${label} dari peta`}>
+    <Tooltip title={hidden ? `Show ${label} sensors on the map` : `Hide ${label} sensors from the map`}>
       {content}
     </Tooltip>
   );
@@ -47,12 +47,16 @@ export function SensorStatsCardContent({ stats, hiddenStatuses, onToggleStatus }
   const isHidden = (bucket) => hiddenStatuses?.has(bucket) ?? false;
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      <Typography sx={{ ...eyebrowSx, mb: 0.25 }}>Statistik Sensor</Typography>
+      <Typography sx={{ ...eyebrowSx, mb: 0.25 }}>Sensor Statistics</Typography>
       <Row icon="material-symbols:sensors-rounded" color="var(--color-text)" label="Total" value={stats.total} />
-      <Row icon="material-symbols:check-circle-rounded" color="var(--status-active)" label="Aktif" value={stats.active}
+      <Row icon="material-symbols:check-circle-rounded" color="var(--status-active)" label="Active" value={stats.active}
         bucket="active" hidden={isHidden('active')} onToggle={onToggleStatus} />
-      <Row icon="material-symbols:rainy-rounded" color="var(--status-raining)" label="Hujan" value={stats.raining}
+      <Row icon="material-symbols:rainy-rounded" color="var(--status-raining)" label="Raining" value={stats.raining}
         bucket="raining" hidden={isHidden('raining')} onToggle={onToggleStatus} />
+      <Row icon="material-symbols:wifi-off-rounded" color="var(--status-unavailable)" label="Unavailable" value={stats.unavailable}
+        bucket="unavailable" hidden={isHidden('unavailable')} onToggle={onToggleStatus} />
+      <Row icon="material-symbols:do-not-disturb-on-rounded" color="var(--status-inactive)" label="Inactive" value={stats.inactive}
+        bucket="inactive" hidden={isHidden('inactive')} onToggle={onToggleStatus} />
       <Row icon="material-symbols:block-rounded" color="var(--status-blacklisted)" label="Blacklist" value={stats.blacklist}
         bucket="blacklisted" hidden={isHidden('blacklisted')} onToggle={onToggleStatus} />
     </Box>
@@ -86,7 +90,7 @@ export default function SensorStatsCard({ stats, hiddenStatuses, onToggleStatus 
           height: 32, px: open ? 0.5 : 0, cursor: 'pointer',
         }}
       >
-        <Tooltip title={open ? 'Sembunyikan statistik' : 'Tampilkan statistik'}>
+        <Tooltip title={open ? 'Hide statistics' : 'Show statistics'}>
           <IconButton size="small" disableRipple sx={{ p: 0.25, color: 'text.secondary' }}>
             <Icon icon={open ? 'material-symbols:chevron-right-rounded' : 'material-symbols:sensors-rounded'} width={18} style={!open ? { color: 'var(--nirmala-cyan)' } : undefined} />
           </IconButton>

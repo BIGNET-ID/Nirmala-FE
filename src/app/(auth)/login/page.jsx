@@ -27,7 +27,7 @@ export default function LoginPage() {
   const dark = mode !== 'light';
 
   // Single fixed demo account (see src/app/api/auth/login/route.js TEMP_USERS)
-  // — fields are pre-filled and disabled below so the user only clicks "Masuk".
+  // — fields are pre-filled and disabled below so the user only clicks "Log in".
   const [email] = useState('appgenius@bignet.id');
   const [password] = useState('D(1u@>R6V_Ig&gu?nL]wD~Uk');
   const [showPw, setShowPw] = useState(false);
@@ -63,7 +63,7 @@ export default function LoginPage() {
       setLaunching(true);                          // dramatic charge through the storm
       setTimeout(() => router.replace('/'), 3100);
     } catch (err) {
-      setError(err?.message || 'Login gagal. Periksa email & password.');
+      setError(err?.message || 'Login failed. Check your email & password.');
       setSubmitting(false);
     }
   };
@@ -125,10 +125,10 @@ export default function LoginPage() {
             <Box component="img" src={dark ? '/nirmala-brand-dark.png' : '/nirmala-brand.png'} alt="Nirmala" sx={{ height: 56 }} />
           </Box>
           <Typography sx={{ ...eyebrowSx, textAlign: 'center', display: 'block' }}>
-            Prakiraan &amp; Pemantauan Cuaca Real-time
+            Real-time Weather Forecasting &amp; Monitoring
           </Typography>
           <Typography variant="h5" fontWeight={700} sx={{ textAlign: 'center', mt: 0.5, mb: 3, color: 'var(--color-text)' }}>
-            Masuk
+            Log in
           </Typography>
 
           {error && (
@@ -162,7 +162,7 @@ export default function LoginPage() {
                 ),
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPw((s) => !s)} edge="end" size="small" aria-label="Tampilkan password">
+                    <IconButton onClick={() => setShowPw((s) => !s)} edge="end" size="small" aria-label="Show password">
                       <Icon icon={showPw ? 'material-symbols:visibility-off-rounded' : 'material-symbols:visibility-rounded'} width={18} />
                     </IconButton>
                   </InputAdornment>
@@ -184,7 +184,7 @@ export default function LoginPage() {
               '&.Mui-disabled': { backgroundColor: 'rgba(6,182,212,0.4)', color: 'rgba(255,255,255,0.7)' },
             }}
           >
-            {submitting ? <CircularProgress size={20} sx={{ color: '#ffffff' }} /> : 'Masuk'}
+            {submitting ? <CircularProgress size={20} sx={{ color: '#ffffff' }} /> : 'Log in'}
           </Button>
 
           <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 2.5, color: 'var(--color-text-muted)' }}>
