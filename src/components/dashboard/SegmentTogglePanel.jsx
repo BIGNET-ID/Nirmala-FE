@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Box, Button, Typography, FormControlLabel, Switch, Tooltip, Chip, IconButton } from '@mui/material';
+import { Box, Button, Typography, FormControlLabel, Switch, Slider, Tooltip, Chip, IconButton } from '@mui/material';
 import { motion, AnimatePresence } from 'motion/react';
 import { Icon } from '@iconify/react';
 import { METRICS } from '@/constants/metrics';
@@ -154,6 +154,7 @@ const OWM_LAYERS = [
 export function SkySegmentContent({
   activeLayer, onToggleHimawari,
   showWind, onToggleWind, windStatus,
+  avgWindSpeedKmh, windSpeedMultiplier, onWindSpeedMultiplierChange,
   owmLayer, onOwmChange,
   hideTitle,
 }) {
@@ -211,6 +212,30 @@ export function SkySegmentContent({
         )}
         {onToggleWind && (
           <LayerSwitch checked={showWind} onChange={onToggleWind} label="Wind (particles)" status={windStatus} />
+        )}
+        {onToggleWind && showWind && (
+          <>
+            {avgWindSpeedKmh != null && (
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem' }}>
+                ~{avgWindSpeedKmh.toFixed(1)} km/h avg
+              </Typography>
+            )}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', flexShrink: 0 }}>
+                Particle speed
+              </Typography>
+              <Slider
+                size="small"
+                min={0.5}
+                max={2.5}
+                step={0.1}
+                value={windSpeedMultiplier}
+                onChange={(_, v) => onWindSpeedMultiplierChange(v)}
+                sx={{ color: 'var(--nirmala-cyan)' }}
+                aria-label="Particle speed multiplier"
+              />
+            </Box>
+          </>
         )}
         <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.62rem', lineHeight: 1.4 }}>
           Data refreshes automatically every ~10 minutes.
