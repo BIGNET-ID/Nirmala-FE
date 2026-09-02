@@ -1,22 +1,19 @@
 /**
  * Custom Hook: usePlatformData
- * Loads the initial REST snapshot (PRD §4.1 step 1: GET /api/sensors,
- * /api/lightning, /api/thunderstorm on app load) plus manifest and health.
- * Live incremental updates for sensors/lightning/thunderstorm come from the
- * dedicated SSE hooks (useSensorStream/useLightningStream/useThunderstormStream,
- * see PRD §5.4) instead of polling — this hook only fetches each once.
- * Health has no SSE channel per PRD's Kategori grouping, so it keeps polling.
+ * Loads the initial REST snapshot (PRD §4.1 step 1: GET /api/sensors on app
+ * load) plus manifest and health. Live incremental updates for sensors come
+ * from the dedicated SSE hook (useSensorStream, see PRD §5.4) instead of
+ * polling — this hook only fetches once. Health has no SSE channel per PRD's
+ * Kategori grouping, so it keeps polling.
  */
 
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { nirmalaApiService, normalizeSensors, normalizeLightning, normalizeThunderstorm, getDefaultMap } from '@/lib/nirmalaApi';
+import { nirmalaApiService, normalizeSensors, getDefaultMap } from '@/lib/nirmalaApi';
 
 export function usePlatformData() {
   const [sensors, setSensors] = useState([]);
-  const [lightning, setLightning] = useState([]);
-  const [thunderstorm, setThunderstorm] = useState([]);
   const [manifest, setManifest] = useState(null);
   const [defaultMap, setDefaultMap] = useState(null);
   const [health, setHealth] = useState(null);
@@ -65,38 +62,6 @@ export function usePlatformData() {
     fetchSensors();
   }, []);
 
-  // Fetch lightning once — the initial REST snapshot. Live updates come from useLightningStream (SSE).
-  useEffect(() => {
-    const fetchLightning = async () => {
-      try {
-        const response = await nirmalaApiService.getLightning();
-        const normalized = normalizeLightning(response);
-        setLightning(normalized);
-      } catch (err) {
-        console.warn('[usePlatformData] Error fetching lightning:', err);
-        setLightning([]);
-      }
-    };
-
-    fetchLightning();
-  }, []);
-
-  // Fetch thunderstorm once — the initial REST snapshot. Live updates come from useThunderstormStream (SSE).
-  useEffect(() => {
-    const fetchThunderstorm = async () => {
-      try {
-        const response = await nirmalaApiService.getThunderstorm();
-        const normalized = normalizeThunderstorm(response);
-        setThunderstorm(normalized);
-      } catch (err) {
-        console.warn('[usePlatformData] Error fetching thunderstorm:', err);
-        setThunderstorm([]);
-      }
-    };
-
-    fetchThunderstorm();
-  }, []);
-
   // Fetch health every 60s
   useEffect(() => {
     const fetchHealth = async () => {
@@ -133,8 +98,6 @@ export function usePlatformData() {
 
   return {
     sensors,
-    lightning,
-    thunderstorm,
     manifest,
     defaultMap,
     health,

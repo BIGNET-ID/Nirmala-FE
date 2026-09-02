@@ -11,10 +11,9 @@ function makeBtnSx(size) {
     color: 'text.primary',
     bgcolor: 'var(--nirmala-glass-bg)',
     border: '1px solid var(--nirmala-glass-border)',
-    backdropFilter: 'blur(20px)',
     borderRadius: 'var(--radius-md, 8px)',
     transition: 'background var(--duration-fast, 150ms) var(--ease-standard)',
-    '&:hover': { bgcolor: 'rgba(0,229,255,0.10)', color: '#00e5ff' },
+    '&:hover': { bgcolor: 'var(--nirmala-cyan-dim)', color: 'var(--nirmala-cyan)' },
   };
 }
 

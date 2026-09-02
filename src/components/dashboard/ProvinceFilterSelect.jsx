@@ -24,7 +24,6 @@ export default function ProvinceFilterSelect({ selectedCode, onSelectCode, match
         px: { xs: 1.25, sm: 2 },
         background: 'var(--nirmala-glass-bg-header)',
         borderBottom: '1px solid var(--nirmala-glass-border)',
-        backdropFilter: 'blur(20px)',
       }}
     >
       <Icon icon="material-symbols:location-on-rounded" width={16} style={{ color: 'var(--nirmala-cyan)', flexShrink: 0 }} />

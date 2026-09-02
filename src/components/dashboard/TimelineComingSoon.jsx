@@ -30,7 +30,6 @@ export default function TimelineComingSoon() {
           maxWidth: 480,
           p: 4,
           textAlign: 'center',
-          backdropFilter: 'blur(20px)',
           background: 'var(--nirmala-glass-bg)',
           border: '1px solid var(--nirmala-glass-border)',
           borderRadius: 'var(--radius-lg, 12px)',

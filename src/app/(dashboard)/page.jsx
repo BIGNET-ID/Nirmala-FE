@@ -8,8 +8,6 @@ import CanvasHeatmapOverlay from '@/components/map/CanvasOverlay';
 import SensorDotLayer from '@/components/map/SensorDotLayer';
 import MeshLayer from '@/components/map/MeshLayer';
 import OpenWeatherLayer from '@/components/map/OpenWeatherLayer';
-import LightningLayer from '@/components/map/LightningLayer';
-import ThunderstormLayer from '@/components/map/ThunderstormLayer';
 import WindParticleLayer from '@/components/map/WindParticleLayer';
 import HimawariLayer from '@/components/map/HimawariLayer';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
@@ -19,44 +17,41 @@ import ColorRampLegend from '@/components/dashboard/ColorRampLegend';
 import SensorDetailDrawer from '@/components/dashboard/SensorDetailDrawer';
 import SensorStatsCard from '@/components/dashboard/SensorStatsCard';
 import MobileControlSheet from '@/components/dashboard/MobileControlSheet';
-import MapInfoPill from '@/components/dashboard/MapInfoPill';
-import LiveTimestampBadge from '@/components/dashboard/LiveTimestampBadge';
 import MapControls from '@/components/map/MapControls';
 import TimelineComingSoon from '@/components/dashboard/TimelineComingSoon';
 import { usePlatformData } from '@/hooks/usePlatformData';
 import { useSensorStream } from '@/hooks/useSensorStream';
-import { useLightningStream } from '@/hooks/useLightningStream';
-import { useThunderstormStream } from '@/hooks/useThunderstormStream';
 import { useWindField } from '@/hooks/useWindField';
 import { useJmaHimawariTicks } from '@/hooks/useJmaHimawariTicks';
 import { useAuth } from '@/hooks/useAuth';
 import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
+import { useThemeMode } from '@/context/ThemeModeContext';
 import { METRICS } from '@/constants/metrics';
-import { MAP_CENTER, MAP_ZOOM_DEFAULT } from '@/constants/mapConfig';
-import { LAYER_STATUS } from '@/constants/layerStatus';
+import { MAP_CENTER, MAP_ZOOM_DEFAULT, MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@/constants/mapConfig';
 import { PROVINCES } from '@/constants/provinces';
 import { filterStationsInBounds, summarizeStations } from '@/lib/provinceFilter';
+import { statusBucket } from '@/lib/sensorColor';
 
-// SSE streams report 'connecting'/'live'/'reconnecting'; a toggle also needs
-// to say "connected but nothing to show right now" — this maps both signals
-// into the one LAYER_STATUS vocabulary every layer indicator reads.
-function streamStatus(sseStatus, count) {
-  if (sseStatus === 'reconnecting') return LAYER_STATUS.ERROR;
-  if (sseStatus === 'connecting') return LAYER_STATUS.LOADING;
-  return count > 0 ? LAYER_STATUS.OK : LAYER_STATUS.EMPTY;
-}
+// OpenWeather's precipitation tiles are pale, semi-transparent PNGs — the
+// same fixed alpha reads much dimmer against the near-black dark basemap
+// than the light one, so opacity is tuned per theme (and lowered further
+// while Himawari is active, so the two cloud/weather layers don't visually
+// fight — see the matching note in SegmentTogglePanel).
+const OWM_OPACITY = {
+  light: { normal: 0.9, himawari: 0.6 },
+  dark: { normal: 0.85, himawari: 0.55 },
+};
 
 export default function NirmalaDashboard() {
   const { isCompact } = useResponsiveLayout();
-  const { sensors: apiSensors, lightning: apiLightning, thunderstorm: apiThunderstorm, health, loading, error } = usePlatformData();
+  const { mode } = useThemeMode();
+  const { sensors: apiSensors, health, loading, error } = usePlatformData();
   const { permissions, defaultMap, defaultLayer } = useAuth();
 
-  // Initial REST snapshot seeds each SSE hook; live updates flow in via /api/stream/*.
+  // Initial REST snapshot seeds the SSE hook; live updates flow in via /api/stream/*.
   const { stations: SENSOR_STATIONS, status: sensorStreamStatus } = useSensorStream(apiSensors);
-  const { strikes: lightning, status: lightningStreamStatus } = useLightningStream(apiLightning);
-  const { storms: thunderstorm, status: thunderstormStreamStatus } = useThunderstormStream(apiThunderstorm);
   const [activeLayer, setActiveLayer] = useState('rain');
-  // The last-selected ground mode (rain/mesh/node) — restored when the
+  // The last-selected ground mode (rain/mesh) — restored when the
   // Himawari switch turns off, so leaving Himawari mode never dead-ends on
   // "no mode selected"; it goes back to wherever the user actually was.
   const [groundLayer, setGroundLayer] = useState('rain');
@@ -67,12 +62,24 @@ export default function NirmalaDashboard() {
   const handleHimawariToggle = (checked) => {
     setActiveLayer(checked ? 'himawari' : groundLayer);
   };
-  const [showMarkers, setShowMarkers] = useState(true);
+  // Coverage-first default: individual sensor dots are opt-in, so a
+  // first-time non-technical viewer sees one clear aggregate picture on
+  // login rather than dots + coverage competing for attention.
+  const [showMarkers, setShowMarkers] = useState(false);
   const [showCoverage, setShowCoverage] = useState(true);
-  const [showLightning, setShowLightning] = useState(false);
-  const [showStorms, setShowStorms] = useState(false);
   const [showWind, setShowWind] = useState(false);
   const [owmLayer, setOwmLayer] = useState(null); // OpenWeather tile layer id or null
+  // Which sensor-status rows (from Statistik Sensor) are hidden from the map
+  // dots. Stats counts themselves stay unfiltered — this only trims what
+  // SensorDotLayer draws. Buckets match statusBucket() precedence.
+  const [hiddenStatuses, setHiddenStatuses] = useState(() => new Set());
+  const toggleStatusVisibility = (bucket) => {
+    setHiddenStatuses((prev) => {
+      const next = new Set(prev);
+      if (next.has(bucket)) next.delete(bucket); else next.add(bucket);
+      return next;
+    });
+  };
   const [selectedStation, setSelectedStation] = useState(null);
   const [map, setMap] = useState(null);
   const [activeTab, setActiveTab] = useState('current'); // 'current' | 'timeline' — PRD §4.1 Dual-Tab
@@ -81,18 +88,6 @@ export default function NirmalaDashboard() {
   // ColorRampLegend can label its gradient with the real km range instead
   // of recomputing the same tree a second time.
   const [meshDistanceRange, setMeshDistanceRange] = useState(null);
-
-  // Dismiss state for the two top-center status pills — manual close only,
-  // never a timer (this is ongoing status, not a one-off toast; see the
-  // components' own doc comments). Resetting on mode/tab change means a
-  // user who dismissed one for "Kerapatan Hujan" still sees it again after
-  // switching to "Himawari", since the content underneath is genuinely new.
-  const [infoPillDismissed, setInfoPillDismissed] = useState(false);
-  const [timestampBadgeDismissed, setTimestampBadgeDismissed] = useState(false);
-  useEffect(() => {
-    setInfoPillDismissed(false);
-    setTimestampBadgeDismissed(false);
-  }, [activeLayer, activeTab]);
 
   const himawari = useJmaHimawariTicks(activeLayer === 'himawari');
   const [himawariStatus, setHimawariStatus] = useState('ok'); // 'ok' | 'loading' | 'unavailable' — only 'unavailable' has UI today (see the notice box below); 'loading' is reserved for a future spinner.
@@ -141,6 +136,15 @@ export default function NirmalaDashboard() {
     return new Date(Math.max(...times.map((d) => d.getTime())));
   }, [SENSOR_STATIONS]);
   const activeLayerLastSynced = activeLayer === 'himawari' ? himawariLastSynced : rainvisionLastSynced;
+
+  // Notification bell content (DashboardHeader) — live status, not a
+  // discrete message log, since all three of these continuously re-derive
+  // from the sensor stream/Himawari state rather than firing one-off events.
+  const himawariNoticeMessage = activeLayer === 'himawari' && (!himawariZoomInRange || himawariStatus === 'unavailable')
+    ? (himawariZoomInRange
+        ? 'Citra tidak tersedia untuk waktu ini'
+        : 'Perbesar/perkecil peta ke level zoom 3–5 untuk melihat citra satelit')
+    : null;
 
   // Manifest resolves async, after activeLayer's initial state and (likely) after
   // the map has already mounted with the hardcoded MAP_CENTER/MAP_ZOOM_DEFAULT —
@@ -200,9 +204,33 @@ export default function NirmalaDashboard() {
     blacklist: SENSOR_STATIONS.filter((s) => s.blacklisted || s.status === 'blacklisted').length,
   };
 
+  // Stats above always reflect the true totals; only the dots drawn on the
+  // map are trimmed by hiddenStatuses (see toggleStatusVisibility above).
+  const visibleStations = hiddenStatuses.size
+    ? SENSOR_STATIONS.filter((s) => !hiddenStatuses.has(statusBucket(s)))
+    : SENSOR_STATIONS;
+
+  // Master reset toggles next to the Space/Ground Segment panel titles —
+  // ON re-activates every boolean control in that segment, OFF turns them
+  // all off. OWM's 3-way mode only follows the OFF direction (→ "Nonaktif");
+  // it stays a radio-select, not a boolean, so there's no single "on" value
+  // to restore.
+  const skyFilterActive = activeLayer === 'himawari' && showWind;
+  const handleSkyFilterToggle = (checked) => {
+    handleHimawariToggle(checked);
+    setShowWind(checked);
+    if (!checked) setOwmLayer(null);
+  };
+  const groundFilterActive = showCoverage && showMarkers;
+  const handleGroundFilterToggle = (checked) => {
+    setShowCoverage(checked);
+    setShowMarkers(checked);
+  };
+
   const handleZoom = (delta) => {
     if (!map) return;
-    const nextZoom = Math.min(Math.max(map.getZoom() + delta, 4), 17);
+    // Mirrors the minZoom/maxZoom passed to <Map> in GoogleMapWrapper.
+    const nextZoom = Math.min(Math.max(map.getZoom() + delta, MAP_MIN_ZOOM), MAP_MAX_ZOOM);
     map.setZoom(nextZoom);
   };
 
@@ -267,6 +295,9 @@ export default function NirmalaDashboard() {
           streamStatus={sensorStreamStatus}
           activeTab={activeTab}
           onTabChange={setActiveTab}
+          mapInfo={{ raining: stats.raining, total: stats.total, loading: loading && stats.total === 0 }}
+          timestampInfo={{ label: METRICS[activeLayer]?.label ?? '', timestamp: activeLayerLastSynced }}
+          himawariNotice={himawariNoticeMessage}
         />
 
         {activeTab === 'current' && (
@@ -285,8 +316,11 @@ export default function NirmalaDashboard() {
                   cover over the same area — lower this one's opacity while
                   Himawari is active so the two don't visually fight (see the
                   matching note in SegmentTogglePanel). */}
-              <OpenWeatherLayer layer={owmLayer} opacity={activeLayer === 'himawari' ? 0.4 : 0.75} />
-              {activeLayer === 'rain' && (
+              <OpenWeatherLayer
+                layer={owmLayer}
+                opacity={OWM_OPACITY[mode][activeLayer === 'himawari' ? 'himawari' : 'normal']}
+              />
+              {(activeLayer === 'rain' || activeLayer === 'himawari') && (
                 <CanvasHeatmapOverlay stations={SENSOR_STATIONS} showCoverage={showCoverage} />
               )}
               {activeLayer === 'mesh' && (
@@ -301,15 +335,16 @@ export default function NirmalaDashboard() {
                   onBasetimeResolved={setHimawariResolvedBasetime}
                 />
               )}
-              <ThunderstormLayer storms={thunderstorm} show={showStorms} />
-              <LightningLayer strikes={lightning} show={showLightning} />
               <WindParticleLayer show={showWind} field={windField} ambientField={windAmbientField} />
               <SensorDotLayer
-                stations={SENSOR_STATIONS}
-                showMarkers={activeLayer === 'rain' ? showMarkers : true}
+                stations={visibleStations}
+                // Mesh Map is about inspecting gaps/coverage between
+                // sensors — hiding dots by default there would defeat the
+                // point, so it always shows them regardless of the user's
+                // toggle.
+                showMarkers={activeLayer === 'mesh' ? true : showMarkers}
                 selectedId={selectedStation?.id ?? null}
                 onSelect={setSelectedStation}
-                focus={activeLayer === 'node'}
               />
             </GoogleMapWrapper>
 
@@ -333,15 +368,11 @@ export default function NirmalaDashboard() {
               const segmentProps = {
                 activeLayer, onLayerChange: handleLayerChange, onToggleHimawari: handleHimawariToggle,
                 showMarkers, onToggleMarkers: setShowMarkers, showCoverage, onToggleCoverage: setShowCoverage,
-                showLightning, onToggleLightning: setShowLightning, lightningCount: lightning?.length || 0,
-                lightningStatus: streamStatus(lightningStreamStatus, lightning?.length || 0),
-                showStorms, onToggleStorms: setShowStorms, stormCount: thunderstorm?.length || 0,
-                stormStatus: streamStatus(thunderstormStreamStatus, thunderstorm?.length || 0),
                 showWind, onToggleWind: setShowWind, windStatus: windFieldStatus,
                 owmLayer, onOwmChange: setOwmLayer, permissions,
               };
               const legendProps = { activeLayer, showCoverage, meshDistanceRange };
-              const statsProps = { stats };
+              const statsProps = { stats, hiddenStatuses, onToggleStatus: toggleStatusVisibility };
 
               if (isCompact) {
                 return (
@@ -354,7 +385,7 @@ export default function NirmalaDashboard() {
               }
               return (
                 <>
-                  {/* Left: Sky Segment panel above Ground Segment panel — centred
+                  {/* Left: Space segment panel above Ground Segment panel — centred
                       vertically in the space between the header and the bottom
                       edge (not top-anchored), so the pair never hangs low when
                       both are expanded. */}
@@ -362,8 +393,8 @@ export default function NirmalaDashboard() {
                     position: 'absolute', top: 72, bottom: 16, left: 16, zIndex: 'var(--z-overlay, 100)',
                     display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1.5,
                   }}>
-                    <SkySegmentPanel {...segmentProps} />
-                    <GroundSegmentPanel {...segmentProps} />
+                    <SkySegmentPanel {...segmentProps} skyFilterActive={skyFilterActive} onSkyFilterToggle={handleSkyFilterToggle} />
+                    <GroundSegmentPanel {...segmentProps} groundFilterActive={groundFilterActive} onGroundFilterToggle={handleGroundFilterToggle} />
                   </Box>
                   {/* Right: sensor statistics above the rain-density legend */}
                   <Box sx={{
@@ -376,60 +407,6 @@ export default function NirmalaDashboard() {
                 </>
               );
             })()}
-
-            {/* Top-center: contextual info pill */}
-            {!infoPillDismissed && (
-              <MapInfoPill
-                raining={stats.raining}
-                total={stats.total}
-                loading={loading && stats.total === 0}
-                onClose={() => setInfoPillDismissed(true)}
-              />
-            )}
-
-            {/* Top-center, below the info pill: Live Timestamp Badge (PRD §4.1) —
-                when each mode's data was actually last synced. Renders nothing
-                until a real timestamp is known (see LiveTimestampBadge). */}
-            {!timestampBadgeDismissed && (
-              <LiveTimestampBadge
-                label={METRICS[activeLayer]?.label ?? ''}
-                timestamp={activeLayerLastSynced}
-                onClose={() => setTimestampBadgeDismissed(true)}
-              />
-            )}
-
-            {/* Top-center, below the timestamp badge: Himawari notice — either
-                "zoom out of range" (JMA only serves this product at zoom 3-5;
-                takes priority since it explains why nothing shows regardless of
-                data status) or the load-failure notice (rare: JMA hasn't
-                published any of the last 4 frames). Neither needs a permanent
-                slot the way MapInfoPill/LiveTimestampBadge do — always shown
-                (including on phones), text just wraps below `sm`. */}
-            {activeLayer === 'himawari' && (!himawariZoomInRange || himawariStatus === 'unavailable') && (
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: 152,
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  zIndex: 'var(--z-overlay, 100)',
-                  px: 1.75,
-                  py: 0.75,
-                  maxWidth: 'calc(100vw - 32px)',
-                  textAlign: 'center',
-                  backdropFilter: 'blur(20px)',
-                  background: 'var(--nirmala-glass-bg)',
-                  border: '1px solid var(--nirmala-glass-border)',
-                  borderRadius: 'var(--radius-lg, 12px)',
-                  fontSize: { xs: '0.7rem', sm: '0.78rem' },
-                  color: 'text.primary',
-                }}
-              >
-                {himawariZoomInRange
-                  ? 'Citra tidak tersedia untuk waktu ini'
-                  : 'Perbesar/perkecil peta ke level zoom 3–5 untuk melihat citra satelit'}
-              </Box>
-            )}
 
             {/* Map Controls */}
             <MapControls

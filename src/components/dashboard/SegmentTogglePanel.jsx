@@ -31,11 +31,11 @@ const STATUS_DOT = {
 };
 
 const switchSx = {
-  '& .MuiSwitch-switchBase.Mui-checked': { color: '#00e5ff' },
-  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: 'rgba(0, 229, 255, 0.7)' },
+  '& .MuiSwitch-switchBase.Mui-checked': { color: 'var(--nirmala-cyan)' },
+  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: 'var(--nirmala-cyan)', opacity: 0.6 },
 };
 
-function LayerSwitch({ checked, onChange, label, count, status, sx }) {
+function LayerSwitch({ checked, onChange, label, count, status, info, sx }) {
   const dot = STATUS_DOT[status];
   return (
     <FormControlLabel
@@ -47,6 +47,11 @@ function LayerSwitch({ checked, onChange, label, count, status, sx }) {
           <Typography variant="body2" sx={{ fontSize: '0.82rem', color: 'text.primary' }}>
             {label}{typeof count === 'number' ? <Box component="span" sx={{ color: 'text.secondary', ml: 0.5 }}>· {count}</Box> : null}
           </Typography>
+          {info && (
+            <Tooltip title={info} placement="top">
+              <Icon icon="material-symbols:info-outline-rounded" width={13} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+            </Tooltip>
+          )}
           {dot && (
             <Tooltip title={dot.title} placement="top">
               <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: dot.color, flexShrink: 0 }} />
@@ -58,8 +63,8 @@ function LayerSwitch({ checked, onChange, label, count, status, sx }) {
   );
 }
 
-function ModeButton({ active, icon, label, onClick }) {
-  return (
+function ModeButton({ active, icon, label, onClick, info }) {
+  const button = (
     <Button
       startIcon={<Icon icon={icon} />}
       onClick={onClick}
@@ -81,9 +86,10 @@ function ModeButton({ active, icon, label, onClick }) {
       {label}
     </Button>
   );
+  return info ? <Tooltip title={info} placement="right">{button}</Tooltip> : button;
 }
 
-function VendorCard({ title, accent, active = true, children }) {
+function VendorCard({ title, accent, info, active = true, children }) {
   return (
     <Box
       sx={{
@@ -98,9 +104,16 @@ function VendorCard({ title, accent, active = true, children }) {
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="body2" sx={{ fontSize: '0.78rem', fontWeight: 700, color: 'text.primary' }}>
-          {title}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+          <Typography variant="body2" sx={{ fontSize: '0.78rem', fontWeight: 700, color: 'text.primary' }}>
+            {title}
+          </Typography>
+          {info && (
+            <Tooltip title={info} placement="top">
+              <Icon icon="material-symbols:info-outline-rounded" width={13} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+            </Tooltip>
+          )}
+        </Box>
         {!active && (
           <Tooltip title="Menunggu integrasi Backend" placement="top">
             <Chip
@@ -134,7 +147,7 @@ const OWM_LAYERS = [
 ];
 
 /**
- * Bare Sky Segment content — every sky-side control, no positioning/chrome.
+ * Bare Space segment content — every sky-side control, no positioning/chrome.
  * Shared by the desktop floating panel (below) and the mobile bottom sheet
  * (MobileControlSheet), which supplies its own container.
  */
@@ -147,16 +160,21 @@ export function SkySegmentContent({
   const himawariActive = activeLayer === 'himawari';
 
   return (
-    <SegmentGroup title="Sky Segment" hideTitle={hideTitle}>
+    <SegmentGroup title="Space segment" hideTitle={hideTitle}>
       <VendorCard title="JMA Himawari-9" accent="var(--nirmala-cyan)">
         <LayerSwitch
           checked={himawariActive}
           onChange={onToggleHimawari}
           label={METRICS.himawari.label}
+          info={METRICS.himawari.legendNote}
         />
       </VendorCard>
 
-      <VendorCard title="OpenWeather" accent="var(--nirmala-cyan)">
+      <VendorCard
+        title="OpenWeather"
+        accent="var(--nirmala-cyan)"
+        info="Lapisan curah hujan dari penyedia data cuaca global OpenWeather."
+      >
         <Box sx={{ display: 'flex', gap: 0.5 }}>
           {OWM_LAYERS.map((o) => {
             const active = owmLayer === o.id;
@@ -194,6 +212,9 @@ export function SkySegmentContent({
         {onToggleWind && (
           <LayerSwitch checked={showWind} onChange={onToggleWind} label="Angin (partikel)" status={windStatus} />
         )}
+        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.62rem', lineHeight: 1.4 }}>
+          Data diperbarui otomatis setiap ±10 menit.
+        </Typography>
         <Typography
           variant="caption"
           component="a"
@@ -218,8 +239,6 @@ export function SkySegmentContent({
  */
 export function GroundSegmentContent({
   activeLayer, onLayerChange, showMarkers, onToggleMarkers, showCoverage, onToggleCoverage,
-  showLightning, onToggleLightning, lightningCount, lightningStatus,
-  showStorms, onToggleStorms, stormCount, stormStatus,
   permissions,
   hideTitle,
 }) {
@@ -227,22 +246,14 @@ export function GroundSegmentContent({
   // `false`. Undefined/null (manifest not loaded yet, or flag absent) keeps
   // it visible — same rule MetricLayerSelector used.
   const canViewSensor = permissions?.can_view_sensor !== false;
-  const canViewLightning = permissions?.can_view_lightning !== false;
-  const showSensorToggles = activeLayer === 'rain';
+  const showSensorToggles = activeLayer === 'rain' || activeLayer === 'himawari';
 
   return (
     <SegmentGroup title="Ground Segment" hideTitle={hideTitle}>
-      <VendorCard title="Databourg" accent="var(--status-active, #34d399)">
+      <VendorCard title="Nirmala Data" accent="var(--status-active, #34d399)">
         <ModeButton active={activeLayer === 'rain'} icon={METRICS.rain.icon} label={METRICS.rain.label} onClick={() => onLayerChange('rain')} />
-        <ModeButton active={activeLayer === 'mesh'} icon={METRICS.mesh.icon} label={METRICS.mesh.label} onClick={() => onLayerChange('mesh')} />
-        <ModeButton active={activeLayer === 'node'} icon={METRICS.node.icon} label={METRICS.node.label} onClick={() => onLayerChange('node')} />
+        <ModeButton active={activeLayer === 'mesh'} icon={METRICS.mesh.icon} label={METRICS.mesh.label} onClick={() => onLayerChange('mesh')} info={METRICS.mesh.legendNote} />
 
-        {onToggleLightning && canViewLightning && (
-          <LayerSwitch checked={showLightning} onChange={onToggleLightning} label="Petir" count={lightningCount} status={lightningStatus} />
-        )}
-        {onToggleStorms && (
-          <LayerSwitch checked={showStorms} onChange={onToggleStorms} label="Sel Badai" count={stormCount} status={stormStatus} />
-        )}
         {canViewSensor && showSensorToggles && (
           <>
             <LayerSwitch checked={showCoverage} onChange={onToggleCoverage} label="Cakupan Sensor" />
@@ -268,8 +279,12 @@ const collapseTransition = { duration: 0.28, ease: [0.2, 0, 0, 1] }; // matches 
  * freeing map real estate. Sky and Ground each hold their own independent
  * collapse state, animated with motion/react for a smooth width/fade
  * transition rather than an instant show/hide.
+ *
+ * `resetActive`/`onResetToggle` (optional): a master switch next to the
+ * title that turns every boolean control in this panel on/off at once —
+ * see handleResetFilters in page.jsx for what "default" means per segment.
  */
-function CollapsiblePanel({ icon, title, children }) {
+function CollapsiblePanel({ icon, title, children, resetActive, onResetToggle }) {
   const [open, setOpen] = useState(true);
 
   return (
@@ -281,7 +296,15 @@ function CollapsiblePanel({ icon, title, children }) {
       sx={{
         zIndex: 'var(--z-overlay, 100)',
         overflow: 'hidden',
-        backdropFilter: 'blur(20px)',
+        // display:flex + minHeight:0 here (not just on the scrollable child)
+        // is what lets this panel actually shrink when the sidebar column
+        // runs out of room — without it, overflow:hidden alone gives this
+        // box an implicit min-height of 0 that the flex PARENT can shrink
+        // past, silently clipping content instead of letting the child's
+        // own overflowY:auto take over.
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: 0,
         background: 'var(--nirmala-glass-bg)',
         border: '1px solid var(--nirmala-glass-border)',
         borderRadius: open ? 'var(--radius-lg, 12px)' : 'var(--radius-md, 8px)',
@@ -315,11 +338,24 @@ function CollapsiblePanel({ icon, title, children }) {
           </AnimatePresence>
         </Box>
         {open && (
-          <Tooltip title="Sembunyikan panel">
-            <IconButton size="small" disableRipple sx={{ p: 0.25, color: 'text.secondary', flexShrink: 0 }}>
-              <Icon icon="material-symbols:chevron-left-rounded" width={18} />
-            </IconButton>
-          </Tooltip>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, flexShrink: 0 }}>
+            {onResetToggle && (
+              <Tooltip title={resetActive ? 'Matikan semua filter' : 'Aktifkan semua filter'}>
+                <Switch
+                  checked={resetActive}
+                  onChange={(e) => { e.stopPropagation(); onResetToggle(e.target.checked); }}
+                  onClick={(e) => e.stopPropagation()}
+                  size="small"
+                  sx={switchSx}
+                />
+              </Tooltip>
+            )}
+            <Tooltip title="Sembunyikan panel">
+              <IconButton size="small" disableRipple sx={{ p: 0.25, color: 'text.secondary', flexShrink: 0 }}>
+                <Icon icon="material-symbols:chevron-left-rounded" width={18} />
+              </IconButton>
+            </Tooltip>
+          </Box>
         )}
       </Box>
 
@@ -331,9 +367,9 @@ function CollapsiblePanel({ icon, title, children }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
-            sx={{ width: EXPANDED_WIDTH }}
+            sx={{ width: EXPANDED_WIDTH, display: 'flex', flexDirection: 'column', flex: '1 1 auto', minHeight: 0 }}
           >
-            <Box sx={{ px: 1.75, pb: 1.75, maxHeight: 'min(320px, 38vh)', overflowY: 'auto' }}>
+            <Box sx={{ px: 1.75, pb: 1.75, maxHeight: 'min(320px, 38vh)', flex: '1 1 auto', minHeight: 0, overflowY: 'auto' }}>
               {children}
             </Box>
           </Box>
@@ -344,18 +380,18 @@ function CollapsiblePanel({ icon, title, children }) {
 }
 
 /** Desktop/tablet-landscape floating panel — collapsible chrome around SkySegmentContent. */
-export function SkySegmentPanel(props) {
+export function SkySegmentPanel({ skyFilterActive, onSkyFilterToggle, ...props }) {
   return (
-    <CollapsiblePanel icon="material-symbols:satellite-alt-rounded" title="Sky Segment">
+    <CollapsiblePanel icon="material-symbols:satellite-alt-rounded" title="Space segment" resetActive={skyFilterActive} onResetToggle={onSkyFilterToggle}>
       <SkySegmentContent {...props} hideTitle />
     </CollapsiblePanel>
   );
 }
 
 /** Desktop/tablet-landscape floating panel — collapsible chrome around GroundSegmentContent. */
-export function GroundSegmentPanel(props) {
+export function GroundSegmentPanel({ groundFilterActive, onGroundFilterToggle, ...props }) {
   return (
-    <CollapsiblePanel icon="material-symbols:sensors-rounded" title="Ground Segment">
+    <CollapsiblePanel icon="material-symbols:sensors-rounded" title="Ground Segment" resetActive={groundFilterActive} onResetToggle={onGroundFilterToggle}>
       <GroundSegmentContent {...props} hideTitle />
     </CollapsiblePanel>
   );

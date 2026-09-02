@@ -2,38 +2,34 @@
  * Live sensors report only BINARY is_raining — there is no numeric intensity or
  * temperature nationwide. So the only honest national layer is rain DENSITY
  * (concentration of raining sensors), not "mm/jam". Temperature is removed
- * (no data source anywhere). Lightning & thunderstorm layers are declared as
- * upcoming (data exists but not yet wired to the map).
+ * (no data source anywhere).
  */
 export const METRICS = {
   rain: {
     key: 'rain',
     label: 'Kerapatan Hujan',
     icon: 'material-symbols:rainy-rounded',
-    // Matches the heatmap density ramp (cool -> hot).
-    colorRamp: 'linear-gradient(to right, #60a5fa, #34d399, #eab308, #fb923c, #ef4444, #c084fc)',
-    minLabel: 'Rendah',
-    maxLabel: 'Tinggi',
-    legendNote: 'Konsentrasi sensor yang melaporkan hujan.',
+    // Full meteorological precipitation spectrum (Windy/BMKG-style) — an
+    // approved exception to "no rainbow" in AGENTS.md, always paired with
+    // qualitative tickLabels below rather than fabricated mm/h numbers
+    // (Nirmala has no spatial mm/h intensity data, only binary is_raining).
+    colorRamp: 'linear-gradient(to right, #3b82f6, #22d3ee, #22c55e, #eab308, #f97316, #dc2626)',
+    tickLabels: ['Rendah', 'Sedang', 'Tinggi', 'Ekstrem'],
+    legendNote: 'Kerapatan sensor yang melaporkan hujan — kategori relatif, bukan pengukuran mm/jam per titik.',
   },
   mesh: {
     key: 'mesh',
     label: 'Mesh Map',
     icon: 'material-symbols:hub-outline-rounded',
-    // Same ramp as 'rain' — reused for edge distance instead of rain
-    // intensity, so "cool short, hot long" reads consistently. minLabel/
-    // maxLabel here are just a loading-state fallback; ColorRampLegend
-    // overrides them with the actual km range once MeshLayer computes it.
-    colorRamp: 'linear-gradient(to right, #60a5fa, #34d399, #eab308, #fb923c, #ef4444, #c084fc)',
+    // Own sequential blue + alert-red ramp for edge distance (not the rain
+    // metric's spectrum above — different meaning, "cool short, hot long
+    // gap"). minLabel/maxLabel here are just a loading-state fallback;
+    // ColorRampLegend overrides them with the actual km range once
+    // MeshLayer computes it.
+    colorRamp: 'linear-gradient(to right, #dbeafe, #93c5fd, #3b82f6, #1d4ed8, #1e3a8a, #dc2626)',
     minLabel: 'Dekat',
     maxLabel: 'Jauh',
-    legendNote: 'Minimum Spanning Tree — setiap sensor terhubung minimal satu garis. Makin merah & tebal, makin jauh jaraknya: garis ini menandai celah cakupan sensor terbesar.',
-  },
-  node: {
-    key: 'node',
-    label: 'Node Sensor',
-    icon: 'material-symbols:sensors-rounded',
-    legendNote: 'Klik titik sensor untuk melihat grafik curah hujan.',
+    legendNote: 'Jaringan sensor terdekat — setiap sensor terhubung ke sensor-sensor di sekitarnya, tidak ada yang terputus. Makin merah & tebal, makin jauh jaraknya: garis ini menandai celah cakupan sensor terbesar. Arahkan kursor ke sebuah garis untuk melihat jarak persisnya.',
   },
   himawari: {
     key: 'himawari',
@@ -42,8 +38,3 @@ export const METRICS = {
     legendNote: 'Citra suhu puncak awan (infrared enhanced) dari JMA. Cakupan: piringan penuh Himawari, termasuk Indonesia.',
   },
 };
-
-export const UPCOMING_LAYERS = [
-  { key: 'lightning', label: 'Petir', icon: 'material-symbols:bolt-rounded' },
-  { key: 'thunderstorm', label: 'Sel Badai', icon: 'material-symbols:cyclone-rounded' },
-];
