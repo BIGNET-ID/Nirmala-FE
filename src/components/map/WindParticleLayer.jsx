@@ -46,19 +46,21 @@ function sampleField(field, lat, lng) {
   return { u: lerp(uTop, uBot, fy), v: lerp(vTop, vBot, fy) };
 }
 
-export default function WindParticleLayer({ show = true, field = null, ambientField = null }) {
+export default function WindParticleLayer({ show = true, field = null, ambientField = null, speedMultiplier = 1 }) {
   const map = useMap();
   const overlayRef = useRef(null);
   const canvasRef = useRef(null);
   const fieldRef = useRef(field);
   const ambientFieldRef = useRef(ambientField);
   const showRef = useRef(show);
+  const speedMultiplierRef = useRef(speedMultiplier);
   const rafRef = useRef(0);
   const particlesRef = useRef([]);
 
   useEffect(() => { showRef.current = show; }, [show]);
   useEffect(() => { fieldRef.current = field; }, [field]);
   useEffect(() => { ambientFieldRef.current = ambientField; }, [ambientField]);
+  useEffect(() => { speedMultiplierRef.current = speedMultiplier; }, [speedMultiplier]);
 
   useEffect(() => {
     if (!map || !window.google) return;
@@ -108,8 +110,8 @@ export default function WindParticleLayer({ show = true, field = null, ambientFi
           // reach (e.g. far outside wherever the user has actually panned).
           const w = ll ? (sampleField(field, ll.lat(), ll.lng()) ?? sampleField(ambient, ll.lat(), ll.lng())) : null;
           if (!w) { p.x = Math.random() * c.width; p.y = Math.random() * c.height; p.age = 0; continue; }
-          const nx = p.x + w.u * VELOCITY_SCALE;
-          const ny = p.y - w.v * VELOCITY_SCALE; // screen y is down; +v is north
+          const nx = p.x + w.u * VELOCITY_SCALE * speedMultiplierRef.current;
+          const ny = p.y - w.v * VELOCITY_SCALE * speedMultiplierRef.current; // screen y is down; +v is north
           const spd = Math.hypot(w.u, w.v);
           ctx.beginPath();
           ctx.moveTo(p.x, p.y);
