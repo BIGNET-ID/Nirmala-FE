@@ -173,7 +173,7 @@ export function SkySegmentContent({
       <VendorCard
         title="OpenWeather"
         accent="var(--nirmala-cyan)"
-        info="Rainfall layer from the OpenWeather global weather data provider."
+        info="Cloud cover layer from the OpenWeather global weather data provider."
       >
         <Box sx={{ display: 'flex', gap: 0.5 }}>
           {OWM_LAYERS.map((o) => {

@@ -33,7 +33,7 @@ const COVER_MAX_ALPHA = 90;   // subtle — network base, never competes with ra
 // --rain-1..6 in globals.css and ColorRampLegend's tick labels. Approved
 // exception to "no rainbow" in AGENTS.md design guardrails — this follows
 // a recognized weather-platform convention and is always shown with a
-// qualitative tick legend (Rendah/Sedang/Tinggi/Ekstrem), not decoration.
+// numeric mm/h tick legend (0 / 2.5 / 7.6 / 50+ mm/h), not decoration.
 const RAIN_RAMP = [
   [0.00, [59, 130, 246]], [0.20, [34, 211, 238]], [0.40, [34, 197, 94]],
   [0.60, [234, 179, 8]], [0.80, [249, 115, 22]], [1.00, [220, 38, 38]],
@@ -130,8 +130,14 @@ function drawRainField(ctx, fieldCanvas, field, projection, offsetX, offsetY) {
   paintRainFieldCanvas(fieldCanvas, field);
 
   const { bounds: B, nx, ny } = field;
+  // google.maps.LatLng normalizes lng into [-180, 180) — an east edge of
+  // exactly 180 silently wraps to -180 (equal to the west edge), collapsing
+  // destW to 0 and making the whole draw disappear via the guard below.
+  // Clamp just under 180 so a world-spanning field (e.g. the ambient grid,
+  // AMBIENT_BOUNDS in route.js) still projects to a real width.
+  const eastLng = B.east >= 180 ? 179.999 : B.east;
   const nw = projection.fromLatLngToDivPixel(new window.google.maps.LatLng(B.north, B.west));
-  const se = projection.fromLatLngToDivPixel(new window.google.maps.LatLng(B.south, B.east));
+  const se = projection.fromLatLngToDivPixel(new window.google.maps.LatLng(B.south, eastLng));
   const destX = nw.x - offsetX, destY = nw.y - offsetY;
   const destW = se.x - nw.x, destH = se.y - nw.y;
   if (destW <= 0 || destH <= 0) return;
@@ -143,38 +149,43 @@ function renderHeatmap(canvas, shadow, coolLayer, rainFieldCanvas, stations, pro
   if (W <= 0 || H <= 0) return;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, W, H);
-  if (!showCoverage || !map) return;
+  if (!map) return;
 
-  const zoom = map.getZoom();
-  const lat = map.getCenter()?.lat() ?? 0;
-  const mpp = metersPerPixel(lat, zoom);
-  const coverR = Math.max(COVER_MIN, Math.min(COVER_MAX, (COVER_KM * 1000) / mpp));
+  // 1) coverage base (teal, subtle) — sensor-derived, gated by the
+  // "Sensor Coverage" toggle. Drawn first, underneath.
+  if (showCoverage) {
+    const zoom = map.getZoom();
+    const lat = map.getCenter()?.lat() ?? 0;
+    const mpp = metersPerPixel(lat, zoom);
+    const coverR = Math.max(COVER_MIN, Math.min(COVER_MAX, (COVER_KM * 1000) / mpp));
 
-  // Any operationally-live sensor (active or currently raining — i.e. not
-  // blacklisted/inactive/unavailable) counts toward coverage now that rain
-  // is no longer sensor-derived — a raining sensor is still part of the
-  // live network, so it's no longer excluded from this base layer the way
-  // the old wet/dry split required.
-  const dry = [];
-  for (const st of stations) {
-    const isLive = !st.blacklisted && st.status !== 'blacklisted' && !st.inactive && !st.unavailable;
-    if (!isLive) continue;
-    const p = projection.fromLatLngToDivPixel(new window.google.maps.LatLng(st.lat, st.lng));
-    const x = p.x - canvas._offsetX, y = p.y - canvas._offsetY;
-    if (x < -coverR || x > W + coverR || y < -coverR || y > H + coverR) continue;
-    dry.push([x, y]);
+    // Any operationally-live sensor (active or currently raining — i.e. not
+    // blacklisted/inactive/unavailable) counts toward coverage now that rain
+    // is no longer sensor-derived — a raining sensor is still part of the
+    // live network, so it's no longer excluded from this base layer the way
+    // the old wet/dry split required.
+    const dry = [];
+    for (const st of stations) {
+      const isLive = !st.blacklisted && st.status !== 'blacklisted' && !st.inactive && !st.unavailable;
+      if (!isLive) continue;
+      const p = projection.fromLatLngToDivPixel(new window.google.maps.LatLng(st.lat, st.lng));
+      const x = p.x - canvas._offsetX, y = p.y - canvas._offsetY;
+      if (x < -coverR || x > W + coverR || y < -coverR || y > H + coverR) continue;
+      dry.push([x, y]);
+    }
+
+    if (dry.length) {
+      shadow.width = W; shadow.height = H;
+      const sctx = shadow.getContext('2d');
+      drawKernels(sctx, W, H, dry, coverR);
+      colourizeInto(coolLayer, shadow, W, H, COVER_LUT, COVER_MAX_ALPHA);
+      ctx.drawImage(coolLayer, 0, 0);
+    }
   }
 
-  shadow.width = W; shadow.height = H;
-  const sctx = shadow.getContext('2d');
-
-  // 1) coverage base (teal, subtle) — drawn first, underneath.
-  if (dry.length) {
-    drawKernels(sctx, W, H, dry, coverR);
-    colourizeInto(coolLayer, shadow, W, H, COVER_LUT, COVER_MAX_ALPHA);
-    ctx.drawImage(coolLayer, 0, 0);
-  }
-  // 2) rain intensity (real OpenWeather mm/h) — composited on top.
+  // 2) rain intensity (real OpenWeather mm/h) — always drawn, independent
+  // of the sensor-based coverage toggle; drawRainField's own null-field
+  // guard handles "no data yet" gracefully.
   drawRainField(ctx, rainFieldCanvas, rainField || rainAmbientField, projection, canvas._offsetX, canvas._offsetY);
 }
 
