@@ -142,7 +142,6 @@ function SegmentGroup({ title, hideTitle, children }) {
 
 const OWM_LAYERS = [
   { id: null, label: 'Off' },
-  { id: 'precipitation_new', label: 'Rain' },
   { id: 'clouds_new', label: 'Clouds' },
 ];
 
