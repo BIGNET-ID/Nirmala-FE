@@ -233,6 +233,8 @@ export function SkySegmentContent({
                 onChange={(_, v) => onWindSpeedMultiplierChange(v)}
                 sx={{ color: 'var(--nirmala-cyan)' }}
                 aria-label="Particle speed multiplier"
+                valueLabelDisplay="auto"
+                valueLabelFormat={(v) => `${v.toFixed(1)}×`}
               />
             </Box>
           </>
