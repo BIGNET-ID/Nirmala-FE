@@ -5,11 +5,22 @@ export const UNAVAILABLE_AFTER_MS = 2 * 60 * 60 * 1000;
 export const INACTIVE_AFTER_MS = 24 * 60 * 60 * 1000;
 
 /**
- * Live sensors report only BINARY is_raining — there is no numeric intensity or
- * temperature nationwide. So the only honest national layer is rain DENSITY
- * (concentration of raining sensors), not "mm/jam". Temperature is removed
- * (no data source anywhere).
+ * Live sensors report only BINARY is_raining — there is no numeric intensity
+ * from them. Rain Density's actual intensity now comes from OpenWeather's
+ * grid-sampled mm/h data instead (see src/app/api/wind/route.js's `rain`
+ * field and src/components/map/CanvasOverlay.jsx's drawRainField) — sensors
+ * still drive the separate "coverage" (active network) base layer only.
+ * Temperature is removed (no data source anywhere).
  */
+
+// Standard meteorological hourly-intensity classes (WMO-style): light,
+// moderate, heavy, violent — mm of rain per hour. Shared by the legend tick
+// labels below and by src/lib/rainRamp.js's mmToT(), so the class
+// boundaries always land exactly on the legend's tick marks (ColorRampLegend
+// draws tickLabels at even 0/33/66/100% positions regardless of the
+// underlying values).
+export const RAIN_MM_BREAKPOINTS = [0, 2.5, 7.6, 50];
+
 export const METRICS = {
   rain: {
     key: 'rain',
@@ -17,11 +28,10 @@ export const METRICS = {
     icon: 'material-symbols:rainy-rounded',
     // Full meteorological precipitation spectrum (Windy/BMKG-style) — an
     // approved exception to "no rainbow" in AGENTS.md, always paired with
-    // qualitative tickLabels below rather than fabricated mm/h numbers
-    // (Nirmala has no spatial mm/h intensity data, only binary is_raining).
+    // a numeric tick legend below.
     colorRamp: 'linear-gradient(to right, #3b82f6, #22d3ee, #22c55e, #eab308, #f97316, #dc2626)',
-    tickLabels: ['Low', 'Moderate', 'High', 'Extreme'],
-    legendNote: 'Density of sensors reporting rain — a relative category, not a per-point mm/hour measurement.',
+    tickLabels: ['0', '2.5', '7.6', '50+ mm/h'],
+    legendNote: 'Rainfall intensity from OpenWeather, interpolated across a coarse grid — not a per-sensor reading.',
   },
   mesh: {
     key: 'mesh',
