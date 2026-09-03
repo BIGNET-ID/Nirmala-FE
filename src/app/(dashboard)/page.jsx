@@ -33,6 +33,7 @@ import { MAP_CENTER, MAP_ZOOM_DEFAULT, MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@/cons
 import { PROVINCES } from '@/constants/provinces';
 import { filterStationsInBounds, summarizeStations } from '@/lib/provinceFilter';
 import { statusBucket } from '@/lib/sensorColor';
+import { averageSpeed } from '@/lib/windStats';
 
 // OpenWeather's precipitation tiles are pale, semi-transparent PNGs — the
 // same fixed alpha reads much dimmer against the near-black dark basemap
@@ -70,6 +71,16 @@ export default function NirmalaDashboard() {
   const [showMarkers, setShowMarkers] = useState(false);
   const [showCoverage, setShowCoverage] = useState(true);
   const [showWind, setShowWind] = useState(false);
+  // Visual-only override on top of the real-data-driven particle speed —
+  // see WindParticleLayer's speedMultiplier prop. 1 = today's exact
+  // behavior (VELOCITY_SCALE unscaled).
+  const [windSpeedMultiplier, setWindSpeedMultiplier] = useState(1);
+  // Resets to 1x whenever Wind turns off, so re-enabling it always starts
+  // from the default speed rather than wherever the slider was left.
+  const handleToggleWind = (checked) => {
+    setShowWind(checked);
+    if (!checked) setWindSpeedMultiplier(1);
+  };
   const [owmLayer, setOwmLayer] = useState(null); // OpenWeather tile layer id or null
   // Which sensor-status rows (from Statistik Sensor) are hidden from the map
   // dots. Stats counts themselves stay unfiltered — this only trims what
@@ -204,6 +215,14 @@ export default function NirmalaDashboard() {
 
   const { field: windField, ambientField: windAmbientField, status: windFieldStatus } = useWindField(mapBounds);
 
+  // Dense field preferred, ambient as fallback — same precedence
+  // WindParticleLayer already uses when sampling per-particle velocity.
+  const avgWindSpeedKmh = useMemo(() => {
+    const source = windField?.speed?.length ? windField : windAmbientField;
+    const avg = averageSpeed(source);
+    return avg == null ? null : avg * 3.6; // m/s -> km/h
+  }, [windField, windAmbientField]);
+
   // Ticks every 60s so Unavailable(2h)/Inactive(24h) status keeps advancing
   // purely from the clock, even between sensor stream updates.
   const now = useNow();
@@ -235,7 +254,7 @@ export default function NirmalaDashboard() {
   const skyFilterActive = activeLayer === 'himawari' && showWind;
   const handleSkyFilterToggle = (checked) => {
     handleHimawariToggle(checked);
-    setShowWind(checked);
+    handleToggleWind(checked);
     if (!checked) setOwmLayer(null);
   };
   const groundFilterActive = showCoverage && showMarkers;
@@ -344,7 +363,7 @@ export default function NirmalaDashboard() {
                   onBasetimeResolved={setHimawariResolvedBasetime}
                 />
               )}
-              <WindParticleLayer show={showWind} field={windField} ambientField={windAmbientField} />
+              <WindParticleLayer show={showWind} field={windField} ambientField={windAmbientField} speedMultiplier={windSpeedMultiplier} />
               <SensorDotLayer
                 stations={visibleStations}
                 // Mesh Map is about inspecting gaps/coverage between
@@ -377,7 +396,8 @@ export default function NirmalaDashboard() {
               const segmentProps = {
                 activeLayer, onLayerChange: handleLayerChange, onToggleHimawari: handleHimawariToggle,
                 showMarkers, onToggleMarkers: setShowMarkers, showCoverage, onToggleCoverage: setShowCoverage,
-                showWind, onToggleWind: setShowWind, windStatus: windFieldStatus,
+                showWind, onToggleWind: handleToggleWind, windStatus: windFieldStatus,
+                avgWindSpeedKmh, windSpeedMultiplier, onWindSpeedMultiplierChange: setWindSpeedMultiplier,
                 owmLayer, onOwmChange: setOwmLayer, permissions,
               };
               const legendProps = { activeLayer, showCoverage, meshDistanceRange };
