@@ -274,8 +274,13 @@ Expected: FAIL — `src/lib/rainRamp.js` does not exist yet.
 
 - [ ] **Step 3: Add `RAIN_MM_BREAKPOINTS` and implement `mmToT`**
 
-In `src/constants/metrics.js`, replace the top doc comment and `METRICS.rain`
-block (current lines 1-19) with:
+`src/constants/metrics.js` currently starts with two staleness constants
+(`UNAVAILABLE_AFTER_MS`, `INACTIVE_AFTER_MS`, current lines 1-5) — these
+belong to unrelated sensor-status logic and are out of scope; leave them
+untouched. Replace only the doc comment and `METRICS.rain` block that
+follows (current lines 7-25 — starts at the `/**` right after those
+constants, ends at the `rain: { ... }` block's closing `},` just before the
+`mesh:` entry) with:
 
 ```js
 /**
@@ -386,7 +391,7 @@ git commit -m "feat: real mm/h rain intensity legend backed by mmToT()"
 - [ ] **Step 1: Replace the top doc comment and remove now-dead rain-kernel constants**
 
 In `src/components/map/CanvasOverlay.jsx`, replace the file's top comment
-block (current lines 7-21) with:
+block (current lines 6-20) with:
 
 ```js
 /**
@@ -409,7 +414,7 @@ block (current lines 7-21) with:
  */
 ```
 
-Replace the old rain-kernel tuning constants (current lines 23-29):
+Replace the old rain-kernel tuning constants (current lines 22-28):
 
 ```js
 const RAIN_KM = 35;
@@ -435,16 +440,15 @@ const COVER_MAX_ALPHA = 90;   // subtle — network base, never competes with ra
 
 - [ ] **Step 2: Add the `mmToT` import and `drawRainField()`**
 
-Add the import alongside the existing ones (current lines 3-5):
+Add the import alongside the existing ones (current lines 3-4):
 
 ```js
 import { useEffect, useRef } from 'react';
 import { useMap } from '@vis.gl/react-google-maps';
-import { statusBucket } from '@/lib/sensorColor';
 import { mmToT } from '@/lib/rainRamp';
 ```
 
-After `colourizeInto` (current lines 82-98) and before `renderHeatmap`, add:
+After `colourizeInto` (current lines 81-97) and before `renderHeatmap`, add:
 
 ```js
 /**
@@ -490,7 +494,7 @@ function drawRainField(ctx, fieldCanvas, field, projection, offsetX, offsetY) {
 
 - [ ] **Step 3: Rewrite `renderHeatmap` and the component to use it**
 
-Replace `renderHeatmap` (current lines 100-140) with:
+Replace `renderHeatmap` (current lines 99-139) with:
 
 ```js
 function renderHeatmap(canvas, shadow, coolLayer, rainFieldCanvas, stations, projection, map, showCoverage, rainField, rainAmbientField) {
@@ -505,10 +509,15 @@ function renderHeatmap(canvas, shadow, coolLayer, rainFieldCanvas, stations, pro
   const mpp = metersPerPixel(lat, zoom);
   const coverR = Math.max(COVER_MIN, Math.min(COVER_MAX, (COVER_KM * 1000) / mpp));
 
+  // Any operationally-live sensor (active or currently raining — i.e. not
+  // blacklisted/inactive/unavailable) counts toward coverage now that rain
+  // is no longer sensor-derived — a raining sensor is still part of the
+  // live network, so it's no longer excluded from this base layer the way
+  // the old wet/dry split required.
   const dry = [];
   for (const st of stations) {
-    const bucket = statusBucket(st);
-    if (bucket !== 'active' && bucket !== 'raining') continue; // any operationally-live sensor
+    const isLive = !st.blacklisted && st.status !== 'blacklisted' && !st.inactive && !st.unavailable;
+    if (!isLive) continue;
     const p = projection.fromLatLngToDivPixel(new window.google.maps.LatLng(st.lat, st.lng));
     const x = p.x - canvas._offsetX, y = p.y - canvas._offsetY;
     if (x < -coverR || x > W + coverR || y < -coverR || y > H + coverR) continue;
@@ -529,7 +538,11 @@ function renderHeatmap(canvas, shadow, coolLayer, rainFieldCanvas, stations, pro
 }
 ```
 
-Replace the component (current lines 142-216) with:
+(`RAIN_KM`/`RAIN_MIN`/`RAIN_MAX` were already removed from the constants in
+Step 1, so `rainR`/`pad` — which only fed the old wet-kernel radius/cull
+margin — are gone too; `coverR` alone now bounds the coverage cull.)
+
+Replace the component (current lines 141-215) with:
 
 ```jsx
 export default function CanvasHeatmapOverlay({ stations, showCoverage = true, rainField = null, rainAmbientField = null }) {
