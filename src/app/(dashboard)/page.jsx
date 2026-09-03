@@ -75,6 +75,12 @@ export default function NirmalaDashboard() {
   // see WindParticleLayer's speedMultiplier prop. 1 = today's exact
   // behavior (VELOCITY_SCALE unscaled).
   const [windSpeedMultiplier, setWindSpeedMultiplier] = useState(1);
+  // Resets to 1x whenever Wind turns off, so re-enabling it always starts
+  // from the default speed rather than wherever the slider was left.
+  const handleToggleWind = (checked) => {
+    setShowWind(checked);
+    if (!checked) setWindSpeedMultiplier(1);
+  };
   const [owmLayer, setOwmLayer] = useState(null); // OpenWeather tile layer id or null
   // Which sensor-status rows (from Statistik Sensor) are hidden from the map
   // dots. Stats counts themselves stay unfiltered — this only trims what
@@ -248,7 +254,7 @@ export default function NirmalaDashboard() {
   const skyFilterActive = activeLayer === 'himawari' && showWind;
   const handleSkyFilterToggle = (checked) => {
     handleHimawariToggle(checked);
-    setShowWind(checked);
+    handleToggleWind(checked);
     if (!checked) setOwmLayer(null);
   };
   const groundFilterActive = showCoverage && showMarkers;
@@ -390,7 +396,7 @@ export default function NirmalaDashboard() {
               const segmentProps = {
                 activeLayer, onLayerChange: handleLayerChange, onToggleHimawari: handleHimawariToggle,
                 showMarkers, onToggleMarkers: setShowMarkers, showCoverage, onToggleCoverage: setShowCoverage,
-                showWind, onToggleWind: setShowWind, windStatus: windFieldStatus,
+                showWind, onToggleWind: handleToggleWind, windStatus: windFieldStatus,
                 avgWindSpeedKmh, windSpeedMultiplier, onWindSpeedMultiplierChange: setWindSpeedMultiplier,
                 owmLayer, onOwmChange: setOwmLayer, permissions,
               };
