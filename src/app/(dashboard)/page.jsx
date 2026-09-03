@@ -349,7 +349,12 @@ export default function NirmalaDashboard() {
                 opacity={OWM_OPACITY[mode][activeLayer === 'himawari' ? 'himawari' : 'normal']}
               />
               {(activeLayer === 'rain' || activeLayer === 'himawari') && (
-                <CanvasHeatmapOverlay stations={SENSOR_STATIONS} showCoverage={showCoverage} />
+                <CanvasHeatmapOverlay
+                  stations={SENSOR_STATIONS}
+                  showCoverage={showCoverage}
+                  rainField={windField}
+                  rainAmbientField={windAmbientField}
+                />
               )}
               {activeLayer === 'mesh' && (
                 <MeshLayer stations={SENSOR_STATIONS} onDistanceRangeChange={setMeshDistanceRange} />
