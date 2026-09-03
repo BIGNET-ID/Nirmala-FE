@@ -97,47 +97,29 @@ still built from `stations` exactly as today.
 
 **Rain** is rebuilt from a scalar field instead of point kernels:
 
-1. A bilinear sampler for a scalar grid (mirrors `WindParticleLayer.jsx`'s
-   `sampleField`, which does the same interpolation for the vector `u`/`v`
-   grid):
+1. A small offscreen "field canvas" sized to the grid's *own* resolution
+   (`nx × ny` — the dense grid is `9×6`, see `GRID_NX`/`GRID_NY` in
+   `route.js`). Each field-canvas pixel `(i, j)` corresponds one-to-one to
+   grid cell `field.rain[j*nx+i]` — no interpolation needed to *build* this
+   tiny raster, since its pixel grid already *is* the field's native grid.
+   Map each cell's mm value through `mmToT` (see Legend section) into
+   `RAIN_LUT`, and set that pixel's RGBA — alpha scaled by `t` (0 mm → fully
+   transparent, so dry areas show the basemap/coverage layer underneath, not
+   a flat color). Field row `j=0` is the *south* edge (per `route.js`'s
+   `sampleGrid`), so it's written to the *bottom* canvas row (`ny-1-j`) to
+   keep north-at-top orientation.
 
-   ```js
-   function sampleScalarField(field, lat, lng) {
-     if (!field) return null;
-     const { bounds: B, nx, ny, rain } = field;
-     const gx = ((lng - B.west) / (B.east - B.west)) * (nx - 1);
-     const gy = ((lat - B.south) / (B.north - B.south)) * (ny - 1);
-     if (gx < 0 || gx > nx - 1 || gy < 0 || gy > ny - 1) return null;
-     const i0 = Math.floor(gx), j0 = Math.floor(gy);
-     const i1 = Math.min(nx - 1, i0 + 1), j1 = Math.min(ny - 1, j0 + 1);
-     const fx = gx - i0, fy = gy - j0;
-     const at = (i, j) => j * nx + i;
-     const lerp = (a, b, f) => a + (b - a) * f;
-     const top = lerp(rain[at(i0, j0)], rain[at(i1, j0)], fx);
-     const bot = lerp(rain[at(i0, j1)], rain[at(i1, j1)], fx);
-     return lerp(top, bot, fy);
-   }
-   ```
+2. Draw that small field canvas onto the main overlay canvas via
+   `ctx.drawImage(fieldCanvas, 0, 0, nx, ny, destX, destY, destW, destH)`,
+   where the destination rect comes from projecting the field's own
+   `bounds` (NW/SE corners) through the map's projection — the same
+   lat/lng-to-div-pixel conversion the existing kernel code already uses for
+   station points. `drawImage`'s native bilinear upscaling (the canvas 2D
+   default; no extra code needed) smooths between grid cells for the "area"
+   look — avoids per-screen-pixel work entirely (bounded by `nx*ny` ≈ 54
+   cell writes + one `drawImage` call, not `W*H` ≈ 900,000 canvas pixels).
 
-2. A small offscreen "field canvas" sized to the grid resolution (`nx × ny`
-   from whichever field is used — the dense grid is `9×6`, see
-   `GRID_NX`/`GRID_NY` in `route.js`). For each cell, convert its pixel
-   position back to lat/lng via the *map's* projection (not the field's own
-   bounds — the field canvas is drawn over the same screen region as the
-   main overlay canvas, so it must line up with the current viewport, same
-   as how the existing kernel code already maps station lat/lng → div
-   pixels), sample `sampleScalarField`, map the mm value through `mmToT`
-   (see Legend section) into `RAIN_LUT`, and set that pixel's RGBA — alpha
-   scaled by `t` (0 mm → fully transparent, so dry areas show the basemap /
-   coverage layer underneath, not a flat color).
-
-3. Draw that small field canvas onto the main overlay canvas scaled up to
-   the full viewport size, with `ctx.imageSmoothingEnabled = true` (default)
-   so the browser's own bilinear upscale gives the smooth "area" look —
-   avoids per-screen-pixel work (bounded by `nx*ny` ≈ 54 cells instead of
-   `W*H` ≈ 900,000 canvas pixels).
-
-4. Field selection: prefer the dense `rainField` whenever it's non-null
+3. Field selection: prefer the dense `rainField` whenever it's non-null
    (`CanvasOverlay` already receives it pre-fetched at whatever viewport the
    map is idled at); fall back to `rainAmbientField` only when the dense one
    is `null` (matches the `skipped`/too-wide-viewport case in `route.js`).
