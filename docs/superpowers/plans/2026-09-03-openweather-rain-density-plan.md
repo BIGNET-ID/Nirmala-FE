@@ -687,9 +687,14 @@ git commit -m "feat: render Rain Density from real OpenWeather mm/h grid data"
 
 **Interfaces:**
 - Consumes: nothing from Tasks 1-3.
-- Produces: n/a (UI-only change, no other file references
-  `precipitation_new` — confirmed by grep during design; `OpenWeatherLayer`'s
-  `layer` prop still accepts any OpenWeather layer id string, unchanged).
+- Produces: n/a (UI-only change). `precipitation_new` also appears in
+  `src/app/api/owm/[...tile]/route.js`'s `LAYERS` allowlist and
+  `OpenWeatherLayer.jsx`'s docblock — leave both untouched. `LAYERS` is a
+  generic tile-type allowlist (also lists `clouds_new`/`wind_new`/
+  `temp_new`/`pressure_new`, most already unused in the UI too) and
+  `OpenWeatherLayer`'s `layer` prop still genuinely accepts any OpenWeather
+  layer id — this task only removes the one UI button, not the underlying
+  capability.
 
 - [ ] **Step 1: Remove the entry**
 
@@ -713,11 +718,14 @@ const OWM_LAYERS = [
 ];
 ```
 
-- [ ] **Step 2: Verify no other reference to `precipitation_new` remains**
+- [ ] **Step 2: Verify no other reference in the UI layer**
 
 Run: `grep -rn "precipitation_new" src`
-Expected: no output (the only reference was the `OWM_LAYERS` entry just
-removed).
+Expected output: two hits — `src/app/api/owm/[...tile]/route.js`'s `LAYERS`
+allowlist and `OpenWeatherLayer.jsx`'s docblock comment. Both are
+intentionally untouched (see Interfaces above) — this step is just to
+confirm no OTHER file (e.g. any leftover reference in `page.jsx` or
+`SegmentTogglePanel.jsx` itself) still mentions it.
 
 - [ ] **Step 3: Manual check**
 
