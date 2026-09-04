@@ -142,6 +142,7 @@ function SegmentGroup({ title, hideTitle, children }) {
 
 const OWM_LAYERS = [
   { id: null, label: 'Off' },
+  { id: 'rain', label: 'Rain' },
   { id: 'clouds_new', label: 'Clouds' },
 ];
 
@@ -173,7 +174,7 @@ export function SkySegmentContent({
       <VendorCard
         title="OpenWeather"
         accent="var(--nirmala-cyan)"
-        info="Cloud cover layer from the OpenWeather global weather data provider."
+        info="Rain and cloud cover layers from the OpenWeather global weather data provider."
       >
         <Box sx={{ display: 'flex', gap: 0.5 }}>
           {OWM_LAYERS.map((o) => {

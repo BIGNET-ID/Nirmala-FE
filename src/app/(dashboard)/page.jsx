@@ -8,6 +8,7 @@ import CanvasHeatmapOverlay from '@/components/map/CanvasOverlay';
 import SensorDotLayer from '@/components/map/SensorDotLayer';
 import MeshLayer from '@/components/map/MeshLayer';
 import OpenWeatherLayer from '@/components/map/OpenWeatherLayer';
+import OpenWeatherRainLayer from '@/components/map/OpenWeatherRainLayer';
 import WindParticleLayer from '@/components/map/WindParticleLayer';
 import HimawariLayer from '@/components/map/HimawariLayer';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
@@ -345,8 +346,13 @@ export default function NirmalaDashboard() {
                   Himawari is active so the two don't visually fight (see the
                   matching note in SegmentTogglePanel). */}
               <OpenWeatherLayer
-                layer={owmLayer}
+                layer={owmLayer === 'clouds_new' ? 'clouds_new' : null}
                 opacity={OWM_OPACITY[mode][activeLayer === 'himawari' ? 'himawari' : 'normal']}
+              />
+              <OpenWeatherRainLayer
+                show={owmLayer === 'rain'}
+                field={windField}
+                ambientField={windAmbientField}
               />
               {(activeLayer === 'rain' || activeLayer === 'himawari') && (
                 <CanvasHeatmapOverlay stations={SENSOR_STATIONS} showCoverage={showCoverage} />
@@ -400,7 +406,8 @@ export default function NirmalaDashboard() {
                 avgWindSpeedKmh, windSpeedMultiplier, onWindSpeedMultiplierChange: setWindSpeedMultiplier,
                 owmLayer, onOwmChange: setOwmLayer, permissions,
               };
-              const legendProps = { activeLayer, showCoverage, meshDistanceRange };
+              const legendMetricKey = owmLayer === 'rain' ? 'openweatherRain' : activeLayer;
+              const legendProps = { activeLayer: legendMetricKey, showCoverage, meshDistanceRange };
               const statsProps = { stats, hiddenStatuses, onToggleStatus: toggleStatusVisibility };
 
               if (isCompact) {
