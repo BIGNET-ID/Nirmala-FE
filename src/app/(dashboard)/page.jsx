@@ -26,13 +26,13 @@ import { useWindField } from '@/hooks/useWindField';
 import { useJmaHimawariTicks } from '@/hooks/useJmaHimawariTicks';
 import { useAuth } from '@/hooks/useAuth';
 import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
-import { useNow } from '@/hooks/useNow';
 import { useThemeMode } from '@/context/ThemeModeContext';
 import { METRICS } from '@/constants/metrics';
 import { MAP_CENTER, MAP_ZOOM_DEFAULT, MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@/constants/mapConfig';
 import { PROVINCES } from '@/constants/provinces';
 import { filterStationsInBounds, summarizeStations } from '@/lib/provinceFilter';
 import { statusBucket } from '@/lib/sensorColor';
+import { averageSpeed } from '@/lib/windStats';
 
 // OpenWeather's precipitation tiles are pale, semi-transparent PNGs — the
 // same fixed alpha reads much dimmer against the near-black dark basemap
@@ -47,11 +47,11 @@ const OWM_OPACITY = {
 export default function NirmalaDashboard() {
   const { isCompact } = useResponsiveLayout();
   const { mode } = useThemeMode();
-  const { sensors: apiSensors, health, loading, error } = usePlatformData();
+  const { sensors: apiSensors, sensorMeta: initialSensorMeta, health, loading, error } = usePlatformData();
   const { permissions, defaultMap, defaultLayer } = useAuth();
 
   // Initial REST snapshot seeds the SSE hook; live updates flow in via /api/stream/*.
-  const { stations: SENSOR_STATIONS, status: sensorStreamStatus } = useSensorStream(apiSensors);
+  const { stations: SENSOR_STATIONS, status: sensorStreamStatus, meta: sensorMeta } = useSensorStream(apiSensors, initialSensorMeta);
   const [activeLayer, setActiveLayer] = useState('rain');
   // The last-selected ground mode (rain/mesh) — restored when the
   // Himawari switch turns off, so leaving Himawari mode never dead-ends on
@@ -70,6 +70,16 @@ export default function NirmalaDashboard() {
   const [showMarkers, setShowMarkers] = useState(false);
   const [showCoverage, setShowCoverage] = useState(true);
   const [showWind, setShowWind] = useState(false);
+  // Visual-only override on top of the real-data-driven particle speed —
+  // see WindParticleLayer's speedMultiplier prop. 1 = today's exact
+  // behavior (VELOCITY_SCALE unscaled).
+  const [windSpeedMultiplier, setWindSpeedMultiplier] = useState(1);
+  // Resets to 1x whenever Wind turns off, so re-enabling it always starts
+  // from the default speed rather than wherever the slider was left.
+  const handleToggleWind = (checked) => {
+    setShowWind(checked);
+    if (!checked) setWindSpeedMultiplier(1);
+  };
   const [owmLayer, setOwmLayer] = useState(null); // OpenWeather tile layer id or null
   // Which sensor-status rows (from Statistik Sensor) are hidden from the map
   // dots. Stats counts themselves stay unfiltered — this only trims what
@@ -204,27 +214,37 @@ export default function NirmalaDashboard() {
 
   const { field: windField, ambientField: windAmbientField, status: windFieldStatus } = useWindField(mapBounds);
 
-  // Ticks every 60s so Unavailable(2h)/Inactive(24h) status keeps advancing
-  // purely from the clock, even between sensor stream updates.
-  const now = useNow();
+  // Dense field preferred, ambient as fallback — same precedence
+  // WindParticleLayer already uses when sampling per-particle velocity.
+  const avgWindSpeedKmh = useMemo(() => {
+    const source = windField?.speed?.length ? windField : windAmbientField;
+    const avg = averageSpeed(source);
+    return avg == null ? null : avg * 3.6; // m/s -> km/h
+  }, [windField, windAmbientField]);
 
-  // Derived from statusBucket() so these counts stay mutually exclusive and
-  // in lockstep with the map dot colors and the hide/show filter below —
-  // no separate ad-hoc predicates to drift out of sync.
+  // active/raining/unavailable/inactive come straight from the backend's own
+  // `categories` tally (see /api/stream/sensors) — it already classifies
+  // staleness/availability server-side, so the frontend no longer re-derives
+  // it from timestamps. Blacklist has no backend count (it's a per-sensor
+  // flag, not one of the backend's categories), so that one still comes from
+  // statusBucket() over the current sensor list.
   const stats = useMemo(() => {
-    const counts = { total: SENSOR_STATIONS.length, active: 0, raining: 0, unavailable: 0, inactive: 0, blacklist: 0 };
-    for (const s of SENSOR_STATIONS) {
-      const bucket = statusBucket(s, now);
-      if (bucket === 'blacklisted') counts.blacklist += 1;
-      else counts[bucket] += 1;
-    }
-    return counts;
-  }, [SENSOR_STATIONS, now]);
+    const categories = sensorMeta?.categories ?? {};
+    const blacklist = SENSOR_STATIONS.filter((s) => statusBucket(s) === 'blacklisted').length;
+    return {
+      total: SENSOR_STATIONS.length,
+      active: categories.active ?? 0,
+      raining: categories.raining ?? 0,
+      unavailable: categories.unavailable ?? 0,
+      inactive: categories.inactive ?? 0,
+      blacklist,
+    };
+  }, [SENSOR_STATIONS, sensorMeta]);
 
   // Stats above always reflect the true totals; only the dots drawn on the
   // map are trimmed by hiddenStatuses (see toggleStatusVisibility above).
   const visibleStations = hiddenStatuses.size
-    ? SENSOR_STATIONS.filter((s) => !hiddenStatuses.has(statusBucket(s, now)))
+    ? SENSOR_STATIONS.filter((s) => !hiddenStatuses.has(statusBucket(s)))
     : SENSOR_STATIONS;
 
   // Master reset toggles next to the Space/Ground Segment panel titles —
@@ -235,7 +255,7 @@ export default function NirmalaDashboard() {
   const skyFilterActive = activeLayer === 'himawari' && showWind;
   const handleSkyFilterToggle = (checked) => {
     handleHimawariToggle(checked);
-    setShowWind(checked);
+    handleToggleWind(checked);
     if (!checked) setOwmLayer(null);
   };
   const groundFilterActive = showCoverage && showMarkers;
@@ -292,8 +312,8 @@ export default function NirmalaDashboard() {
     if (!selectedProvinceCode) return null;
     const province = PROVINCES.find((p) => p.code === selectedProvinceCode);
     if (!province) return null;
-    return summarizeStations(filterStationsInBounds(SENSOR_STATIONS, province.bounds), now);
-  }, [selectedProvinceCode, SENSOR_STATIONS, now]);
+    return summarizeStations(filterStationsInBounds(SENSOR_STATIONS, province.bounds));
+  }, [selectedProvinceCode, SENSOR_STATIONS]);
 
   return (
       <Box sx={{ display: 'flex', flexDirection: 'column', width: '100vw', height: '100vh', bgcolor: 'var(--nirmala-map-bg)', overflow: 'hidden' }}>
@@ -344,7 +364,7 @@ export default function NirmalaDashboard() {
                   onBasetimeResolved={setHimawariResolvedBasetime}
                 />
               )}
-              <WindParticleLayer show={showWind} field={windField} ambientField={windAmbientField} />
+              <WindParticleLayer show={showWind} field={windField} ambientField={windAmbientField} speedMultiplier={windSpeedMultiplier} />
               <SensorDotLayer
                 stations={visibleStations}
                 // Mesh Map is about inspecting gaps/coverage between
@@ -377,7 +397,8 @@ export default function NirmalaDashboard() {
               const segmentProps = {
                 activeLayer, onLayerChange: handleLayerChange, onToggleHimawari: handleHimawariToggle,
                 showMarkers, onToggleMarkers: setShowMarkers, showCoverage, onToggleCoverage: setShowCoverage,
-                showWind, onToggleWind: setShowWind, windStatus: windFieldStatus,
+                showWind, onToggleWind: handleToggleWind, windStatus: windFieldStatus,
+                avgWindSpeedKmh, windSpeedMultiplier, onWindSpeedMultiplierChange: setWindSpeedMultiplier,
                 owmLayer, onOwmChange: setOwmLayer, permissions,
               };
               const legendProps = { activeLayer, showCoverage, meshDistanceRange };

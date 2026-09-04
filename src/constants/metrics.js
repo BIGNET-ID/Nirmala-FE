@@ -1,15 +1,10 @@
-// Sensor staleness thresholds, measured against lastUpdate/scrapedAt.
-// Unavailable = unreachable for 2h; Inactive = no data at all for 24h
-// (a superset of Unavailable — see statusBucket() in src/lib/sensorColor.js).
-export const UNAVAILABLE_AFTER_MS = 2 * 60 * 60 * 1000;
-export const INACTIVE_AFTER_MS = 24 * 60 * 60 * 1000;
-
 /**
  * Live sensors report only BINARY is_raining — there is no numeric intensity or
  * temperature nationwide. So the only honest national layer is rain DENSITY
  * (concentration of raining sensors), not "mm/jam". Temperature is removed
  * (no data source anywhere).
  */
+
 export const METRICS = {
   rain: {
     key: 'rain',

@@ -8,18 +8,21 @@ import SparklineOverviewDialog from '@/components/dashboard/SparklineOverviewDia
 import SeriesStatsRow from '@/components/dashboard/SeriesStatsRow';
 import { nirmalaApiService, normalizeTimeseries } from '@/lib/nirmalaApi';
 import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
-import { statusBucket, SENSOR_STATUS_COLOR } from '@/lib/sensorColor';
+import { statusBucket, statusColor } from '@/lib/sensorColor';
 
-const STATUS_META = {
-  blacklisted: { label: 'Blacklist', color: SENSOR_STATUS_COLOR.blacklisted },
-  inactive: { label: 'Inactive', color: SENSOR_STATUS_COLOR.inactive },
-  unavailable: { label: 'Unavailable', color: SENSOR_STATUS_COLOR.unavailable },
-  raining: { label: 'Raining', color: SENSOR_STATUS_COLOR.raining },
-  active: { label: 'Active', color: SENSOR_STATUS_COLOR.active },
+const STATUS_LABEL = {
+  blacklisted: 'Blacklist',
+  inactive: 'Inactive',
+  unavailable: 'Unavailable',
+  raining: 'Raining',
+  active: 'Active',
 };
 
-function statusMeta(st, now) {
-  return STATUS_META[statusBucket(st, now)];
+// color comes from statusColor(), not a static lookup, so the chip picks up
+// its dark-mode-only override (see SENSOR_STATUS_COLOR_DARK in sensorColor.js)
+// instead of always rendering the light-tuned color.
+function statusMeta(st) {
+  return { label: STATUS_LABEL[statusBucket(st)], color: statusColor(st) };
 }
 
 const eyebrowSx = {

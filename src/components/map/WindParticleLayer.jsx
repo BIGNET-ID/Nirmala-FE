@@ -19,9 +19,22 @@ const prefersReducedMotion = () =>
   typeof window !== 'undefined' &&
   window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-// speed (m/s) → trail colour
-function speedColor(spd, a) {
+const isDarkTheme = () =>
+  typeof document !== 'undefined' && document.documentElement.dataset.theme === 'dark';
+
+// speed (m/s) → trail colour. Dark mode's pale blue-to-white ramp reads
+// clearly against the near-black map bg, but the same pale colours vanish
+// against light mode's near-white bg — so light mode instead runs a solid,
+// darker ramp anchored to the brand's --nirmala-cyan (#0d47a1), getting
+// deeper (not lighter) as speed increases to stay legible.
+function speedColor(spd, a, dark) {
   const t = Math.min(1, spd / 14);
+  if (!dark) {
+    const r = Math.round(13 - t * 5);
+    const g = Math.round(71 - t * 40);
+    const b = Math.round(161 - t * 40);
+    return `rgba(${r},${g},${b},${a})`;
+  }
   const r = Math.round(130 + t * 125);
   const g = Math.round(190 + t * 65);
   const b = 255;
@@ -46,19 +59,21 @@ function sampleField(field, lat, lng) {
   return { u: lerp(uTop, uBot, fy), v: lerp(vTop, vBot, fy) };
 }
 
-export default function WindParticleLayer({ show = true, field = null, ambientField = null }) {
+export default function WindParticleLayer({ show = true, field = null, ambientField = null, speedMultiplier = 1 }) {
   const map = useMap();
   const overlayRef = useRef(null);
   const canvasRef = useRef(null);
   const fieldRef = useRef(field);
   const ambientFieldRef = useRef(ambientField);
   const showRef = useRef(show);
+  const speedMultiplierRef = useRef(speedMultiplier);
   const rafRef = useRef(0);
   const particlesRef = useRef([]);
 
   useEffect(() => { showRef.current = show; }, [show]);
   useEffect(() => { fieldRef.current = field; }, [field]);
   useEffect(() => { ambientFieldRef.current = ambientField; }, [ambientField]);
+  useEffect(() => { speedMultiplierRef.current = speedMultiplier; }, [speedMultiplier]);
 
   useEffect(() => {
     if (!map || !window.google) return;
@@ -100,6 +115,7 @@ export default function WindParticleLayer({ show = true, field = null, ambientFi
       ctx.globalCompositeOperation = 'source-over';
 
       if ((field || ambient) && showRef.current) {
+        const dark = isDarkTheme();
         const parts = particlesRef.current;
         for (const p of parts) {
           const ll = latlngAt(p.x, p.y);
@@ -108,13 +124,13 @@ export default function WindParticleLayer({ show = true, field = null, ambientFi
           // reach (e.g. far outside wherever the user has actually panned).
           const w = ll ? (sampleField(field, ll.lat(), ll.lng()) ?? sampleField(ambient, ll.lat(), ll.lng())) : null;
           if (!w) { p.x = Math.random() * c.width; p.y = Math.random() * c.height; p.age = 0; continue; }
-          const nx = p.x + w.u * VELOCITY_SCALE;
-          const ny = p.y - w.v * VELOCITY_SCALE; // screen y is down; +v is north
+          const nx = p.x + w.u * VELOCITY_SCALE * speedMultiplierRef.current;
+          const ny = p.y - w.v * VELOCITY_SCALE * speedMultiplierRef.current; // screen y is down; +v is north
           const spd = Math.hypot(w.u, w.v);
           ctx.beginPath();
           ctx.moveTo(p.x, p.y);
           ctx.lineTo(nx, ny);
-          ctx.strokeStyle = speedColor(spd, 0.85);
+          ctx.strokeStyle = speedColor(spd, 0.85, dark);
           ctx.lineWidth = 1.2;
           ctx.stroke();
           p.x = nx; p.y = ny; p.age += 1;

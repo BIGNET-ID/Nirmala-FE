@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useMap } from '@vis.gl/react-google-maps';
+import { statusBucket } from '@/lib/sensorColor';
 
 /**
  * Rain-density heatmap with a coverage base, both gated by `showCoverage`
@@ -112,13 +113,13 @@ function renderHeatmap(canvas, shadow, coolLayer, warmLayer, stations, projectio
 
   const wet = [], dry = [];
   for (const st of stations) {
-    const isActive = !st.blacklisted && !st.inactive && !st.unavailable && st.status === 'active';
-    if (!st.isRaining && !isActive) continue;
+    const bucket = statusBucket(st);
+    if (bucket !== 'raining' && bucket !== 'active') continue;
     const p = projection.fromLatLngToDivPixel(new window.google.maps.LatLng(st.lat, st.lng));
     const x = p.x - canvas._offsetX, y = p.y - canvas._offsetY;
     if (x < -pad || x > W + pad || y < -pad || y > H + pad) continue;
-    if (st.isRaining) wet.push([x, y]);
-    else if (isActive) dry.push([x, y]);
+    if (bucket === 'raining') wet.push([x, y]);
+    else dry.push([x, y]);
   }
 
   shadow.width = W; shadow.height = H;
