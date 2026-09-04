@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from 'react';
 import { useMap } from '@vis.gl/react-google-maps';
-import { mmToT } from '@/lib/rainRamp';
 
 /**
  * Rain-density heatmap with a coverage base, both gated by `showCoverage`
@@ -10,30 +9,29 @@ import { mmToT } from '@/lib/rainRamp';
  * layer; "Titik Sensor" (SensorDotLayer) is a fully independent dot layer
  * with no heatmap involvement.
  *
- * Two layers, each one hue = one meaning:
- *  - COVERAGE (subtle teal): every operationally-active sensor (active or
- *    raining — i.e. not blacklisted/inactive/unavailable) emits a faint
- *    kernel → shows the live sensor network regardless of rain.
- *  - RAIN (dominant, cool→hot): real OpenWeather mm/h precipitation,
- *    grid-sampled (see src/app/api/wind/route.js's `rain` field), painted
- *    as a tiny raster sized to the grid's own resolution and smoothly
- *    upscaled via ctx.drawImage — not sensor-derived, see drawRainField.
+ * The live feed is BINARY (is_raining) — no numeric intensity to interpolate.
+ * Two honest density layers, each one hue = one meaning:
+ *  - COVERAGE (subtle teal): every ACTIVE, non-raining sensor emits a faint
+ *    kernel → shows the live sensor network even when it isn't raining.
+ *  - RAIN (dominant, cool→hot): every RAINING sensor emits a stronger kernel;
+ *    overlaps accumulate → isolated rain = modest, clustered rain = hot core.
  * Coverage is drawn first, rain composited on top so rain always reads clearly.
- * Coverage technique = heatmap.js: greyscale alpha kernels → colourize via a
- * 1×256 LUT. Rain technique = direct per-grid-cell colorize, no kernels.
+ * Technique = heatmap.js: greyscale alpha kernels → colourize via a 1×256 LUT.
  */
 
+const RAIN_KM = 35;
+const RAIN_MIN = 14, RAIN_MAX = 90;
 const COVER_KM = 22;
 const COVER_MIN = 8, COVER_MAX = 42;
 const POINT_ALPHA = 0.5;
-const RAIN_MAX_ALPHA = 220;   // rain fill's max opacity (0-255 scale)
+const RAIN_MAX_ALPHA = 220;
 const COVER_MAX_ALPHA = 90;   // subtle — network base, never competes with rain
 
 // Full meteorological precipitation spectrum (Windy/BMKG-style), matching
 // --rain-1..6 in globals.css and ColorRampLegend's tick labels. Approved
 // exception to "no rainbow" in AGENTS.md design guardrails — this follows
 // a recognized weather-platform convention and is always shown with a
-// numeric mm/h tick legend (0 / 2.5 / 7.6 / 50+ mm/h), not decoration.
+// qualitative tick legend (Rendah/Sedang/Tinggi/Ekstrem), not decoration.
 const RAIN_RAMP = [
   [0.00, [59, 130, 246]], [0.20, [34, 211, 238]], [0.40, [34, 197, 94]],
   [0.60, [234, 179, 8]], [0.80, [249, 115, 22]], [1.00, [220, 38, 38]],
@@ -98,114 +96,61 @@ function colourizeInto(layer, shadow, W, H, lut, maxAlpha) {
   layer.getContext('2d').putImageData(img, 0, 0);
 }
 
-/**
- * Paints `field.rain` (mm/h, one value per grid cell) into `fieldCanvas` at
- * the field's own native resolution — no manual interpolation needed, since
- * ctx.drawImage's own bilinear upscaling smooths between cells when this
- * tiny canvas gets stretched onto the main overlay canvas below. Field row
- * j=0 is the SOUTH edge (see route.js's sampleGrid), so it's written to the
- * BOTTOM canvas row (ny-1-j) to keep north-at-top orientation.
- */
-function paintRainFieldCanvas(fieldCanvas, field) {
-  const { nx, ny, rain } = field;
-  fieldCanvas.width = nx;
-  fieldCanvas.height = ny;
-  const fctx = fieldCanvas.getContext('2d');
-  for (let j = 0; j < ny; j++) {
-    for (let i = 0; i < nx; i++) {
-      const t = mmToT(rain[j * nx + i]);
-      const idx = Math.round(t * 255);
-      const r = RAIN_LUT[idx * 3], g = RAIN_LUT[idx * 3 + 1], b = RAIN_LUT[idx * 3 + 2];
-      const alpha = t * (RAIN_MAX_ALPHA / 255);
-      fctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
-      fctx.fillRect(i, ny - 1 - j, 1, 1);
-    }
-  }
-}
-
-/** Draws whichever rain field is available (dense preferred, ambient
- * fallback) onto the main canvas, scaled to its own geographic bounds. */
-function drawRainField(ctx, fieldCanvas, field, projection, offsetX, offsetY) {
-  if (!field || !field.nx || !field.ny || !field.rain?.length) return;
-  paintRainFieldCanvas(fieldCanvas, field);
-
-  const { bounds: B, nx, ny } = field;
-  // google.maps.LatLng normalizes lng into [-180, 180) — an east edge of
-  // exactly 180 silently wraps to -180 (equal to the west edge), collapsing
-  // destW to 0 and making the whole draw disappear via the guard below.
-  // Clamp just under 180 so a world-spanning field (e.g. the ambient grid,
-  // AMBIENT_BOUNDS in route.js) still projects to a real width.
-  const eastLng = B.east >= 180 ? 179.999 : B.east;
-  const nw = projection.fromLatLngToDivPixel(new window.google.maps.LatLng(B.north, B.west));
-  const se = projection.fromLatLngToDivPixel(new window.google.maps.LatLng(B.south, eastLng));
-  const destX = nw.x - offsetX, destY = nw.y - offsetY;
-  const destW = se.x - nw.x, destH = se.y - nw.y;
-  if (destW <= 0 || destH <= 0) return;
-  ctx.drawImage(fieldCanvas, 0, 0, nx, ny, destX, destY, destW, destH);
-}
-
-function renderHeatmap(canvas, shadow, coolLayer, rainFieldCanvas, stations, projection, map, showCoverage, rainField, rainAmbientField) {
+function renderHeatmap(canvas, shadow, coolLayer, warmLayer, stations, projection, map, showCoverage) {
   const W = canvas.width, H = canvas.height;
   if (W <= 0 || H <= 0) return;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, W, H);
-  if (!map) return;
+  if (!showCoverage || !stations.length || !map) return;
 
-  // 1) coverage base (teal, subtle) — sensor-derived, gated by the
-  // "Sensor Coverage" toggle. Drawn first, underneath.
-  if (showCoverage) {
-    const zoom = map.getZoom();
-    const lat = map.getCenter()?.lat() ?? 0;
-    const mpp = metersPerPixel(lat, zoom);
-    const coverR = Math.max(COVER_MIN, Math.min(COVER_MAX, (COVER_KM * 1000) / mpp));
+  const zoom = map.getZoom();
+  const lat = map.getCenter()?.lat() ?? 0;
+  const mpp = metersPerPixel(lat, zoom);
+  const rainR = Math.max(RAIN_MIN, Math.min(RAIN_MAX, (RAIN_KM * 1000) / mpp));
+  const coverR = Math.max(COVER_MIN, Math.min(COVER_MAX, (COVER_KM * 1000) / mpp));
+  const pad = Math.max(rainR, coverR);
 
-    // Any operationally-live sensor (active or currently raining — i.e. not
-    // blacklisted/inactive/unavailable) counts toward coverage now that rain
-    // is no longer sensor-derived — a raining sensor is still part of the
-    // live network, so it's no longer excluded from this base layer the way
-    // the old wet/dry split required.
-    const dry = [];
-    for (const st of stations) {
-      const isLive = !st.blacklisted && st.status !== 'blacklisted' && !st.inactive && !st.unavailable;
-      if (!isLive) continue;
-      const p = projection.fromLatLngToDivPixel(new window.google.maps.LatLng(st.lat, st.lng));
-      const x = p.x - canvas._offsetX, y = p.y - canvas._offsetY;
-      if (x < -coverR || x > W + coverR || y < -coverR || y > H + coverR) continue;
-      dry.push([x, y]);
-    }
-
-    if (dry.length) {
-      shadow.width = W; shadow.height = H;
-      const sctx = shadow.getContext('2d');
-      drawKernels(sctx, W, H, dry, coverR);
-      colourizeInto(coolLayer, shadow, W, H, COVER_LUT, COVER_MAX_ALPHA);
-      ctx.drawImage(coolLayer, 0, 0);
-    }
+  const wet = [], dry = [];
+  for (const st of stations) {
+    const isActive = !st.blacklisted && !st.inactive && !st.unavailable && st.status === 'active';
+    if (!st.isRaining && !isActive) continue;
+    const p = projection.fromLatLngToDivPixel(new window.google.maps.LatLng(st.lat, st.lng));
+    const x = p.x - canvas._offsetX, y = p.y - canvas._offsetY;
+    if (x < -pad || x > W + pad || y < -pad || y > H + pad) continue;
+    if (st.isRaining) wet.push([x, y]);
+    else if (isActive) dry.push([x, y]);
   }
 
-  // 2) rain intensity (real OpenWeather mm/h) — always drawn, independent
-  // of the sensor-based coverage toggle; drawRainField's own null-field
-  // guard handles "no data yet" gracefully.
-  drawRainField(ctx, rainFieldCanvas, rainField || rainAmbientField, projection, canvas._offsetX, canvas._offsetY);
+  shadow.width = W; shadow.height = H;
+  const sctx = shadow.getContext('2d');
+
+  // 1) coverage base (teal, subtle) — drawn first, underneath.
+  if (dry.length) {
+    drawKernels(sctx, W, H, dry, coverR);
+    colourizeInto(coolLayer, shadow, W, H, COVER_LUT, COVER_MAX_ALPHA);
+    ctx.drawImage(coolLayer, 0, 0);
+  }
+  // 2) rain density (cool→hot, dominant) — composited on top.
+  if (wet.length) {
+    drawKernels(sctx, W, H, wet, rainR);
+    colourizeInto(warmLayer, shadow, W, H, RAIN_LUT, RAIN_MAX_ALPHA);
+    ctx.drawImage(warmLayer, 0, 0);
+  }
 }
 
-export default function CanvasHeatmapOverlay({ stations, showCoverage = true, rainField = null, rainAmbientField = null }) {
+export default function CanvasHeatmapOverlay({ stations, showCoverage = true }) {
   const map = useMap();
   const overlayRef = useRef(null);
   const canvasRef = useRef(null);
   const shadowRef = useRef(null);
   const coolRef = useRef(null);
-  const rainFieldCanvasRef = useRef(null);
+  const warmRef = useRef(null);
   const stationsRef = useRef(stations);
   const coverageRef = useRef(showCoverage);
-  const rainFieldRef = useRef(rainField);
-  const rainAmbientFieldRef = useRef(rainAmbientField);
   const rafRef = useRef(0);
 
   useEffect(() => { stationsRef.current = stations; }, [stations]);
   useEffect(() => { coverageRef.current = showCoverage; }, [showCoverage]);
-  useEffect(() => { rainFieldRef.current = rainField; }, [rainField]);
-  useEffect(() => { rainAmbientFieldRef.current = rainAmbientField; }, [rainAmbientField]);
 
   useEffect(() => {
     if (!map || !window.google) return;
@@ -218,7 +163,7 @@ export default function CanvasHeatmapOverlay({ stations, showCoverage = true, ra
     canvasRef.current = canvas;
     shadowRef.current = document.createElement('canvas');
     coolRef.current = document.createElement('canvas');
-    rainFieldCanvasRef.current = document.createElement('canvas');
+    warmRef.current = document.createElement('canvas');
 
     const scheduleDraw = (fn) => {
       if (rafRef.current) return;
@@ -245,9 +190,8 @@ export default function CanvasHeatmapOverlay({ stations, showCoverage = true, ra
         canvas._offsetX = left;
         canvas._offsetY = top;
         scheduleDraw(() =>
-          renderHeatmap(canvas, shadowRef.current, coolRef.current, rainFieldCanvasRef.current,
-            stationsRef.current, projection, map, coverageRef.current,
-            rainFieldRef.current, rainAmbientFieldRef.current)
+          renderHeatmap(canvas, shadowRef.current, coolRef.current, warmRef.current,
+            stationsRef.current, projection, map, coverageRef.current)
         );
       }
 
@@ -265,7 +209,7 @@ export default function CanvasHeatmapOverlay({ stations, showCoverage = true, ra
     };
   }, [map]);
 
-  useEffect(() => { overlayRef.current?.draw(); }, [stations, showCoverage, rainField, rainAmbientField]);
+  useEffect(() => { overlayRef.current?.draw(); }, [stations, showCoverage]);
 
   return null;
 }
