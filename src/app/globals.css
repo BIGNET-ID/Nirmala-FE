@@ -182,6 +182,13 @@
   --nirmala-cyan: #5b8def;                 /* muted brand blue, replaces neon cyan */
   --nirmala-cyan-dim: rgba(91, 141, 239, 0.16);
   --nirmala-focus-glow: 0 0 0 3px rgba(91, 141, 239, 0.20);
+
+  /* --status-inactive's light value (#4b5563) all but disappears against
+     this theme's near-black map bg — reuse --dm-300, the existing
+     dark-mode muted-gray token, for enough contrast. Must stay in sync
+     with SENSOR_STATUS_COLOR_DARK in src/lib/sensorColor.js (canvas
+     fillStyle can't resolve CSS vars, see comment there). */
+  --status-inactive: var(--dm-300);
 }
 
 /* ── Global Reset & Base ── */

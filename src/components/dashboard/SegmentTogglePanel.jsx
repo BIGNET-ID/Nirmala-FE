@@ -142,7 +142,7 @@ function SegmentGroup({ title, hideTitle, children }) {
 
 const OWM_LAYERS = [
   { id: null, label: 'Off' },
-  { id: 'rain', label: 'Rain' },
+  { id: 'precipitation_new', label: 'Rain' },
   { id: 'clouds_new', label: 'Clouds' },
 ];
 
@@ -205,7 +205,7 @@ export function SkySegmentContent({
             is the only way the user learns why the overlay looks fainter,
             since color alone can't communicate it (OpenWeather's tile
             colors are fixed server-side, not something we can restyle). */}
-        {himawariActive && owmLayer === 'clouds_new' && (
+        {himawariActive && owmLayer && (
           <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.62rem', lineHeight: 1.4 }}>
             Opacity automatically reduced while Himawari is active
           </Typography>

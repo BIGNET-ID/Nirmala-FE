@@ -8,7 +8,6 @@ import CanvasHeatmapOverlay from '@/components/map/CanvasOverlay';
 import SensorDotLayer from '@/components/map/SensorDotLayer';
 import MeshLayer from '@/components/map/MeshLayer';
 import OpenWeatherLayer from '@/components/map/OpenWeatherLayer';
-import OpenWeatherRainLayer from '@/components/map/OpenWeatherRainLayer';
 import WindParticleLayer from '@/components/map/WindParticleLayer';
 import HimawariLayer from '@/components/map/HimawariLayer';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
@@ -27,7 +26,6 @@ import { useWindField } from '@/hooks/useWindField';
 import { useJmaHimawariTicks } from '@/hooks/useJmaHimawariTicks';
 import { useAuth } from '@/hooks/useAuth';
 import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
-import { useNow } from '@/hooks/useNow';
 import { useThemeMode } from '@/context/ThemeModeContext';
 import { METRICS } from '@/constants/metrics';
 import { MAP_CENTER, MAP_ZOOM_DEFAULT, MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@/constants/mapConfig';
@@ -49,11 +47,11 @@ const OWM_OPACITY = {
 export default function NirmalaDashboard() {
   const { isCompact } = useResponsiveLayout();
   const { mode } = useThemeMode();
-  const { sensors: apiSensors, health, loading, error } = usePlatformData();
+  const { sensors: apiSensors, sensorMeta: initialSensorMeta, health, loading, error } = usePlatformData();
   const { permissions, defaultMap, defaultLayer } = useAuth();
 
   // Initial REST snapshot seeds the SSE hook; live updates flow in via /api/stream/*.
-  const { stations: SENSOR_STATIONS, status: sensorStreamStatus } = useSensorStream(apiSensors);
+  const { stations: SENSOR_STATIONS, status: sensorStreamStatus, meta: sensorMeta } = useSensorStream(apiSensors, initialSensorMeta);
   const [activeLayer, setActiveLayer] = useState('rain');
   // The last-selected ground mode (rain/mesh) — restored when the
   // Himawari switch turns off, so leaving Himawari mode never dead-ends on
@@ -224,27 +222,29 @@ export default function NirmalaDashboard() {
     return avg == null ? null : avg * 3.6; // m/s -> km/h
   }, [windField, windAmbientField]);
 
-  // Ticks every 60s so Unavailable(2h)/Inactive(24h) status keeps advancing
-  // purely from the clock, even between sensor stream updates.
-  const now = useNow();
-
-  // Derived from statusBucket() so these counts stay mutually exclusive and
-  // in lockstep with the map dot colors and the hide/show filter below —
-  // no separate ad-hoc predicates to drift out of sync.
+  // active/raining/unavailable/inactive come straight from the backend's own
+  // `categories` tally (see /api/stream/sensors) — it already classifies
+  // staleness/availability server-side, so the frontend no longer re-derives
+  // it from timestamps. Blacklist has no backend count (it's a per-sensor
+  // flag, not one of the backend's categories), so that one still comes from
+  // statusBucket() over the current sensor list.
   const stats = useMemo(() => {
-    const counts = { total: SENSOR_STATIONS.length, active: 0, raining: 0, unavailable: 0, inactive: 0, blacklist: 0 };
-    for (const s of SENSOR_STATIONS) {
-      const bucket = statusBucket(s, now);
-      if (bucket === 'blacklisted') counts.blacklist += 1;
-      else counts[bucket] += 1;
-    }
-    return counts;
-  }, [SENSOR_STATIONS, now]);
+    const categories = sensorMeta?.categories ?? {};
+    const blacklist = SENSOR_STATIONS.filter((s) => statusBucket(s) === 'blacklisted').length;
+    return {
+      total: SENSOR_STATIONS.length,
+      active: categories.active ?? 0,
+      raining: categories.raining ?? 0,
+      unavailable: categories.unavailable ?? 0,
+      inactive: categories.inactive ?? 0,
+      blacklist,
+    };
+  }, [SENSOR_STATIONS, sensorMeta]);
 
   // Stats above always reflect the true totals; only the dots drawn on the
   // map are trimmed by hiddenStatuses (see toggleStatusVisibility above).
   const visibleStations = hiddenStatuses.size
-    ? SENSOR_STATIONS.filter((s) => !hiddenStatuses.has(statusBucket(s, now)))
+    ? SENSOR_STATIONS.filter((s) => !hiddenStatuses.has(statusBucket(s)))
     : SENSOR_STATIONS;
 
   // Master reset toggles next to the Space/Ground Segment panel titles —
@@ -312,8 +312,8 @@ export default function NirmalaDashboard() {
     if (!selectedProvinceCode) return null;
     const province = PROVINCES.find((p) => p.code === selectedProvinceCode);
     if (!province) return null;
-    return summarizeStations(filterStationsInBounds(SENSOR_STATIONS, province.bounds), now);
-  }, [selectedProvinceCode, SENSOR_STATIONS, now]);
+    return summarizeStations(filterStationsInBounds(SENSOR_STATIONS, province.bounds));
+  }, [selectedProvinceCode, SENSOR_STATIONS]);
 
   return (
       <Box sx={{ display: 'flex', flexDirection: 'column', width: '100vw', height: '100vh', bgcolor: 'var(--nirmala-map-bg)', overflow: 'hidden' }}>
@@ -346,13 +346,8 @@ export default function NirmalaDashboard() {
                   Himawari is active so the two don't visually fight (see the
                   matching note in SegmentTogglePanel). */}
               <OpenWeatherLayer
-                layer={owmLayer === 'clouds_new' ? 'clouds_new' : null}
+                layer={owmLayer}
                 opacity={OWM_OPACITY[mode][activeLayer === 'himawari' ? 'himawari' : 'normal']}
-              />
-              <OpenWeatherRainLayer
-                show={owmLayer === 'rain'}
-                field={windField}
-                ambientField={windAmbientField}
               />
               {(activeLayer === 'rain' || activeLayer === 'himawari') && (
                 <CanvasHeatmapOverlay stations={SENSOR_STATIONS} showCoverage={showCoverage} />
@@ -406,8 +401,7 @@ export default function NirmalaDashboard() {
                 avgWindSpeedKmh, windSpeedMultiplier, onWindSpeedMultiplierChange: setWindSpeedMultiplier,
                 owmLayer, onOwmChange: setOwmLayer, permissions,
               };
-              const legendMetricKey = owmLayer === 'rain' ? 'openweatherRain' : activeLayer;
-              const legendProps = { activeLayer: legendMetricKey, showCoverage, meshDistanceRange };
+              const legendProps = { activeLayer, showCoverage, meshDistanceRange };
               const statsProps = { stats, hiddenStatuses, onToggleStatus: toggleStatusVisibility };
 
               if (isCompact) {

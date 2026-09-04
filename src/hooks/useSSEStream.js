@@ -38,14 +38,20 @@ export function useSSEStream(path, initialData, options = {}) {
     mergeStrategy = 'replace',
     getKey = (item) => item?.id,
     normalizeItem = (raw) => raw,
+    // Only used for 'replace' streams that carry aggregate metadata alongside
+    // the item array (e.g. /api/stream/sensors' `categories`/`alert`) — every
+    // other channel omits it and `meta` just stays at `initialMeta`.
+    normalizeMeta = null,
+    initialMeta = null,
     maxItems = 500,
   } = options;
 
   const [data, setData] = useState(initialData);
+  const [meta, setMeta] = useState(initialMeta);
   const [status, setStatus] = useState('connecting'); // 'connecting' | 'live' | 'reconnecting'
 
-  const optsRef = useRef({ mergeStrategy, getKey, normalizeItem, maxItems });
-  optsRef.current = { mergeStrategy, getKey, normalizeItem, maxItems };
+  const optsRef = useRef({ mergeStrategy, getKey, normalizeItem, normalizeMeta, maxItems });
+  optsRef.current = { mergeStrategy, getKey, normalizeItem, normalizeMeta, maxItems };
 
   // `initialData` typically starts as [] and resolves asynchronously (the REST
   // snapshot fetch in usePlatformData finishes after this hook has already
@@ -58,8 +64,14 @@ export function useSSEStream(path, initialData, options = {}) {
   }, [initialData]);
 
   useEffect(() => {
+    if (liveDataArrivedRef.current) return;
+    setMeta(initialMeta);
+  }, [initialMeta]);
+
+  useEffect(() => {
     let closed = false;
     let bufferRef = { current: optsRef.current.mergeStrategy === 'upsert' ? {} : optsRef.current.mergeStrategy === 'append' ? [] : null };
+    let metaBufferRef = { current: null };
 
     const handleMessage = (event) => {
       let payload;
@@ -69,10 +81,11 @@ export function useSSEStream(path, initialData, options = {}) {
         console.warn(`[useSSEStream] Failed to parse payload from ${path}:`, err.message);
         return;
       }
-      const { mergeStrategy: strategy, getKey: keyFn, normalizeItem: normFn } = optsRef.current;
+      const { mergeStrategy: strategy, getKey: keyFn, normalizeItem: normFn, normalizeMeta: metaFn } = optsRef.current;
       if (strategy === 'replace') {
         const items = normFn(payload);
         if (items) bufferRef.current = items;
+        if (metaFn) metaBufferRef.current = metaFn(payload);
         return;
       }
       const item = normFn(payload);
@@ -104,6 +117,10 @@ export function useSSEStream(path, initialData, options = {}) {
             liveDataArrivedRef.current = true;
             setData(bufferRef.current);
             bufferRef.current = null;
+          }
+          if (metaBufferRef.current) {
+            setMeta(metaBufferRef.current);
+            metaBufferRef.current = null;
           }
         } else if (strategy === 'upsert') {
           const updates = bufferRef.current;
@@ -143,5 +160,5 @@ export function useSSEStream(path, initialData, options = {}) {
     };
   }, [path]);
 
-  return { data, status };
+  return { data, status, meta };
 }

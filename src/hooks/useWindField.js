@@ -12,14 +12,6 @@ const RETRY_MS = 30 * 1000;
  * to, instead of silently staying blank forever on a failed/missing key
  * (see src/app/api/wind/route.js).
  *
- * The same fetch also carries a `rain` (mm/h) array per grid point — added
- * for the independent OpenWeather Rain overlay (see
- * OpenWeatherRainLayer.jsx's drawRainField), which reads
- * `field.rain`/`ambientField.rain` from the objects this hook returns. This
- * is NOT related to the sensor-based "Rain Density" ground layer
- * (CanvasOverlay.jsx), which stays qualitative and untouched by this data.
- * No separate fetch or hook exists for the rain data; it rides along with wind.
- *
  * `bounds` (optional, `{north,south,east,west}`) — the map's current
  * viewport. When present, the dense field is refetched whenever it changes
  * (the caller is expected to debounce this, e.g. on the map's `idle`

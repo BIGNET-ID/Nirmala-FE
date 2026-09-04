@@ -10,10 +10,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { nirmalaApiService, normalizeSensors, getDefaultMap } from '@/lib/nirmalaApi';
+import { nirmalaApiService, normalizeSensors, extractSensorMeta, getDefaultMap } from '@/lib/nirmalaApi';
 
 export function usePlatformData() {
   const [sensors, setSensors] = useState([]);
+  const [sensorMeta, setSensorMeta] = useState(null);
   const [manifest, setManifest] = useState(null);
   const [defaultMap, setDefaultMap] = useState(null);
   const [health, setHealth] = useState(null);
@@ -47,6 +48,7 @@ export function usePlatformData() {
         const response = await nirmalaApiService.getSensors();
         const normalized = normalizeSensors(response);
         setSensors(normalized);
+        setSensorMeta(extractSensorMeta(response));
         setError(null);
         setApiStatus('connected');
       } catch (err) {
@@ -98,6 +100,7 @@ export function usePlatformData() {
 
   return {
     sensors,
+    sensorMeta,
     manifest,
     defaultMap,
     health,

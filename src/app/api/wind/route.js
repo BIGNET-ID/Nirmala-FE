@@ -76,18 +76,6 @@ function cacheKey(b) {
   return `${b.north},${b.south},${b.east},${b.west}`;
 }
 
-// OpenWeather's Current Weather Data API nests hourly rain volume (mm) under
-// `rain['1h']` when it's raining at that point; `rain['3h']` (3-hour total)
-// is a fallback some responses use instead — divided by 3 for an
-// approximate hourly rate. No `rain` key at all means "not raining there".
-export function extractRainMm(json) {
-  const r = json?.rain;
-  if (!r) return 0;
-  if (typeof r['1h'] === 'number') return r['1h'];
-  if (typeof r['3h'] === 'number') return r['3h'] / 3;
-  return 0;
-}
-
 async function sampleGrid(bounds, nx, ny) {
   const pts = [];
   for (let j = 0; j < ny; j++) {
@@ -104,14 +92,14 @@ async function sampleGrid(bounds, nx, ny) {
         `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&units=metric&appid=${KEY}`,
         { cache: 'no-store' },
       );
-      if (!r.ok) return { u: 0, v: 0, speed: 0, rain: 0 };
+      if (!r.ok) return { u: 0, v: 0, speed: 0 };
       const j = await r.json();
       const speed = j?.wind?.speed || 0;
       const deg = j?.wind?.deg || 0;
       const rad = (deg * Math.PI) / 180;
-      return { u: -speed * Math.sin(rad), v: -speed * Math.cos(rad), speed, rain: extractRainMm(j) };
+      return { u: -speed * Math.sin(rad), v: -speed * Math.cos(rad), speed };
     } catch {
-      return { u: 0, v: 0, speed: 0, rain: 0 };
+      return { u: 0, v: 0, speed: 0 };
     }
   }));
 
@@ -122,7 +110,6 @@ async function sampleGrid(bounds, nx, ny) {
     u: cells.map((c) => +c.u.toFixed(3)),
     v: cells.map((c) => +c.v.toFixed(3)),
     speed: cells.map((c) => +c.speed.toFixed(2)),
-    rain: cells.map((c) => +c.rain.toFixed(2)),
   };
 }
 

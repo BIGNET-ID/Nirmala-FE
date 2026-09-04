@@ -17,10 +17,10 @@ export function filterStationsInBounds(stations, bounds) {
 
 // active/raining are mutually-exclusive statusBucket() buckets — a raining
 // sensor counts as raining, not also active (see sensorColor.js).
-export function summarizeStations(stations, now = Date.now()) {
+export function summarizeStations(stations) {
   return {
     total: stations.length,
-    active: stations.filter((s) => statusBucket(s, now) === 'active').length,
-    raining: stations.filter((s) => statusBucket(s, now) === 'raining').length,
+    active: stations.filter((s) => statusBucket(s) === 'active').length,
+    raining: stations.filter((s) => statusBucket(s) === 'raining').length,
   };
 }

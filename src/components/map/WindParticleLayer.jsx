@@ -19,9 +19,22 @@ const prefersReducedMotion = () =>
   typeof window !== 'undefined' &&
   window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-// speed (m/s) → trail colour
-function speedColor(spd, a) {
+const isDarkTheme = () =>
+  typeof document !== 'undefined' && document.documentElement.dataset.theme === 'dark';
+
+// speed (m/s) → trail colour. Dark mode's pale blue-to-white ramp reads
+// clearly against the near-black map bg, but the same pale colours vanish
+// against light mode's near-white bg — so light mode instead runs a solid,
+// darker ramp anchored to the brand's --nirmala-cyan (#0d47a1), getting
+// deeper (not lighter) as speed increases to stay legible.
+function speedColor(spd, a, dark) {
   const t = Math.min(1, spd / 14);
+  if (!dark) {
+    const r = Math.round(13 - t * 5);
+    const g = Math.round(71 - t * 40);
+    const b = Math.round(161 - t * 40);
+    return `rgba(${r},${g},${b},${a})`;
+  }
   const r = Math.round(130 + t * 125);
   const g = Math.round(190 + t * 65);
   const b = 255;
@@ -102,6 +115,7 @@ export default function WindParticleLayer({ show = true, field = null, ambientFi
       ctx.globalCompositeOperation = 'source-over';
 
       if ((field || ambient) && showRef.current) {
+        const dark = isDarkTheme();
         const parts = particlesRef.current;
         for (const p of parts) {
           const ll = latlngAt(p.x, p.y);
@@ -116,7 +130,7 @@ export default function WindParticleLayer({ show = true, field = null, ambientFi
           ctx.beginPath();
           ctx.moveTo(p.x, p.y);
           ctx.lineTo(nx, ny);
-          ctx.strokeStyle = speedColor(spd, 0.85);
+          ctx.strokeStyle = speedColor(spd, 0.85, dark);
           ctx.lineWidth = 1.2;
           ctx.stroke();
           p.x = nx; p.y = ny; p.age += 1;

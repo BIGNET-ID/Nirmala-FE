@@ -98,7 +98,8 @@ export function normalizeSensor(s) {
     name: s.id,
     lat: s.latitude,
     lng: s.longitude,
-    status: s.status,                 // 'active' | 'inactive' | 'blacklisted'
+    status: s.status,                 // 'active' | 'blacklisted' (raw, legacy — see category)
+    category: s.category,             // 'active' | 'raining' | 'unavailable' | 'inactive' — the backend's authoritative classification, see statusBucket()
     isRaining: Boolean(s.is_raining),
     blacklisted: Boolean(s.blacklisted),
     manualBlacklisted: Boolean(s.manual_blacklisted),
@@ -117,6 +118,21 @@ export function normalizeSensor(s) {
 export function normalizeSensors(apiResponse) {
   if (!apiResponse || !apiResponse.sensors) return [];
   return apiResponse.sensors.map(normalizeSensor);
+}
+
+/**
+ * Extract the aggregate sensor category counts + human-readable alert line
+ * the backend now computes itself (active/raining/unavailable/inactive),
+ * so the frontend no longer has to re-tally these from the sensor list —
+ * see the `stats` memo in the dashboard page. `blacklisted` has no count
+ * here (it's a per-sensor flag, not one of the backend's categories), so
+ * that count is still derived client-side via statusBucket().
+ */
+export function extractSensorMeta(apiResponse) {
+  return {
+    categories: apiResponse?.categories ?? null,
+    alert: apiResponse?.alert ?? null,
+  };
 }
 
 /** Extract the default map view from manifest (account.default_map). */
