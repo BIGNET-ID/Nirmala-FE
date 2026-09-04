@@ -17,12 +17,11 @@ export function tempToColor(celsius) {
   return hslToRgba(hue, 0.85, 0.5, 0.55);
 }
 
-// Same 6-stop scale as the app's --rain-1..--rain-6 CSS tokens (already
-// used by the rain-density legend gradient) — reused here for Mesh Map's
-// edge distance instead of a new palette, so "cool = short/low, hot =
-// long/high (coverage gap)" reads consistently across metrics. Sequential
-// blue, with the final stop reserved as a red "alert" tier for the largest
-// gaps — no rainbow/jet colormap (see AGENTS.md design guardrails).
+// Same 6-stop scale as METRICS.mesh.colorRamp (src/constants/metrics.js) —
+// Mesh Map's own gradient, not the Rain Density metric's --rain-1..--rain-6
+// spectrum (a different, unrelated scale). Sequential blue, with the final
+// stop reserved as a red "alert" tier for the largest gaps — no rainbow/jet
+// colormap, no purple (see AGENTS.md design guardrails).
 const DISTANCE_STOPS = [
   [219, 234, 254], // --rain-1 #dbeafe
   [147, 197, 253], // --rain-2 #93c5fd
