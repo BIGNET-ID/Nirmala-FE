@@ -283,7 +283,10 @@ export function GroundSegmentContent({
 
         {canViewSensor && showSensorToggles && (
           <>
-            <LayerSwitch checked={showCoverage} onChange={onToggleCoverage} label="Sensor Coverage" />
+            {/* Sensor Coverage control hidden for now — its density-kernel
+                theory needs revalidation before it's shown to users (see
+                SHOW_COVERAGE_LAYER in CanvasOverlay.jsx). Rain Density
+                (above) is unaffected. */}
             <LayerSwitch checked={showMarkers} onChange={onToggleMarkers} label="Sensor Points" />
           </>
         )}

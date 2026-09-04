@@ -91,7 +91,9 @@ export function ColorRampLegendContent({ activeLayer, showCoverage = false, mesh
         </Typography>
       )}
 
-      {activeLayer === 'rain' && showCoverage && (
+      {/* Coverage swatch hidden along with the Sensor Coverage layer itself
+          — see SHOW_COVERAGE_LAYER in CanvasOverlay.jsx. */}
+      {false && activeLayer === 'rain' && showCoverage && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 1, pt: 1, borderTop: '1px solid var(--nirmala-glass-border)' }}>
           <Box sx={{ width: 12, height: 12, borderRadius: '3px', background: 'linear-gradient(135deg, #14466e, #40b4cd)', flexShrink: 0 }} />
           <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.62rem', lineHeight: 1.3 }}>
