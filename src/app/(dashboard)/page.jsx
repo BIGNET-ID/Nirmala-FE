@@ -10,6 +10,7 @@ import MeshLayer from '@/components/map/MeshLayer';
 import OpenWeatherLayer from '@/components/map/OpenWeatherLayer';
 import WindParticleLayer from '@/components/map/WindParticleLayer';
 import HimawariLayer from '@/components/map/HimawariLayer';
+import BmkgRainLayer from '@/components/map/BmkgRainLayer';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import { SegmentPanel } from '@/components/dashboard/SegmentTogglePanel';
 import ColorRampLegend from '@/components/dashboard/ColorRampLegend';
@@ -24,6 +25,7 @@ import { usePlatformData } from '@/hooks/usePlatformData';
 import { useSensorStream } from '@/hooks/useSensorStream';
 import { useWindField } from '@/hooks/useWindField';
 import { useJmaHimawariTicks } from '@/hooks/useJmaHimawariTicks';
+import { useBmkgWeather } from '@/hooks/useBmkgWeather';
 import { useAuth } from '@/hooks/useAuth';
 import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 import { useThemeMode } from '@/context/ThemeModeContext';
@@ -109,6 +111,7 @@ export default function NirmalaDashboard() {
   const [meshDistanceRange, setMeshDistanceRange] = useState(null);
 
   const himawari = useJmaHimawariTicks(activeLayer === 'himawari');
+  const { kabupaten: bmkgKabupaten, lastSyncedAt: bmkgLastSynced } = useBmkgWeather(activeLayer === 'bmkg');
   const [himawariStatus, setHimawariStatus] = useState('ok'); // 'ok' | 'loading' | 'unavailable' — only 'unavailable' has UI today (see the notice box below); 'loading' is reserved for a future spinner.
   const [himawariZoomInRange, setHimawariZoomInRange] = useState(true); // JMA only serves this product at zoom 3-5 — see HimawariLayer's onZoomRangeChange
   // Which basetime HimawariLayer actually crossfaded onto the map (not just
@@ -154,7 +157,11 @@ export default function NirmalaDashboard() {
     if (!times.length) return null;
     return new Date(Math.max(...times.map((d) => d.getTime())));
   }, [SENSOR_STATIONS]);
-  const activeLayerLastSynced = activeLayer === 'himawari' ? himawariLastSynced : rainvisionLastSynced;
+  const activeLayerLastSynced = activeLayer === 'himawari'
+    ? himawariLastSynced
+    : activeLayer === 'bmkg'
+      ? bmkgLastSynced
+      : rainvisionLastSynced;
 
   // Notification bell content (DashboardHeader) — live status, not a
   // discrete message log, since all three of these continuously re-derive
@@ -356,6 +363,9 @@ export default function NirmalaDashboard() {
               )}
               {activeLayer === 'mesh' && (
                 <MeshLayer stations={SENSOR_STATIONS} onDistanceRangeChange={setMeshDistanceRange} />
+              )}
+              {activeLayer === 'bmkg' && (
+                <BmkgRainLayer kabupaten={bmkgKabupaten} />
               )}
               {activeLayer === 'himawari' && (
                 <HimawariLayer
