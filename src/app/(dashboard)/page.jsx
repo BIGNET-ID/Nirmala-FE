@@ -64,10 +64,12 @@ export default function NirmalaDashboard() {
   const handleHimawariToggle = (checked) => {
     setActiveLayer(checked ? 'himawari' : groundLayer);
   };
-  // Coverage-first default: individual sensor dots are opt-in, so a
-  // first-time non-technical viewer sees one clear aggregate picture on
-  // login rather than dots + coverage competing for attention.
-  const [showMarkers, setShowMarkers] = useState(false);
+  // Sensor-first default: the coverage heatmap is currently hidden (see
+  // HEATMAP_ENABLED in CanvasOverlay.jsx), so individual sensor dots are the
+  // only ground-truth visual on the map — default them on so a user is
+  // greeted with active sensors immediately on login/refresh instead of an
+  // empty map.
+  const [showMarkers, setShowMarkers] = useState(true);
   const [showCoverage, setShowCoverage] = useState(true);
   const [showWind, setShowWind] = useState(false);
   // Visual-only override on top of the real-data-driven particle speed —

@@ -5,10 +5,10 @@ import { useMap } from '@vis.gl/react-google-maps';
 import { statusBucket } from '@/lib/sensorColor';
 
 /**
- * Rain-density heatmap with a coverage base, both gated by `showCoverage`
- * (BIGNET DS v19) — this whole overlay is the "Cakupan Sensor" toggle's
- * layer; "Titik Sensor" (SensorDotLayer) is a fully independent dot layer
- * with no heatmap involvement.
+ * Rain-density heatmap with a coverage base (BIGNET DS v19). "Titik Sensor"
+ * (SensorDotLayer) is a fully independent dot layer with no heatmap
+ * involvement. The whole heatmap (both layers below) is currently hidden —
+ * see HEATMAP_ENABLED below.
  *
  * The live feed is BINARY (is_raining) — no numeric intensity to interpolate.
  * Two honest density layers, each one hue = one meaning:
@@ -19,6 +19,16 @@ import { statusBucket } from '@/lib/sensorColor';
  * Coverage is drawn first, rain composited on top so rain always reads clearly.
  * Technique = heatmap.js: greyscale alpha kernels → colourize via a 1×256 LUT.
  */
+
+// Whole heatmap (coverage teal base AND rain-density blobs) hidden for
+// now — the underlying density-kernel theory hasn't been validated yet
+// ("secara teori masih belum benar"). This is a blanket hide of everything
+// CanvasHeatmapOverlay draws, not just the coverage sub-layer: the two
+// layers read as one visual to users (they share the same blob shapes,
+// coverage is just the low end of the same gradient), so a partial hide
+// still looked like leftover coverage. Flip back on once validated.
+const HEATMAP_ENABLED = false;
+const SHOW_COVERAGE_LAYER = false;
 
 const RAIN_KM = 35;
 const RAIN_MIN = 14, RAIN_MAX = 90;
@@ -102,7 +112,7 @@ function renderHeatmap(canvas, shadow, coolLayer, warmLayer, stations, projectio
   if (W <= 0 || H <= 0) return;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, W, H);
-  if (!showCoverage || !stations.length || !map) return;
+  if (!HEATMAP_ENABLED || !stations.length || !map) return;
 
   const zoom = map.getZoom();
   const lat = map.getCenter()?.lat() ?? 0;
@@ -126,7 +136,7 @@ function renderHeatmap(canvas, shadow, coolLayer, warmLayer, stations, projectio
   const sctx = shadow.getContext('2d');
 
   // 1) coverage base (teal, subtle) — drawn first, underneath.
-  if (dry.length) {
+  if (SHOW_COVERAGE_LAYER && dry.length) {
     drawKernels(sctx, W, H, dry, coverR);
     colourizeInto(coolLayer, shadow, W, H, COVER_LUT, COVER_MAX_ALPHA);
     ctx.drawImage(coolLayer, 0, 0);
