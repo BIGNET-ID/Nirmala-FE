@@ -62,6 +62,7 @@ function renderHeatmap(canvas, shadow, layer, kabupaten, projection, map) {
     if (t <= 0) continue; // no rain here — no kernel, stays transparent
     const p = projection.fromLatLngToDivPixel(new window.google.maps.LatLng(k.lat, k.lon));
     const x = p.x - canvas._offsetX, y = p.y - canvas._offsetY;
+    if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
     if (x < -radius || x > W + radius || y < -radius || y > H + radius) continue;
     pts.push({ x, y, alpha: t });
   }

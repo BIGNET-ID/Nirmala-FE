@@ -10,7 +10,7 @@ import { LAYER_STATUS } from '@/constants/layerStatus';
 /**
  * Sky/Ground Segment vendor panel (PRD §4.2). Groups every layer control by
  * the vendor that provides it — vendors with no backend integration yet
- * (NASA, Sentinel, BMKG, Maxar) render as disabled cards with a "Segera"
+ * (NASA, Sentinel, Maxar) render as disabled cards with a "Segera"
  * badge rather than being hidden, so the full PRD architecture stays
  * visible. See docs/superpowers/specs/2026-08-26-dual-tab-segment-layout-design.md §2
  * for the vendor→layer mapping this panel encodes.
