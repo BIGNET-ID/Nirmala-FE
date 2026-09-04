@@ -273,7 +273,7 @@ export function GroundSegmentContent({
   // `false`. Undefined/null (manifest not loaded yet, or flag absent) keeps
   // it visible — same rule MetricLayerSelector used.
   const canViewSensor = permissions?.can_view_sensor !== false;
-  const showSensorToggles = activeLayer === 'rain' || activeLayer === 'himawari';
+  const showSensorToggles = activeLayer === 'rain' || activeLayer === 'himawari' || activeLayer === 'bmkg';
 
   return (
     <SegmentGroup title="Ground Segment" hideTitle={hideTitle}>
@@ -292,7 +292,15 @@ export function GroundSegmentContent({
         )}
       </VendorCard>
 
-      <VendorCard title="BMKG" accent="var(--status-active, #34d399)" active={false} />
+      <VendorCard title="BMKG" accent="var(--status-active, #34d399)">
+        <ModeButton
+          active={activeLayer === 'bmkg'}
+          icon={METRICS.bmkg.icon}
+          label={METRICS.bmkg.label}
+          onClick={() => onLayerChange('bmkg')}
+          info={METRICS.bmkg.legendNote}
+        />
+      </VendorCard>
       <VendorCard title="Maxar" accent="var(--status-active, #34d399)" active={false} />
     </SegmentGroup>
   );

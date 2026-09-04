@@ -30,7 +30,7 @@ export function ColorRampLegendContent({ activeLayer, showCoverage = false, mesh
         <Typography sx={{ ...eyebrowSx, display: 'block' }}>
           {metric.label}
         </Typography>
-        {activeLayer === 'rain' && metric.legendNote && (
+        {metric.legendNote && (
           <Tooltip title={metric.legendNote}>
             <Icon icon="material-symbols:info-outline-rounded" width={13} style={{ color: 'var(--nirmala-cyan)', flexShrink: 0 }} />
           </Tooltip>
