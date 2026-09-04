@@ -8,7 +8,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-# Project guardrails (v3)
+# Project guardrails (v4)
 
 _v2 — 2026-08-28: added design/anti-AI-sloop guardrails._
 _v3 — 2026-08-28: added exception for meteorological-convention color spectrums (rain indicator)._

@@ -2,8 +2,9 @@ import { RAIN_MM_BREAKPOINTS } from '../constants/metrics.js';
 
 // Maps a real mm/h rain rate onto the RAIN_RAMP's [0,1] position, using
 // RAIN_MM_BREAKPOINTS as piecewise-linear control points — see
-// CanvasOverlay.jsx's drawRainField, which colorizes grid cells through
-// this before looking them up in RAIN_LUT.
+// OpenWeatherRainLayer.jsx's drawRainField, which colorizes grid cells
+// through this before looking them up in its own RAIN_LUT. Not related to
+// the sensor-based "Rain Density" ground layer, which stays qualitative.
 export function mmToT(mm) {
   if (!Number.isFinite(mm) || mm < 0) return 0;
   const stops = RAIN_MM_BREAKPOINTS;
