@@ -443,7 +443,7 @@ function CollapsiblePanel({ icon, title, titleContent, children, resetActive, on
             transition={{ duration: 0.18 }}
             sx={{ width: EXPANDED_WIDTH, display: 'flex', flexDirection: 'column', flex: '1 1 auto', minHeight: 0 }}
           >
-            <Box sx={{ px: 1.75, pb: 1.75, flex: '1 1 auto', minHeight: 0 }}>
+            <Box sx={{ px: 1.75, pb: 1.75, flex: '1 1 auto', minHeight: 0, overflowY: 'auto' }}>
               {children}
             </Box>
           </Box>
