@@ -82,7 +82,7 @@ export default function MapExtrasCluster({
       </Tooltip>
       <Tooltip title={controlsVisible ? 'Hide controls & legend' : 'Show controls & legend'} placement="bottom">
         <IconButton onClick={onToggleControlsVisible} sx={btnSx} aria-label={controlsVisible ? 'Hide controls and legend' : 'Show controls and legend'}>
-          <Icon icon={controlsVisible ? 'material-symbols:layers-rounded' : 'material-symbols:layers-clear-rounded'} width={iconWidth} />
+          <Icon icon={controlsVisible ? 'material-symbols:visibility-rounded' : 'material-symbols:visibility-off-rounded'} width={iconWidth} />
         </IconButton>
       </Tooltip>
     </Box>

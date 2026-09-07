@@ -140,20 +140,6 @@ function SegmentGroup({ title, hideTitle, children }) {
   );
 }
 
-function owmChipSx(active) {
-  return {
-    flex: 1, minWidth: 0, px: 0.5, py: 0.5, fontSize: '0.68rem', fontWeight: 700,
-    borderRadius: 'var(--radius-sm, 4px)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.4,
-    color: active ? 'var(--nirmala-cyan)' : 'text.secondary',
-    border: `1px solid ${active ? 'var(--nirmala-cyan-dim)' : 'transparent'}`,
-    background: active ? 'var(--nirmala-cyan-dim)' : 'rgba(255,255,255,0.03)',
-    transition: 'background var(--duration-fast, 150ms) var(--ease-standard), color var(--duration-fast, 150ms) var(--ease-standard), border-color var(--duration-fast, 150ms) var(--ease-standard)',
-    '&:hover': { background: 'var(--nirmala-cyan-dim)' },
-    '&.Mui-focusVisible': { outline: '2px solid var(--nirmala-cyan)', outlineOffset: '2px' },
-  };
-}
-
 /**
  * Bare Space segment content — every sky-side control, no positioning/chrome.
  * Shared by the desktop floating panel (below) and the mobile bottom sheet
@@ -184,46 +170,28 @@ export function SkySegmentContent({
         accent="var(--nirmala-cyan)"
         info="Rain and cloud cover layers from the OpenWeather global weather data provider."
       >
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
-          <Button
-            onClick={() => onOwmChange(owmLayer === 'precipitation_new' ? null : 'precipitation_new')}
-            disableRipple
-            aria-pressed={owmLayer === 'precipitation_new'}
-            aria-label="Toggle OpenWeather rain overlay"
-            sx={owmChipSx(owmLayer === 'precipitation_new')}
-          >
-            <Icon icon="material-symbols:rainy-rounded" width={14} />
-            Rain
-          </Button>
-          <Button
-            onClick={() => onOwmChange(owmLayer === 'clouds_new' ? null : 'clouds_new')}
-            disableRipple
-            aria-pressed={owmLayer === 'clouds_new'}
-            aria-label="Toggle OpenWeather cloud overlay"
-            sx={owmChipSx(owmLayer === 'clouds_new')}
-          >
-            <Icon icon="material-symbols:cloud-outline-rounded" width={14} />
-            Clouds
-          </Button>
-        </Box>
+        {/* Rain/Clouds share the same simple switch presentation as
+            Himawari's LayerSwitch above ("independent" toggles, styled
+            identically) — but stay mutually exclusive underneath: turning
+            one on turns the other off, since OpenWeatherLayer.jsx only
+            renders one tile layer at a time. */}
+        <LayerSwitch
+          checked={owmLayer === 'precipitation_new'}
+          onChange={(checked) => onOwmChange(checked ? 'precipitation_new' : null)}
+          label="Rain"
+        />
+        <LayerSwitch
+          checked={owmLayer === 'clouds_new'}
+          onChange={(checked) => onOwmChange(checked ? 'clouds_new' : null)}
+          label="Clouds"
+        />
         {onToggleWind && (
-          <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
-            <Button
-              onClick={() => onToggleWind(!showWind)}
-              disableRipple
-              aria-pressed={showWind}
-              aria-label="Toggle wind particles"
-              sx={owmChipSx(showWind)}
-            >
-              <Icon icon="material-symbols:air-rounded" width={14} />
-              Wind
-              {STATUS_DOT[windStatus] && (
-                <Tooltip title={STATUS_DOT[windStatus].title}>
-                  <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: STATUS_DOT[windStatus].color, flexShrink: 0 }} />
-                </Tooltip>
-              )}
-            </Button>
-          </Box>
+          <LayerSwitch
+            checked={showWind}
+            onChange={onToggleWind}
+            label="Wind"
+            status={windStatus}
+          />
         )}
         {/* Both Himawari (cloud-top IR) and this tile depict cloud/weather
             cover over the same area — layering them at full strength makes
@@ -263,9 +231,6 @@ export function SkySegmentContent({
             </Box>
           </>
         )}
-        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.62rem', lineHeight: 1.4 }}>
-          Data refreshes automatically every ~10 minutes.
-        </Typography>
         <Typography
           variant="caption"
           component="a"
@@ -362,6 +327,7 @@ function CollapsiblePanel({ icon, title, titleContent, children, resetActive, on
       sx={{
         zIndex: 'var(--z-overlay, 100)',
         overflow: 'hidden',
+        maxHeight: '100%',
         display: 'flex',
         flexDirection: 'column',
         minHeight: 0,

@@ -53,7 +53,7 @@ function ProvinceAutocomplete({ selected, onSelectCode, autoFocusInput = false }
           slotProps={{ ...params.slotProps, input: { ...params.slotProps?.input, disableUnderline: true } }}
         />
       )}
-      sx={{ '& .MuiInputBase-input': { fontSize: '0.85rem', color: 'text.primary' } }}
+      sx={{ flex: 1, minWidth: 0, '& .MuiInputBase-input': { fontSize: '0.85rem', color: 'text.primary' } }}
     />
   );
 }
@@ -64,11 +64,13 @@ function ProvinceAutocomplete({ selected, onSelectCode, autoFocusInput = false }
  * an approximate sensor count for that box — see provinceFilter.js for why
  * "approximate" (no real province_code from the backend yet).
  *
- * Desktop/tablet-landscape: an always-visible search card (matches the
- * product reference: rounded card, "Province" eyebrow, "Search a
- * region..." input, chevron). Compact/mobile: keeps the original icon-
- * button + Popover interaction — a persistent 300px+ bar would crowd a
- * phone's top bar.
+ * Desktop/tablet-landscape: an always-visible search field, height-matched
+ * to its sibling square buttons (fullscreen/hide-controls) in
+ * MapExtrasCluster — a marker icon replaces the "Province" wording so the
+ * field reads as a search box, not a labeled form control. Compact/mobile:
+ * keeps the original icon-button + Popover interaction (with its own
+ * "Province" eyebrow inside the popover, where there's no button row to
+ * height-match) — a persistent bar would crowd a phone's top bar.
  */
 export default function ProvinceFilterSelect({ selectedCode, onSelectCode, matched, btnSx, iconWidth }) {
   const { isCompact, isWallTV } = useResponsiveLayout();
@@ -77,19 +79,22 @@ export default function ProvinceFilterSelect({ selectedCode, onSelectCode, match
   const open = Boolean(anchorEl);
 
   if (!isCompact) {
+    const size = isWallTV ? 44 : 38;
     return (
-      <Box
-        sx={{
-          width: isWallTV ? 340 : 300,
-          display: 'flex', flexDirection: 'column', gap: 0.5, px: 1.5, py: 1.25,
-          bgcolor: 'var(--nirmala-glass-bg)', border: '1px solid var(--nirmala-glass-border)',
-          borderRadius: 'var(--radius-lg, 8px)',
-          transition: 'border-color var(--duration-fast, 150ms) var(--ease-standard)',
-          '&:hover': { borderColor: 'var(--nirmala-cyan-dim)' },
-        }}
-      >
-        <Typography sx={eyebrowSx}>Province</Typography>
-        <ProvinceAutocomplete selected={selected} onSelectCode={onSelectCode} />
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, width: isWallTV ? 300 : 260 }}>
+        <Box
+          sx={{
+            height: size,
+            display: 'flex', alignItems: 'center', gap: 0.75, px: 1.25,
+            bgcolor: 'var(--nirmala-glass-bg)', border: '1px solid var(--nirmala-glass-border)',
+            borderRadius: 'var(--radius-md, 8px)',
+            transition: 'border-color var(--duration-fast, 150ms) var(--ease-standard)',
+            '&:hover': { borderColor: 'var(--nirmala-cyan-dim)' },
+          }}
+        >
+          <Icon icon="material-symbols:location-on-rounded" width={18} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+          <ProvinceAutocomplete selected={selected} onSelectCode={onSelectCode} />
+        </Box>
         <MatchedCaption matched={selected ? matched : null} />
       </Box>
     );
