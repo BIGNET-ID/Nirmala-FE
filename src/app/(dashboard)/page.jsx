@@ -35,6 +35,7 @@ import { PROVINCES } from '@/constants/provinces';
 import { filterStationsInBounds, summarizeStations } from '@/lib/provinceFilter';
 import { statusBucket } from '@/lib/sensorColor';
 import { averageSpeed } from '@/lib/windStats';
+import { smoothZoomTo } from '@/lib/smoothZoom';
 
 // OpenWeather's precipitation tiles are pale, semi-transparent PNGs — the
 // same fixed alpha reads much dimmer against the near-black dark basemap
@@ -65,6 +66,13 @@ export default function NirmalaDashboard() {
   };
   const handleHimawariToggle = (checked) => {
     setActiveLayer(checked ? 'himawari' : groundLayer);
+    // Himawari tiles only render at zoom 3-5 (see HimawariLayer.jsx) — if
+    // the user is zoomed in past that when activating, step the zoom back
+    // out smoothly instead of leaving them looking at a blank layer with
+    // only a passive text hint to explain why.
+    if (checked && map && map.getZoom() > 5) {
+      smoothZoomTo(map, 5);
+    }
   };
   // Sensor-first default: the coverage heatmap is currently hidden (see
   // HEATMAP_ENABLED in CanvasOverlay.jsx), so individual sensor dots are the
