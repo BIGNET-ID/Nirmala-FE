@@ -20,6 +20,7 @@ import MobileControlSheet from '@/components/dashboard/MobileControlSheet';
 import MapControls from '@/components/map/MapControls';
 import MapExtrasCluster from '@/components/map/MapExtrasCluster';
 import ThemeToggleControl from '@/components/map/ThemeToggleControl';
+import MapTypeControl from '@/components/map/MapTypeControl';
 import TimelineComingSoon from '@/components/dashboard/TimelineComingSoon';
 import { usePlatformData } from '@/hooks/usePlatformData';
 import { useSensorStream } from '@/hooks/useSensorStream';
@@ -48,7 +49,7 @@ const OWM_OPACITY = {
 };
 
 export default function NirmalaDashboard() {
-  const { isCompact } = useResponsiveLayout();
+  const { isCompact, isWallTV } = useResponsiveLayout();
   const { mode } = useThemeMode();
   const { sensors: apiSensors, sensorMeta: initialSensorMeta, health, loading, error } = usePlatformData();
   const { permissions, defaultMap, defaultLayer } = useAuth();
@@ -106,6 +107,7 @@ export default function NirmalaDashboard() {
   };
   const [selectedStation, setSelectedStation] = useState(null);
   const [map, setMap] = useState(null);
+  const [mapType, setMapType] = useState('roadmap');
   const mapContainerRef = useRef(null);
   // Master show/hide for MapControls, the merged Space/Ground panel,
   // SensorStatsCard, and ColorRampLegend — toggled from MapExtrasCluster,
@@ -360,7 +362,7 @@ export default function NirmalaDashboard() {
         {/* Map container */}
         <Box ref={mapContainerRef} sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           <Box sx={{ position: 'absolute', inset: 0, display: activeTab === 'current' ? 'block' : 'none' }}>
-            <GoogleMapWrapper onMapLoad={setMap}>
+            <GoogleMapWrapper onMapLoad={setMap} mapType={mapType}>
               {/* Himawari (cloud-top IR) and this tile both depict cloud/weather
                   cover over the same area — lower this one's opacity while
                   Himawari is active so the two don't visually fight (see the
@@ -443,7 +445,9 @@ export default function NirmalaDashboard() {
                       tab switcher — vertically centred between the header
                       and bottom edge so it never hangs low when expanded. */}
                   <Box sx={{
-                    position: 'absolute', top: 72, bottom: 16, left: 16, zIndex: 'var(--z-overlay, 100)',
+                    position: 'absolute', top: 72,
+                    bottom: 16 + (isWallTV ? 140 : 122) + 16,
+                    left: 16, zIndex: 'var(--z-overlay, 100)',
                     display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1.5,
                   }}>
                     <SegmentPanel
@@ -477,6 +481,9 @@ export default function NirmalaDashboard() {
 
             {/* Theme toggle — top-left, standalone */}
             <ThemeToggleControl />
+
+            {/* Map type (Default/Satellite/Outline) — bottom-left, standalone */}
+            <MapTypeControl mapType={mapType} onChange={setMapType} />
 
             {/* Province search, fullscreen, show/hide-all — top-right, always visible */}
             <MapExtrasCluster
