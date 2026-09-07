@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Drawer, Typography, Divider, Chip, IconButton, Button, Stack, CircularProgress } from '@mui/material';
 import { Icon } from '@iconify/react';
 import Sparkline, { parseLabel } from '@/components/common/Sparkline';
@@ -87,9 +87,16 @@ export default function SensorDetailDrawer({ station, open, onClose, bmkgKabupat
       .finally(() => { if (myReq === reqId.current) setLoading(false); });
   }, [open, station?.id]);
 
+  // Brute-force nearest-point search over ~511 BMKG kabupaten — only worth
+  // recomputing when the station (or the kabupaten list) actually changes,
+  // not on every render of this drawer.
+  const nearestKabupaten = useMemo(
+    () => (station ? findNearestKabupaten(station.lat, station.lng, bmkgKabupaten) : null),
+    [station, bmkgKabupaten],
+  );
+
   if (!station) return null;
   const sm = statusMeta(station);
-  const nearestKabupaten = findNearestKabupaten(station.lat, station.lng, bmkgKabupaten);
   const rain = series?.rain;
   const signal = series?.signal;
 
