@@ -20,7 +20,7 @@ import MobileControlSheet from '@/components/dashboard/MobileControlSheet';
 import MapControls from '@/components/map/MapControls';
 import MapExtrasCluster from '@/components/map/MapExtrasCluster';
 import ThemeToggleControl from '@/components/map/ThemeToggleControl';
-import MapTypeControl from '@/components/map/MapTypeControl';
+import MapTypeControl, { MAP_TYPE_CONTROL_HEIGHT } from '@/components/map/MapTypeControl';
 import TimelineComingSoon from '@/components/dashboard/TimelineComingSoon';
 import { usePlatformData } from '@/hooks/usePlatformData';
 import { useSensorStream } from '@/hooks/useSensorStream';
@@ -455,7 +455,7 @@ export default function NirmalaDashboard() {
                       and bottom edge so it never hangs low when expanded. */}
                   <Box sx={{
                     position: 'absolute', top: 72,
-                    bottom: 16 + (isWallTV ? 140 : 122) + 16,
+                    bottom: 16 + MAP_TYPE_CONTROL_HEIGHT(isWallTV) + 16,
                     left: 16, zIndex: 'var(--z-overlay, 100)',
                     display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1.5,
                   }}>
