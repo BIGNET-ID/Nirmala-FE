@@ -20,7 +20,7 @@ function MatchedCaption({ matched }) {
       ) : (
         <>
           <Box component="span" sx={{ color: 'var(--nirmala-cyan)' }}>{matched.total}</Box>
-          {' '}sensors{' · '}<Box component="span">{matched.raining}</Box> reporting rain
+          {' '}{matched.total === 1 ? 'sensor' : 'sensors'}{' · '}<Box component="span">{matched.raining}</Box> reporting rain
         </>
       )}
     </Typography>
