@@ -21,13 +21,19 @@ check the new strings for consistency with already-agreed terms and style
 | `src/components/dashboard/SegmentTogglePanel.jsx:422` | `Show all layers` |
 
 Context: caption next to the per-tab master on/off `Switch` in
-`CollapsiblePanel`, paired with a tooltip that reads `Turn off all filters` /
-`Turn on all filters` (line 424, unchanged from the Batch-4 glossary: "Matikan
-semua filter" / "Aktifkan semua filter").
+`CollapsiblePanel`, paired with a tooltip (line 424). **As originally found**
+(before this audit's fix — see "Verification pass" below), that tooltip read
+`Turn off all filters` / `Turn on all filters`, unchanged from the Batch-4
+glossary ("Matikan semua filter" / "Aktifkan semua filter"). **Current
+source, after this audit's fix, reads** `Turn off all layers` / `Turn on all
+layers` — matching the "Show all layers" label above it. The Batch-4
+glossary has been updated accordingly (see its own file, "superseded
+2026-09-07" note on that row).
 
-**Observation:** the static label says "layers" while the switch's own
-tooltip says "filters" ("Turn off all **filters**" / "Turn on all
-**filters**"). Same control, two different nouns for what it does.
+**Observation (as originally found):** the static label said "layers" while
+the switch's own tooltip said "filters" ("Turn off all **filters**" / "Turn
+on all **filters**"). Same control, two different nouns for what it does —
+now fixed, see Verification pass.
 
 ### 1b. Rain / Clouds / Wind button labels + aria-labels (Task 4)
 
@@ -101,19 +107,33 @@ Related, not explicitly listed in the brief but same component:
 
 | File:line | Label | Sibling labels in the same `Stack` (for style comparison) |
 |---|---|---|
-| `src/components/dashboard/SensorDetailDrawer.jsx:178` | `Nearest BMKG region` | — |
+| `src/components/dashboard/SensorDetailDrawer.jsx:178` | `Nearest BMKG region` **as originally found** → `Nearest BMKG Region` **current, after this audit's fix** | — |
 | `src/components/dashboard/SensorDetailDrawer.jsx:180` | `Temperature (BMKG)` | — |
 | `src/components/dashboard/SensorDetailDrawer.jsx:181` | `Humidity (BMKG)` | — |
 | `src/components/dashboard/SensorDetailDrawer.jsx:171` | `Coordinates` (pre-existing) | single word, case-neutral |
 | `src/components/dashboard/SensorDetailDrawer.jsx:173` | `Currently Raining` (pre-existing) | Title Case |
 | `src/components/dashboard/SensorDetailDrawer.jsx:174` | `Last Update` (pre-existing) | Title Case |
 
-**Observation:** every pre-existing `Meta` label in this drawer that has more
-than one word is Title Case ("Currently Raining", "Last Update"). The three
-new Task-12 labels break that local pattern: "Temperature (BMKG)" and
-"Humidity (BMKG)" are Title Case (consistent), but **"Nearest BMKG region"
-lowercases "region"** — it should likely read "Nearest BMKG Region" to match
-"Currently Raining" / "Last Update" directly above it in the same `Stack`.
+**Observation (as originally found):** every pre-existing `Meta` label in
+this drawer that has more than one word is Title Case ("Currently Raining",
+"Last Update"). The three new Task-12 labels broke that local pattern:
+"Temperature (BMKG)" and "Humidity (BMKG)" are Title Case (consistent), but
+**"Nearest BMKG region" lowercased "region"** — fixed to "Nearest BMKG
+Region" to match "Currently Raining" / "Last Update" directly above it in
+the same `Stack` (see Verification pass).
+
+**Caveat added by the independent fresh reader-testing pass (see below):**
+this string-level fix has **no visible effect in the rendered UI** — every
+`Meta` label (`eyebrowSx`, shared by all three audited components) sets
+`textTransform: 'uppercase'`, so "Nearest BMKG Region" and "Nearest BMKG
+region" render identically as "NEAREST BMKG REGION". The source-level
+capitalization fix is still correct (matches the pattern other Meta labels'
+*source strings* follow, and keeps things right if the uppercase CSS is ever
+removed), but it does not fix anything a user can currently see. Fixing the
+CSS itself is a separate, larger, sitewide design decision (the same
+`eyebrowSx` uppercase pattern is used deliberately as an "eyebrow" style
+across many components) and is out of scope for a copy-only audit — flagged
+separately, not fixed here (see Verification pass and the fix report).
 
 ---
 
@@ -133,18 +153,27 @@ lowercases "region"** — it should likely read "Nearest BMKG Region" to match
 
 ---
 
-## Verification pass (doc-coauthoring skill, Stage 3 "Reader Testing" applied)
+## Verification pass (self-review — superseded, see "Independent reader-testing pass" below)
+
+**Note added after coordinator review:** the pass documented immediately
+below was performed by the same agent that wrote this document and the code
+changes it describes — a self-review, not the genuinely independent,
+context-isolated "fresh reader" that `doc-coauthoring`'s Stage 3 specifically
+calls for. It is kept here for the record, but it has since been superseded
+by a real independent pass (see "Independent reader-testing pass" further
+down), dispatched as a fresh subagent with no authorship context, which
+caught real issues this self-review missed (most notably: a pluralization
+bug, and that the Title-Case fix below is invisible due to sitewide
+uppercase CSS). Treat the "Independent reader-testing pass" section as
+authoritative where the two disagree.
 
 The `doc-coauthoring` skill loaded is built for co-authoring a *new* document
 with a live user (context gathering → section drafting → reader testing with
 a fresh sub-agent). This document was already fully compiled before
-invoking the skill, and Task 14's parent brief disallows dispatching
-subagents for this task — so the applicable part of the workflow is Stage 3
-("Reader Testing"): predict the questions a reader would ask, then answer
-them against the actual source (re-verified by re-reading the four files
-above), checking for contradictions, missed errors, and whether each
-candidate issue is genuine or bikeshedding. Performed directly rather than
-via a fresh sub-agent instance, per the no-subagents constraint on this task.
+invoking the skill. The applicable part of the workflow is Stage 3 ("Reader
+Testing"): predict the questions a reader would ask, then answer them
+against the actual source, checking for contradictions, missed errors, and
+whether each candidate issue is genuine or bikeshedding.
 
 **Reader questions checked:** "Which of the 5 candidates are real bugs vs.
 nitpicks?" / "Does the doc's own reasoning hold up against the live source?"
@@ -182,11 +211,73 @@ nitpicks?" / "Does the doc's own reasoning hold up against the live source?"
    capitalization inconsistency against its own sibling labels in the same
    `Stack`. Fixed: now "Nearest BMKG Region".
 
-**Missed items check:** re-read every quoted string in sections 1–4 above
-against the live source a second time for typos/grammar beyond the 5
-candidates — none found (all other strings are grammatically correct and
-internally consistent).
+**Missed items check (self-review claim, since found to be overclaimed):**
+this self-review originally stated "none found — all other strings are
+grammatically correct and internally consistent." The independent
+reader-testing pass below found that claim to be wrong: it missed a real
+pluralization bug and two casing inconsistencies (one visible in source
+only, one genuinely invisible). See below.
 
-**Corrections applied to source (see commits):**
+**Corrections applied to source from this self-review (see commits):**
 - `src/components/dashboard/SensorDetailDrawer.jsx:178` — `Nearest BMKG region` → `Nearest BMKG Region`
 - `src/components/dashboard/SegmentTogglePanel.jsx:424` — `Turn off all filters` / `Turn on all filters` → `Turn off all layers` / `Turn on all layers`
+
+---
+
+## Independent reader-testing pass (fresh subagent, no authorship context)
+
+Dispatched via the Agent tool as a genuinely fresh `general-purpose` agent
+with **zero context** from this document's authoring conversation — handed
+only this document's path, the 4 source files it references, and the
+Batch-4 glossary, and asked to independently re-derive verdicts on the 5
+candidates *before* reading this document's stated verdicts, then compare,
+plus hunt for anything this document missed. This is the actual
+context-isolated "fresh reader" that `doc-coauthoring`'s Stage 3 describes —
+distinct from, and a genuine check on, the self-review above.
+
+**Result: it agreed with all 5 verdicts**, but surfaced four things the
+self-review missed:
+
+1. **Stale quotes (now fixed in this doc):** sections 1a and 4 quoted the
+   *pre-fix* text ("Turn off all filters", "Nearest BMKG region") as if it
+   were still current, even though the same document's own "Verification
+   pass" section already described fixing both. The doc contradicted itself
+   about what the code currently says. **Fixed:** both sections above now
+   show the original-found text alongside the current fixed text.
+2. **The Title Case fix is invisible in the rendered UI (documented, not
+   further "fixed"):** `eyebrowSx` (shared by `Meta` labels across all
+   audited components) applies `textTransform: 'uppercase'`, so "Nearest
+   BMKG Region" and "Nearest BMKG region" render identically. The source-
+   level fix is still correct to keep, but claiming it fixes a *visible*
+   inconsistency was an overclaim. Documented above; the underlying
+   sitewide uppercase-microcopy pattern is a separate, larger design
+   question (and arguably in tension with AGENTS.md's "avoid all-caps on
+   ... microcopy labels" guardrail) that's out of scope for this text-only
+   audit — flagged as a follow-up rather than changed here.
+3. **Pluralization bug — genuine, fixed:**
+   `src/components/dashboard/ProvinceFilterSelect.jsx`'s `MatchedCaption`
+   always rendered the literal word `sensors`, so a province with exactly
+   one matching sensor would have read "1 sensors reporting rain". **Fixed**
+   to `{matched.total === 1 ? 'sensor' : 'sensors'}`.
+4. **Stale glossary entry found — fixed:** the OpenWeather info-tooltip row
+   in `docs/superpowers/specs/2026-09-01-batch4-english-glossary.md` still
+   said "Rainfall layer..." (rain-only), but the live source now reads "Rain
+   and cloud cover layers..." since Task 4 added a Clouds toggle to the same
+   card. Same category of drift as the coordinator's original Finding 1.
+   **Fixed** in the glossary doc with a "superseded 2026-09-07" note.
+
+Also independently confirmed (no action needed): all file:line quotes in
+this document verified verbatim against live source except the two stale
+ones above; the "Province" vs. "region" verdict's supporting comment
+citation (lines 67–71) checked out exactly as quoted; "Space segment"
+(sentence case, `SegmentTogglePanel.jsx`) vs. "Ground Segment" (Title Case)
+is a real, pre-existing source-level casing mismatch in `SegmentGroup`/
+`SegmentPanel` titles, but — like finding 2 above — is invisible in the
+rendered UI under the same uppercase `eyebrowSx`/title styling, is not part
+of Tasks 1–13's new/changed strings, and was left unchanged.
+
+**All corrections from both passes, final list:**
+- `src/components/dashboard/SensorDetailDrawer.jsx:178` — `Nearest BMKG region` → `Nearest BMKG Region`
+- `src/components/dashboard/SegmentTogglePanel.jsx:424` — `Turn off all filters` / `Turn on all filters` → `Turn off all layers` / `Turn on all layers`
+- `src/components/dashboard/ProvinceFilterSelect.jsx` `MatchedCaption` — `sensors` (always plural) → singular/plural agreement with `matched.total`
+- `docs/superpowers/specs/2026-09-01-batch4-english-glossary.md` — 3 rows updated ("filters"→"layers" master-toggle tooltip ×2, OpenWeather info tooltip rain-only→rain+clouds), each with a "superseded 2026-09-07" note
