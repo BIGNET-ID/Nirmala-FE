@@ -252,8 +252,43 @@ const MAP_STYLE_DARK = [
     }
 ];
 
-export default function GoogleMapWrapper({ children, onMapLoad }) {
+// "Outline" map type — line/boundary-only, no fills/labels/POI clutter.
+// Stays on mapTypeId 'roadmap' (see below) and re-styles it; still follows
+// whichever light/dark theme is active, it's a map TYPE choice, not a
+// second place to change theme (that stays owned by ThemeToggleControl).
+const MAP_STYLE_OUTLINE_LIGHT = [
+  { elementType: 'geometry', stylers: [{ color: '#ffffff' }] },
+  { elementType: 'labels', stylers: [{ visibility: 'off' }] },
+  { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#94a3b8' }, { weight: 1 }] },
+  { featureType: 'administrative.country', elementType: 'geometry.stroke', stylers: [{ color: '#64748b' }, { weight: 1.4 }] },
+  { featureType: 'landscape', elementType: 'geometry', stylers: [{ color: '#ffffff' }] },
+  { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+  { featureType: 'road', stylers: [{ visibility: 'off' }] },
+  { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#dbeafe' }] },
+];
+
+const MAP_STYLE_OUTLINE_DARK = [
+  { elementType: 'geometry', stylers: [{ color: '#050811' }] },
+  { elementType: 'labels', stylers: [{ visibility: 'off' }] },
+  { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#3b4a63' }, { weight: 1 }] },
+  { featureType: 'administrative.country', elementType: 'geometry.stroke', stylers: [{ color: '#5b6b82' }, { weight: 1.4 }] },
+  { featureType: 'landscape', elementType: 'geometry', stylers: [{ color: '#050811' }] },
+  { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+  { featureType: 'road', stylers: [{ visibility: 'off' }] },
+  { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0b1220' }] },
+];
+
+export default function GoogleMapWrapper({ children, onMapLoad, mapType = 'roadmap' }) {
   const { mode } = useThemeMode();
+  // Satellite ignores `styles` entirely — Google's own platform behavior,
+  // imagery can't be recolored — so this only matters for roadmap/outline.
+  const styles = mapType === 'outline'
+    ? (mode === 'dark' ? MAP_STYLE_OUTLINE_DARK : MAP_STYLE_OUTLINE_LIGHT)
+    : (mode === 'dark' ? MAP_STYLE_DARK : MAP_STYLE_LIGHT);
+  const mapTypeId = mapType === 'satellite' ? 'satellite' : 'roadmap';
+
   return (
     // Wrap in our own div rather than passing className to <Map> — that prop
     // replaces (not merges with) the library's own sizing class internally,
@@ -265,7 +300,8 @@ export default function GoogleMapWrapper({ children, onMapLoad }) {
           defaultZoom={MAP_ZOOM_DEFAULT}
           minZoom={MAP_MIN_ZOOM}
           maxZoom={MAP_MAX_ZOOM}
-          styles={mode === 'dark' ? MAP_STYLE_DARK : MAP_STYLE_LIGHT}
+          mapTypeId={mapTypeId}
+          styles={styles}
           disableDefaultUI={true}
           gestureHandling="greedy"
           onIdle={(e) => onMapLoad?.(e.map)}
