@@ -63,7 +63,7 @@ export default function MapExtrasCluster({
         zIndex: 'var(--z-overlay, 1300)',
         display: 'flex',
         flexDirection: 'row',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         gap: 1,
       }}
     >
