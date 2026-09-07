@@ -31,6 +31,7 @@ export default function MapTypeControl({ mapType, onChange }) {
     bgcolor: active ? 'var(--nirmala-cyan)' : 'transparent',
     transition: 'background var(--duration-fast, 150ms) var(--ease-standard), color var(--duration-fast, 150ms) var(--ease-standard)',
     '&:hover': { bgcolor: active ? 'var(--nirmala-cyan)' : 'var(--nirmala-cyan-dim)' },
+    '&.Mui-focusVisible': { outline: '2px solid var(--nirmala-cyan)', outlineOffset: '2px' },
   });
 
   return (

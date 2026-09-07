@@ -150,6 +150,7 @@ function owmChipSx(active) {
     background: active ? 'var(--nirmala-cyan-dim)' : 'rgba(255,255,255,0.03)',
     transition: 'background var(--duration-fast, 150ms) var(--ease-standard), color var(--duration-fast, 150ms) var(--ease-standard), border-color var(--duration-fast, 150ms) var(--ease-standard)',
     '&:hover': { background: 'var(--nirmala-cyan-dim)' },
+    '&.Mui-focusVisible': { outline: '2px solid var(--nirmala-cyan)', outlineOffset: '2px' },
   };
 }
 
