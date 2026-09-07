@@ -292,12 +292,16 @@ export function GroundSegmentContent({
         )}
       </VendorCard>
 
+      {/* Single-item card — same pattern as "JMA Himawari-9" above (one
+          LayerSwitch, not a ModeButton): unlike "Nirmala Data", which
+          groups multiple mutually-exclusive modes, BMKG's card has only
+          one thing to turn on/off, so a boolean switch fits better than a
+          mode-select button. */}
       <VendorCard title="BMKG" accent="var(--status-active, #34d399)">
-        <ModeButton
-          active={activeLayer === 'bmkg'}
-          icon={METRICS.bmkg.icon}
+        <LayerSwitch
+          checked={activeLayer === 'bmkg'}
+          onChange={(checked) => onLayerChange(checked ? 'bmkg' : 'rain')}
           label={METRICS.bmkg.label}
-          onClick={() => onLayerChange('bmkg')}
           info={METRICS.bmkg.legendNote}
         />
       </VendorCard>

@@ -34,7 +34,7 @@ export const METRICS = {
   },
   bmkg: {
     key: 'bmkg',
-    label: 'BMKG Cuaca',
+    label: 'BMKG',
     icon: 'material-symbols:cloud-outline-rounded',
     // Same rainbow spectrum as Rain Density's RAIN_RAMP — approved
     // exception to "no rainbow" in AGENTS.md, paired with a real numeric
@@ -43,8 +43,12 @@ export const METRICS = {
     // number. Breakpoints are a standard hourly meteorological convention,
     // not an official BMKG-published threshold — see src/lib/bmkgWeather.js.
     colorRamp: 'linear-gradient(to right, #3b82f6, #22d3ee, #22c55e, #eab308, #f97316, #dc2626)',
-    tickLabels: ['0', '2.5', '7.5', '15', '30+ mm/jam'],
-    legendNote: 'Curah hujan resmi BMKG per kabupaten (data real per-titik, bukan interpolasi sensor).',
+    // Angka pakai koma desimal (konvensi Indonesia) — bukan titik. Label
+    // terakhir sengaja pendek ("30+", bukan "30+ mm/jam") supaya tidak
+    // bertabrakan dengan label "15" di sebelahnya pada lebar legend yang
+    // sempit; satuan mm/jam disebutkan di legendNote di bawah.
+    tickLabels: ['0', '2,5', '7,5', '15', '30+'],
+    legendNote: 'Official BMKG precipitation per kabupaten, mm/hour (real per-point data, not sensor interpolation).',
   },
   himawari: {
     key: 'himawari',

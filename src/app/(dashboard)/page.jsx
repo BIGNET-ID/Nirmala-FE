@@ -271,6 +271,9 @@ export default function NirmalaDashboard() {
   const handleGroundFilterToggle = (checked) => {
     setShowCoverage(checked);
     setShowMarkers(checked);
+    // Same shape as handleSkyFilterToggle above (Himawari): the master
+    // toggle drives BMKG mode directly on both directions, not just OFF.
+    handleLayerChange(checked ? 'bmkg' : 'rain');
   };
 
   const handleZoom = (delta) => {
