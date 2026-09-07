@@ -338,12 +338,6 @@ function CollapsiblePanel({ icon, title, titleContent, children, resetActive, on
       sx={{
         zIndex: 'var(--z-overlay, 100)',
         overflow: 'hidden',
-        // display:flex + minHeight:0 here (not just on the scrollable child)
-        // is what lets this panel actually shrink when the sidebar column
-        // runs out of room — without it, overflow:hidden alone gives this
-        // box an implicit min-height of 0 that the flex PARENT can shrink
-        // past, silently clipping content instead of letting the child's
-        // own overflowY:auto take over.
         display: 'flex',
         flexDirection: 'column',
         minHeight: 0,
@@ -355,54 +349,62 @@ function CollapsiblePanel({ icon, title, titleContent, children, resetActive, on
     >
       <Box
         onClick={(e) => { if (open) { e.stopPropagation(); setOpen(false); } }}
-        sx={{
-          display: 'flex', alignItems: 'center',
-          justifyContent: open ? 'space-between' : 'center',
-          gap: 1, height: COLLAPSED_SIZE, px: open ? 1.75 : 0,
-          cursor: 'pointer', flexShrink: 0,
-        }}
+        sx={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
-          {/* When titleContent (the tab switcher) is shown, its own per-tab
-              icon already identifies the segment — a second leading icon
-              here just stacked/cluttered against it. Only show this one
-              when collapsed (titleContent is unmounted then) or in plain
-              title mode. */}
-          {(!titleContent || !open) && (
-            <Icon icon={icon} width={20} style={{ color: 'var(--nirmala-cyan)', flexShrink: 0 }} />
-          )}
-          <AnimatePresence>
-            {open && (
-              <Box
-                component={motion.span}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                sx={titleContent ? { overflow: 'hidden' } : { ...eyebrowSx, whiteSpace: 'nowrap', overflow: 'hidden' }}
-              >
-                {titleContent ?? title}
-              </Box>
+        <Box
+          sx={{
+            display: 'flex', alignItems: 'center',
+            justifyContent: open ? 'space-between' : 'center',
+            gap: 1, height: COLLAPSED_SIZE, px: open ? 1.75 : 0,
+            cursor: 'pointer',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+            {(!titleContent || !open) && (
+              <Icon icon={icon} width={20} style={{ color: 'var(--nirmala-cyan)', flexShrink: 0 }} />
             )}
-          </AnimatePresence>
-        </Box>
-        {open && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, flexShrink: 0 }}>
-            {onResetToggle && (
-              <Tooltip title={resetActive ? 'Turn off all filters' : 'Turn on all filters'}>
-                <Switch
-                  checked={resetActive}
-                  onChange={(e) => { e.stopPropagation(); onResetToggle(e.target.checked); }}
-                  onClick={(e) => e.stopPropagation()}
-                  size="small"
-                  sx={switchSx}
-                />
-              </Tooltip>
-            )}
+            <AnimatePresence>
+              {open && (
+                <Box
+                  component={motion.span}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  sx={titleContent ? { overflow: 'hidden' } : { ...eyebrowSx, whiteSpace: 'nowrap', overflow: 'hidden' }}
+                >
+                  {titleContent ?? title}
+                </Box>
+              )}
+            </AnimatePresence>
+          </Box>
+          {open && (
             <Tooltip title="Hide panel">
               <IconButton size="small" disableRipple sx={{ p: 0.25, color: 'text.secondary', flexShrink: 0 }}>
                 <Icon icon="material-symbols:chevron-left-rounded" width={18} />
               </IconButton>
+            </Tooltip>
+          )}
+        </Box>
+
+        {open && onResetToggle && (
+          <Box
+            onClick={(e) => e.stopPropagation()}
+            sx={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              height: 32, px: 1.75, pb: 0.5, cursor: 'default',
+            }}
+          >
+            <Typography variant="caption" sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>
+              Show all layers
+            </Typography>
+            <Tooltip title={resetActive ? 'Turn off all filters' : 'Turn on all filters'}>
+              <Switch
+                checked={resetActive}
+                onChange={(e) => onResetToggle(e.target.checked)}
+                size="small"
+                sx={switchSx}
+              />
             </Tooltip>
           </Box>
         )}
@@ -418,7 +420,7 @@ function CollapsiblePanel({ icon, title, titleContent, children, resetActive, on
             transition={{ duration: 0.18 }}
             sx={{ width: EXPANDED_WIDTH, display: 'flex', flexDirection: 'column', flex: '1 1 auto', minHeight: 0 }}
           >
-            <Box sx={{ px: 1.75, pb: 1.75, maxHeight: 'min(320px, 38vh)', flex: '1 1 auto', minHeight: 0, overflowY: 'auto' }}>
+            <Box sx={{ px: 1.75, pb: 1.75, flex: '1 1 auto', minHeight: 0 }}>
               {children}
             </Box>
           </Box>
