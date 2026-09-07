@@ -421,7 +421,7 @@ function CollapsiblePanel({ icon, title, titleContent, children, resetActive, on
             <Typography variant="caption" sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>
               Show all layers
             </Typography>
-            <Tooltip title={resetActive ? 'Turn off all filters' : 'Turn on all filters'}>
+            <Tooltip title={resetActive ? 'Turn off all layers' : 'Turn on all layers'}>
               <Switch
                 checked={resetActive}
                 onChange={(e) => onResetToggle(e.target.checked)}
