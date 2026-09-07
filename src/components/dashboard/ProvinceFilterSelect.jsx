@@ -27,11 +27,10 @@ function MatchedCaption({ matched }) {
   );
 }
 
-function ProvinceAutocomplete({ selected, onSelectCode }) {
+function ProvinceAutocomplete({ selected, onSelectCode, autoFocusInput = false }) {
   const handlePick = (_, option) => onSelectCode(option ? option.code : null);
   return (
     <Autocomplete
-      autoFocus
       openOnFocus
       size="small"
       // No disablePortal: the suggestions list needs to escape whatever
@@ -47,6 +46,7 @@ function ProvinceAutocomplete({ selected, onSelectCode }) {
       renderInput={(params) => (
         <TextField
           {...params}
+          autoFocus={autoFocusInput}
           variant="standard"
           placeholder="Search a region..."
           fullWidth
@@ -122,7 +122,11 @@ export default function ProvinceFilterSelect({ selectedCode, onSelectCode, match
         } } }}
       >
         <Typography sx={{ ...eyebrowSx, mb: 1 }}>Province</Typography>
-        <ProvinceAutocomplete selected={selected} onSelectCode={(code) => { onSelectCode(code); setAnchorEl(null); }} />
+        <ProvinceAutocomplete
+          selected={selected}
+          onSelectCode={(code) => { onSelectCode(code); setAnchorEl(null); }}
+          autoFocusInput
+        />
         {selected && (
           <Chip
             label={selected.name}
