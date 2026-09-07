@@ -261,11 +261,16 @@ const MAP_STYLE_OUTLINE_LIGHT = [
   { elementType: 'labels', stylers: [{ visibility: 'off' }] },
   { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#94a3b8' }, { weight: 1 }] },
   { featureType: 'administrative.country', elementType: 'geometry.stroke', stylers: [{ color: '#64748b' }, { weight: 1.4 }] },
-  { featureType: 'landscape', elementType: 'geometry', stylers: [{ color: '#ffffff' }] },
+  { featureType: 'landscape', elementType: 'geometry.fill', stylers: [{ color: '#ffffff' }] },
+  // Coastlines otherwise disappear entirely (land/water fills are near-
+  // identical tones) — stroke both sides of that boundary so every island,
+  // however small, still reads as a shape rather than empty space.
+  { featureType: 'landscape', elementType: 'geometry.stroke', stylers: [{ color: '#94a3b8' }, { weight: 1 }] },
   { featureType: 'poi', stylers: [{ visibility: 'off' }] },
   { featureType: 'road', stylers: [{ visibility: 'off' }] },
   { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#dbeafe' }] },
+  { featureType: 'water', elementType: 'geometry.fill', stylers: [{ color: '#dbeafe' }] },
+  { featureType: 'water', elementType: 'geometry.stroke', stylers: [{ color: '#94a3b8' }, { weight: 1 }] },
 ];
 
 const MAP_STYLE_OUTLINE_DARK = [
@@ -273,11 +278,16 @@ const MAP_STYLE_OUTLINE_DARK = [
   { elementType: 'labels', stylers: [{ visibility: 'off' }] },
   { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#3b4a63' }, { weight: 1 }] },
   { featureType: 'administrative.country', elementType: 'geometry.stroke', stylers: [{ color: '#5b6b82' }, { weight: 1.4 }] },
-  { featureType: 'landscape', elementType: 'geometry', stylers: [{ color: '#050811' }] },
+  { featureType: 'landscape', elementType: 'geometry.fill', stylers: [{ color: '#050811' }] },
+  // Coastlines otherwise disappear entirely (land/water fills are near-
+  // identical tones) — stroke both sides of that boundary so every island,
+  // however small, still reads as a shape rather than empty space.
+  { featureType: 'landscape', elementType: 'geometry.stroke', stylers: [{ color: '#5b6b82' }, { weight: 1 }] },
   { featureType: 'poi', stylers: [{ visibility: 'off' }] },
   { featureType: 'road', stylers: [{ visibility: 'off' }] },
   { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0b1220' }] },
+  { featureType: 'water', elementType: 'geometry.fill', stylers: [{ color: '#0b1220' }] },
+  { featureType: 'water', elementType: 'geometry.stroke', stylers: [{ color: '#5b6b82' }, { weight: 1 }] },
 ];
 
 export default function GoogleMapWrapper({ children, onMapLoad, mapType = 'roadmap' }) {
