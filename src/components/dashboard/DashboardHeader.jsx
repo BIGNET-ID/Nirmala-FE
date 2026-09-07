@@ -154,7 +154,9 @@ export default function DashboardHeader({ health, streamStatus, activeTab, onTab
         <Box sx={{ width: '1px', height: 20, background: 'var(--nirmala-glass-border)', flexShrink: 0 }} />
       )}
 
-      <TabSwitcher activeTab={activeTab} onChange={onTabChange} />
+      <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
+        <TabSwitcher activeTab={activeTab} onChange={onTabChange} />
+      </Box>
 
       {/* Right group — pinned right, never shrinks */}
       <Box sx={{ ml: 'auto', flexShrink: 0, display: 'flex', alignItems: 'center', gap: isCompact ? 0.75 : 1.5 }}>
