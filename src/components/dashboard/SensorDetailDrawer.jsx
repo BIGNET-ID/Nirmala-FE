@@ -9,6 +9,7 @@ import SeriesStatsRow from '@/components/dashboard/SeriesStatsRow';
 import { nirmalaApiService, normalizeTimeseries } from '@/lib/nirmalaApi';
 import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 import { statusBucket, statusColor } from '@/lib/sensorColor';
+import { findNearestKabupaten } from '@/lib/bmkgHydration';
 
 const STATUS_LABEL = {
   blacklisted: 'Blacklist',
@@ -64,7 +65,7 @@ function bucketsForWindow(pointCount) {
   return Math.min(120, Math.max(4, pointCount));
 }
 
-export default function SensorDetailDrawer({ station, open, onClose }) {
+export default function SensorDetailDrawer({ station, open, onClose, bmkgKabupaten = [] }) {
   const { isCompact } = useResponsiveLayout();
   const [series, setSeries] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -88,6 +89,7 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
 
   if (!station) return null;
   const sm = statusMeta(station);
+  const nearestKabupaten = findNearestKabupaten(station.lat, station.lng, bmkgKabupaten);
   const rain = series?.rain;
   const signal = series?.signal;
 
@@ -171,6 +173,15 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
             <Meta label="Currently Raining" value={station.isRaining ? 'Yes' : 'No'} />
             <Meta label="Last Update" value={fmtTime(station.lastUpdate)} />
           </Box>
+          {nearestKabupaten && (
+            <>
+              <Meta label="Nearest BMKG region" value={nearestKabupaten.name} />
+              <Box sx={{ display: 'flex', gap: 3 }}>
+                <Meta label="Temperature (BMKG)" value={`${nearestKabupaten.now.temp_c}°C`} />
+                <Meta label="Humidity (BMKG)" value={`${nearestKabupaten.now.humidity_pct}%`} />
+              </Box>
+            </>
+          )}
         </Stack>
 
         <Divider sx={{ mb: 2, borderColor: 'var(--nirmala-glass-border)' }} />

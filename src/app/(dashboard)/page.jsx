@@ -121,7 +121,11 @@ export default function NirmalaDashboard() {
   const [meshDistanceRange, setMeshDistanceRange] = useState(null);
 
   const himawari = useJmaHimawariTicks(activeLayer === 'himawari');
-  const { kabupaten: bmkgKabupaten, lastSyncedAt: bmkgLastSynced } = useBmkgWeather(activeLayer === 'bmkg');
+  // Always fetch (not just while activeLayer === 'bmkg'): SensorDetailDrawer
+  // needs this data regardless of which ground mode is active, so a user
+  // can click a sensor while on Rain Density and still see nearest-BMKG
+  // temp/humidity. Cheap to keep warm — 511 points, 2h server-side TTL.
+  const { kabupaten: bmkgKabupaten, lastSyncedAt: bmkgLastSynced } = useBmkgWeather(true);
   const [himawariStatus, setHimawariStatus] = useState('ok'); // 'ok' | 'loading' | 'unavailable' — only 'unavailable' has UI today (see the notice box below); 'loading' is reserved for a future spinner.
   const [himawariZoomInRange, setHimawariZoomInRange] = useState(true); // JMA only serves this product at zoom 3-5 — see HimawariLayer's onZoomRangeChange
   // Which basetime HimawariLayer actually crossfaded onto the map (not just
@@ -500,6 +504,7 @@ export default function NirmalaDashboard() {
               station={selectedStation}
               open={Boolean(selectedStation)}
               onClose={() => setSelectedStation(null)}
+              bmkgKabupaten={bmkgKabupaten}
             />
           </Box>
 
