@@ -69,3 +69,60 @@ test('smoothZoomTo: works with no onDone callback provided', () => {
   const map = makeFakeMap(7);
   assert.doesNotThrow(() => smoothZoomTo(map, 5));
 });
+
+test('smoothZoomTo: stops instead of fighting the user when the zoom moves away mid-tween', () => {
+  const map = makeFakeMap(10);
+  const zoomsRequested = [];
+  const origSetZoom = map.setZoom;
+  let callCount = 0;
+  map.setZoom = (z) => {
+    callCount++;
+    zoomsRequested.push(z);
+    if (callCount === 2) {
+      // Simulate the user taking over mid-tween: the 'idle' event that
+      // fires here settles at a zoom the tween never requested (as if the
+      // user's own zoom action produced it), instead of the step's target.
+      origSetZoom(2);
+      return;
+    }
+    origSetZoom(z);
+  };
+  let done = false;
+  smoothZoomTo(map, 5, () => { done = true; });
+
+  // First step (10 -> 9) proceeds as normal. The second step asks for 8,
+  // but the observed zoom (2) doesn't match it, so the tween must bail
+  // instead of continuing to chase 5 from wherever the user left it.
+  assert.deepEqual(zoomsRequested, [9, 8]);
+  assert.equal(map.getZoom(), 2);
+  assert.equal(done, false);
+});
+
+test('smoothZoomTo: returns a cancel function that stops a pending tween', () => {
+  const map = makeFakeMap(10);
+  // Intercept the 'idle' listener registration and stop setZoom from
+  // auto-firing it, so the test controls exactly when 'idle' settles —
+  // letting cancel() run in the gap between the request and the settle,
+  // like a real async tile-load window would.
+  let idleCb = null;
+  const origAddListener = map.addListener;
+  map.addListener = (event, cb) => {
+    if (event === 'idle') idleCb = cb;
+    return origAddListener(event, cb);
+  };
+  const zoomsSeen = [];
+  const origSetZoom = map.setZoom;
+  map.setZoom = (z) => { zoomsSeen.push(z); };
+
+  let done = false;
+  const cancel = smoothZoomTo(map, 5, () => { done = true; });
+  assert.deepEqual(zoomsSeen, [9]);
+
+  cancel();
+  // 'idle' still eventually fires (tiles finish settling) after
+  // cancellation — the tween must not act on it any more.
+  origSetZoom(9);
+  idleCb();
+  assert.equal(done, false);
+  assert.deepEqual(zoomsSeen, [9]);
+});

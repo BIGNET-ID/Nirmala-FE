@@ -72,7 +72,8 @@ export default function NirmalaDashboard() {
     // out smoothly instead of leaving them looking at a blank layer with
     // only a passive text hint to explain why.
     if (checked && map && map.getZoom() > 5) {
-      smoothZoomTo(map, 5);
+      cancelZoomTweenRef.current?.();
+      cancelZoomTweenRef.current = smoothZoomTo(map, 5);
     }
   };
   // Sensor-first default: the coverage heatmap is currently hidden (see
@@ -106,6 +107,10 @@ export default function NirmalaDashboard() {
     });
   };
   const [selectedStation, setSelectedStation] = useState(null);
+  // Cancels a still-running smoothZoomTo tween (see handleHimawariToggle)
+  // so a second toggle mid-tween replaces it cleanly instead of stacking
+  // two competing recursive listeners on the same map.
+  const cancelZoomTweenRef = useRef(null);
   const [map, setMap] = useState(null);
   const [mapType, setMapType] = useState('roadmap');
   const mapContainerRef = useRef(null);
