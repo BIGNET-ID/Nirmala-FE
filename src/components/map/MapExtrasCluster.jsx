@@ -63,6 +63,7 @@ export default function MapExtrasCluster({
         zIndex: 'var(--z-overlay, 1300)',
         display: 'flex',
         flexDirection: 'row',
+        alignItems: 'flex-start',
         gap: 1,
       }}
     >
@@ -81,7 +82,7 @@ export default function MapExtrasCluster({
       </Tooltip>
       <Tooltip title={controlsVisible ? 'Hide controls & legend' : 'Show controls & legend'} placement="bottom">
         <IconButton onClick={onToggleControlsVisible} sx={btnSx} aria-label={controlsVisible ? 'Hide controls and legend' : 'Show controls and legend'}>
-          <Icon icon={controlsVisible ? 'material-symbols:visibility-off-rounded' : 'material-symbols:visibility-rounded'} width={iconWidth} />
+          <Icon icon={controlsVisible ? 'material-symbols:visibility-rounded' : 'material-symbols:visibility-off-rounded'} width={iconWidth} />
         </IconButton>
       </Tooltip>
     </Box>

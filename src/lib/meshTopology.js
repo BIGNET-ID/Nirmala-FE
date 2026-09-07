@@ -23,7 +23,7 @@
 
 const EARTH_RADIUS_KM = 6371;
 
-function haversineKm(a, b) {
+export function haversineKm(a, b) {
   const toRad = (d) => (d * Math.PI) / 180;
   const dLat = toRad(b.lat - a.lat);
   const dLng = toRad(b.lng - a.lng);

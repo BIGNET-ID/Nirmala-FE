@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { useMap } from '@vis.gl/react-google-maps';
 import { statusBucket } from '@/lib/sensorColor';
+import { buildLUT, metersPerPixel, drawKernels, colourizeInto } from '@/lib/heatmapKernel';
 
 /**
  * Rain-density heatmap with a coverage base (BIGNET DS v19). "Titik Sensor"
@@ -18,6 +19,8 @@ import { statusBucket } from '@/lib/sensorColor';
  *    overlaps accumulate → isolated rain = modest, clustered rain = hot core.
  * Coverage is drawn first, rain composited on top so rain always reads clearly.
  * Technique = heatmap.js: greyscale alpha kernels → colourize via a 1×256 LUT.
+ * `buildLUT`/`metersPerPixel`/`drawKernels`/`colourizeInto` live in
+ * src/lib/heatmapKernel.js, shared with BmkgRainLayer.jsx.
  */
 
 // Whole heatmap (coverage teal base AND rain-density blobs) hidden for
@@ -52,60 +55,8 @@ const COVER_RAMP = [
   [0.00, [20, 70, 110]], [1.00, [64, 180, 205]],
 ];
 
-function buildLUT(ramp) {
-  const lut = new Uint8ClampedArray(256 * 3);
-  for (let i = 0; i < 256; i++) {
-    const t = i / 255;
-    let a = ramp[0], b = ramp[ramp.length - 1];
-    for (let k = 0; k < ramp.length - 1; k++) {
-      if (t >= ramp[k][0] && t <= ramp[k + 1][0]) { a = ramp[k]; b = ramp[k + 1]; break; }
-    }
-    const span = b[0] - a[0] || 1;
-    const f = (t - a[0]) / span;
-    lut[i * 3]     = a[1][0] + (b[1][0] - a[1][0]) * f;
-    lut[i * 3 + 1] = a[1][1] + (b[1][1] - a[1][1]) * f;
-    lut[i * 3 + 2] = a[1][2] + (b[1][2] - a[1][2]) * f;
-  }
-  return lut;
-}
-
 const RAIN_LUT = buildLUT(RAIN_RAMP);
 const COVER_LUT = buildLUT(COVER_RAMP);
-
-function metersPerPixel(lat, zoom) {
-  return (156543.03392 * Math.cos((lat * Math.PI) / 180)) / Math.pow(2, zoom);
-}
-
-function drawKernels(sctx, W, H, pts, radius) {
-  sctx.clearRect(0, 0, W, H);
-  for (const [x, y] of pts) {
-    const g = sctx.createRadialGradient(x, y, 0, x, y, radius);
-    g.addColorStop(0, `rgba(0,0,0,${POINT_ALPHA})`);
-    g.addColorStop(1, 'rgba(0,0,0,0)');
-    sctx.fillStyle = g;
-    sctx.beginPath();
-    sctx.arc(x, y, radius, 0, Math.PI * 2);
-    sctx.fill();
-  }
-}
-
-/** Colourize the shadow's alpha channel through a LUT into a layer canvas. */
-function colourizeInto(layer, shadow, W, H, lut, maxAlpha) {
-  const sctx = shadow.getContext('2d');
-  const img = sctx.getImageData(0, 0, W, H);
-  const d = img.data;
-  for (let i = 0; i < d.length; i += 4) {
-    const alpha = d[i + 3];
-    if (alpha === 0) continue;
-    const li = alpha * 3;
-    d[i] = lut[li];
-    d[i + 1] = lut[li + 1];
-    d[i + 2] = lut[li + 2];
-    d[i + 3] = alpha > maxAlpha ? maxAlpha : alpha;
-  }
-  layer.width = W; layer.height = H;
-  layer.getContext('2d').putImageData(img, 0, 0);
-}
 
 function renderHeatmap(canvas, shadow, coolLayer, warmLayer, stations, projection, map, showCoverage) {
   const W = canvas.width, H = canvas.height;
@@ -128,8 +79,8 @@ function renderHeatmap(canvas, shadow, coolLayer, warmLayer, stations, projectio
     const p = projection.fromLatLngToDivPixel(new window.google.maps.LatLng(st.lat, st.lng));
     const x = p.x - canvas._offsetX, y = p.y - canvas._offsetY;
     if (x < -pad || x > W + pad || y < -pad || y > H + pad) continue;
-    if (bucket === 'raining') wet.push([x, y]);
-    else dry.push([x, y]);
+    if (bucket === 'raining') wet.push({ x, y, alpha: POINT_ALPHA });
+    else dry.push({ x, y, alpha: POINT_ALPHA });
   }
 
   shadow.width = W; shadow.height = H;

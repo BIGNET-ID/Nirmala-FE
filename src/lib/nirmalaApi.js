@@ -38,6 +38,22 @@ export const nirmalaApiService = {
   },
 
   /**
+   * GET /api/bmkg/cuaca/indonesia — BMKG's official current-weather
+   * snapshot for all ~511 kabupaten/kota in one call (server-side cached,
+   * cache_ttl_s: 7200 = 2h). Same backend domain as /api/sensors, so this
+   * goes through the same generic proxy — no dedicated Next.js route
+   * needed. See docs/superpowers/specs/2026-09-04-bmkg-cuaca-tile-design.md.
+   */
+  async getBmkgCuaca() {
+    try {
+      return await nirmalaApi.get('/api/bmkg/cuaca/indonesia');
+    } catch (error) {
+      console.warn('[Nirmala API] BMKG cuaca unavailable, using fixture:', error.message);
+      return (await loadFixture('bmkg-cuaca')) || { kabupaten: [] };
+    }
+  },
+
+  /**
    * GET /api/timeseries/{sensor_id}/latest?minutes={minutes} — rain (mm,
    * 5min avg) + signal for just the last N minutes, already windowed
    * server-side (confirmed against the live API: returns the flat

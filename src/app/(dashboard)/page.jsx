@@ -10,20 +10,27 @@ import MeshLayer from '@/components/map/MeshLayer';
 import OpenWeatherLayer from '@/components/map/OpenWeatherLayer';
 import WindParticleLayer from '@/components/map/WindParticleLayer';
 import HimawariLayer from '@/components/map/HimawariLayer';
+import BmkgRainLayer from '@/components/map/BmkgRainLayer';
+import VolcanoLayer from '@/components/map/VolcanoLayer';
+import VolcanoToggleControl from '@/components/map/VolcanoToggleControl';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import { SegmentPanel } from '@/components/dashboard/SegmentTogglePanel';
 import ColorRampLegend from '@/components/dashboard/ColorRampLegend';
 import SensorDetailDrawer from '@/components/dashboard/SensorDetailDrawer';
+import VolcanoPopover from '@/components/map/VolcanoPopover';
 import SensorStatsCard from '@/components/dashboard/SensorStatsCard';
 import MobileControlSheet from '@/components/dashboard/MobileControlSheet';
 import MapControls from '@/components/map/MapControls';
 import MapExtrasCluster from '@/components/map/MapExtrasCluster';
 import ThemeToggleControl from '@/components/map/ThemeToggleControl';
+import MapTypeControl, { MAP_TYPE_CONTROL_HEIGHT } from '@/components/map/MapTypeControl';
 import TimelineComingSoon from '@/components/dashboard/TimelineComingSoon';
 import { usePlatformData } from '@/hooks/usePlatformData';
 import { useSensorStream } from '@/hooks/useSensorStream';
 import { useWindField } from '@/hooks/useWindField';
 import { useJmaHimawariTicks } from '@/hooks/useJmaHimawariTicks';
+import { useBmkgWeather } from '@/hooks/useBmkgWeather';
+import { useVolcanoes } from '@/hooks/useVolcanoes';
 import { useAuth } from '@/hooks/useAuth';
 import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 import { useThemeMode } from '@/context/ThemeModeContext';
@@ -33,6 +40,7 @@ import { PROVINCES } from '@/constants/provinces';
 import { filterStationsInBounds, summarizeStations } from '@/lib/provinceFilter';
 import { statusBucket } from '@/lib/sensorColor';
 import { averageSpeed } from '@/lib/windStats';
+import { smoothZoomTo } from '@/lib/smoothZoom';
 
 // OpenWeather's precipitation tiles are pale, semi-transparent PNGs — the
 // same fixed alpha reads much dimmer against the near-black dark basemap
@@ -45,7 +53,7 @@ const OWM_OPACITY = {
 };
 
 export default function NirmalaDashboard() {
-  const { isCompact } = useResponsiveLayout();
+  const { isCompact, isWallTV } = useResponsiveLayout();
   const { mode } = useThemeMode();
   const { sensors: apiSensors, sensorMeta: initialSensorMeta, health, loading, error } = usePlatformData();
   const { permissions, defaultMap, defaultLayer } = useAuth();
@@ -63,6 +71,14 @@ export default function NirmalaDashboard() {
   };
   const handleHimawariToggle = (checked) => {
     setActiveLayer(checked ? 'himawari' : groundLayer);
+    // Himawari tiles only render at zoom 3-5 (see HimawariLayer.jsx) — if
+    // the user is zoomed in past that when activating, step the zoom back
+    // out smoothly instead of leaving them looking at a blank layer with
+    // only a passive text hint to explain why.
+    if (checked && map && map.getZoom() > 5) {
+      cancelZoomTweenRef.current?.();
+      cancelZoomTweenRef.current = smoothZoomTo(map, 5);
+    }
   };
   // Sensor-first default: the coverage heatmap is currently hidden (see
   // HEATMAP_ENABLED in CanvasOverlay.jsx), so individual sensor dots are the
@@ -95,7 +111,12 @@ export default function NirmalaDashboard() {
     });
   };
   const [selectedStation, setSelectedStation] = useState(null);
+  // Cancels a still-running smoothZoomTo tween (see handleHimawariToggle)
+  // so a second toggle mid-tween replaces it cleanly instead of stacking
+  // two competing recursive listeners on the same map.
+  const cancelZoomTweenRef = useRef(null);
   const [map, setMap] = useState(null);
+  const [mapType, setMapType] = useState('roadmap');
   const mapContainerRef = useRef(null);
   // Master show/hide for MapControls, the merged Space/Ground panel,
   // SensorStatsCard, and ColorRampLegend — toggled from MapExtrasCluster,
@@ -109,6 +130,16 @@ export default function NirmalaDashboard() {
   const [meshDistanceRange, setMeshDistanceRange] = useState(null);
 
   const himawari = useJmaHimawariTicks(activeLayer === 'himawari');
+  // Always fetch (not just while activeLayer === 'bmkg'): SensorDetailDrawer
+  // needs this data regardless of which ground mode is active, so a user
+  // can click a sensor while on Rain Density and still see nearest-BMKG
+  // temp/humidity. Cheap to keep warm — 511 points, 2h server-side TTL.
+  const { kabupaten: bmkgKabupaten, lastSyncedAt: bmkgLastSynced } = useBmkgWeather(true);
+  // Independent of Sky/Ground segment state (like Wind particles) — only
+  // fetched while the user has actually turned the layer on.
+  const [showVolcanoes, setShowVolcanoes] = useState(false);
+  const { volcanoes } = useVolcanoes(showVolcanoes);
+  const [selectedVolcano, setSelectedVolcano] = useState(null); // { volcano, x, y } | null
   const [himawariStatus, setHimawariStatus] = useState('ok'); // 'ok' | 'loading' | 'unavailable' — only 'unavailable' has UI today (see the notice box below); 'loading' is reserved for a future spinner.
   const [himawariZoomInRange, setHimawariZoomInRange] = useState(true); // JMA only serves this product at zoom 3-5 — see HimawariLayer's onZoomRangeChange
   // Which basetime HimawariLayer actually crossfaded onto the map (not just
@@ -154,7 +185,11 @@ export default function NirmalaDashboard() {
     if (!times.length) return null;
     return new Date(Math.max(...times.map((d) => d.getTime())));
   }, [SENSOR_STATIONS]);
-  const activeLayerLastSynced = activeLayer === 'himawari' ? himawariLastSynced : rainvisionLastSynced;
+  const activeLayerLastSynced = activeLayer === 'himawari'
+    ? himawariLastSynced
+    : activeLayer === 'bmkg'
+      ? bmkgLastSynced
+      : rainvisionLastSynced;
 
   // Notification bell content (DashboardHeader) — live status, not a
   // discrete message log, since all three of these continuously re-derive
@@ -264,6 +299,9 @@ export default function NirmalaDashboard() {
   const handleGroundFilterToggle = (checked) => {
     setShowCoverage(checked);
     setShowMarkers(checked);
+    // Same shape as handleSkyFilterToggle above (Himawari): the master
+    // toggle drives BMKG mode directly on both directions, not just OFF.
+    handleLayerChange(checked ? 'bmkg' : 'rain');
   };
 
   const handleZoom = (delta) => {
@@ -342,7 +380,7 @@ export default function NirmalaDashboard() {
         {/* Map container */}
         <Box ref={mapContainerRef} sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           <Box sx={{ position: 'absolute', inset: 0, display: activeTab === 'current' ? 'block' : 'none' }}>
-            <GoogleMapWrapper onMapLoad={setMap}>
+            <GoogleMapWrapper onMapLoad={setMap} mapType={mapType}>
               {/* Himawari (cloud-top IR) and this tile both depict cloud/weather
                   cover over the same area — lower this one's opacity while
                   Himawari is active so the two don't visually fight (see the
@@ -356,6 +394,15 @@ export default function NirmalaDashboard() {
               )}
               {activeLayer === 'mesh' && (
                 <MeshLayer stations={SENSOR_STATIONS} onDistanceRangeChange={setMeshDistanceRange} />
+              )}
+              {activeLayer === 'bmkg' && (
+                <BmkgRainLayer kabupaten={bmkgKabupaten} />
+              )}
+              {showVolcanoes && (
+                <VolcanoLayer
+                  volcanoes={volcanoes}
+                  onSelect={(volcano, x, y) => setSelectedVolcano({ volcano, x, y })}
+                />
               )}
               {activeLayer === 'himawari' && (
                 <HimawariLayer
@@ -422,7 +469,9 @@ export default function NirmalaDashboard() {
                       tab switcher — vertically centred between the header
                       and bottom edge so it never hangs low when expanded. */}
                   <Box sx={{
-                    position: 'absolute', top: 72, bottom: 16, left: 16, zIndex: 'var(--z-overlay, 100)',
+                    position: 'absolute', top: 72,
+                    bottom: 16 + MAP_TYPE_CONTROL_HEIGHT(isWallTV) + 16,
+                    left: 16, zIndex: 'var(--z-overlay, 100)',
                     display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1.5,
                   }}>
                     <SegmentPanel
@@ -457,6 +506,12 @@ export default function NirmalaDashboard() {
             {/* Theme toggle — top-left, standalone */}
             <ThemeToggleControl />
 
+            {/* Map type (Default/Satellite/Outline) — bottom-left, standalone */}
+            <MapTypeControl mapType={mapType} onChange={setMapType} />
+
+            {/* Volcanoes — bottom-right, standalone, independent of Sky/Ground state */}
+            <VolcanoToggleControl active={showVolcanoes} onChange={setShowVolcanoes} />
+
             {/* Province search, fullscreen, show/hide-all — top-right, always visible */}
             <MapExtrasCluster
               fullscreenTargetRef={mapContainerRef}
@@ -472,7 +527,10 @@ export default function NirmalaDashboard() {
               station={selectedStation}
               open={Boolean(selectedStation)}
               onClose={() => setSelectedStation(null)}
+              bmkgKabupaten={bmkgKabupaten}
             />
+
+            <VolcanoPopover selection={selectedVolcano} onClose={() => setSelectedVolcano(null)} />
           </Box>
 
           {activeTab === 'timeline' && <TimelineComingSoon />}

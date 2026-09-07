@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Drawer, Typography, Divider, Chip, IconButton, Button, Stack, CircularProgress } from '@mui/material';
 import { Icon } from '@iconify/react';
 import Sparkline, { parseLabel } from '@/components/common/Sparkline';
@@ -9,6 +9,7 @@ import SeriesStatsRow from '@/components/dashboard/SeriesStatsRow';
 import { nirmalaApiService, normalizeTimeseries } from '@/lib/nirmalaApi';
 import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 import { statusBucket, statusColor } from '@/lib/sensorColor';
+import { findNearestKabupaten } from '@/lib/bmkgHydration';
 
 const STATUS_LABEL = {
   blacklisted: 'Blacklist',
@@ -64,7 +65,7 @@ function bucketsForWindow(pointCount) {
   return Math.min(120, Math.max(4, pointCount));
 }
 
-export default function SensorDetailDrawer({ station, open, onClose }) {
+export default function SensorDetailDrawer({ station, open, onClose, bmkgKabupaten = [] }) {
   const { isCompact } = useResponsiveLayout();
   const [series, setSeries] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -85,6 +86,14 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
       .catch(() => { if (myReq === reqId.current) setSeries(null); })
       .finally(() => { if (myReq === reqId.current) setLoading(false); });
   }, [open, station?.id]);
+
+  // Brute-force nearest-point search over ~511 BMKG kabupaten — only worth
+  // recomputing when the station (or the kabupaten list) actually changes,
+  // not on every render of this drawer.
+  const nearestKabupaten = useMemo(
+    () => (station ? findNearestKabupaten(station.lat, station.lng, bmkgKabupaten) : null),
+    [station, bmkgKabupaten],
+  );
 
   if (!station) return null;
   const sm = statusMeta(station);
@@ -171,6 +180,15 @@ export default function SensorDetailDrawer({ station, open, onClose }) {
             <Meta label="Currently Raining" value={station.isRaining ? 'Yes' : 'No'} />
             <Meta label="Last Update" value={fmtTime(station.lastUpdate)} />
           </Box>
+          {nearestKabupaten?.now && (
+            <>
+              <Meta label="Nearest BMKG Region" value={nearestKabupaten.name} />
+              <Box sx={{ display: 'flex', gap: 3 }}>
+                <Meta label="Temperature (BMKG)" value={nearestKabupaten.now.temp_c != null ? `${nearestKabupaten.now.temp_c}°C` : '—'} />
+                <Meta label="Humidity (BMKG)" value={nearestKabupaten.now.humidity_pct != null ? `${nearestKabupaten.now.humidity_pct}%` : '—'} />
+              </Box>
+            </>
+          )}
         </Stack>
 
         <Divider sx={{ mb: 2, borderColor: 'var(--nirmala-glass-border)' }} />

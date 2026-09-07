@@ -10,7 +10,7 @@ import { LAYER_STATUS } from '@/constants/layerStatus';
 /**
  * Sky/Ground Segment vendor panel (PRD §4.2). Groups every layer control by
  * the vendor that provides it — vendors with no backend integration yet
- * (NASA, Sentinel, BMKG, Maxar) render as disabled cards with a "Segera"
+ * (NASA, Sentinel, Maxar) render as disabled cards with a "Segera"
  * badge rather than being hidden, so the full PRD architecture stays
  * visible. See docs/superpowers/specs/2026-08-26-dual-tab-segment-layout-design.md §2
  * for the vendor→layer mapping this panel encodes.
@@ -140,12 +140,6 @@ function SegmentGroup({ title, hideTitle, children }) {
   );
 }
 
-const OWM_LAYERS = [
-  { id: null, label: 'Off' },
-  { id: 'precipitation_new', label: 'Rain' },
-  { id: 'clouds_new', label: 'Clouds' },
-];
-
 /**
  * Bare Space segment content — every sky-side control, no positioning/chrome.
  * Shared by the desktop floating panel (below) and the mobile bottom sheet
@@ -176,28 +170,29 @@ export function SkySegmentContent({
         accent="var(--nirmala-cyan)"
         info="Rain and cloud cover layers from the OpenWeather global weather data provider."
       >
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
-          {OWM_LAYERS.map((o) => {
-            const active = owmLayer === o.id;
-            return (
-              <Button
-                key={o.label}
-                onClick={() => onOwmChange(o.id)}
-                disableRipple
-                sx={{
-                  flex: 1, minWidth: 0, px: 0.5, py: 0.5, fontSize: '0.68rem', fontWeight: 700,
-                  borderRadius: 'var(--radius-sm, 4px)',
-                  color: active ? 'var(--nirmala-cyan)' : 'text.secondary',
-                  border: `1px solid ${active ? 'var(--nirmala-cyan-dim)' : 'transparent'}`,
-                  background: active ? 'var(--nirmala-cyan-dim)' : 'rgba(255,255,255,0.03)',
-                  '&:hover': { background: 'var(--nirmala-cyan-dim)' },
-                }}
-              >
-                {o.label}
-              </Button>
-            );
-          })}
-        </Box>
+        {/* Rain/Clouds share the same simple switch presentation as
+            Himawari's LayerSwitch above ("independent" toggles, styled
+            identically) — but stay mutually exclusive underneath: turning
+            one on turns the other off, since OpenWeatherLayer.jsx only
+            renders one tile layer at a time. */}
+        <LayerSwitch
+          checked={owmLayer === 'precipitation_new'}
+          onChange={(checked) => onOwmChange(checked ? 'precipitation_new' : null)}
+          label="Rain"
+        />
+        <LayerSwitch
+          checked={owmLayer === 'clouds_new'}
+          onChange={(checked) => onOwmChange(checked ? 'clouds_new' : null)}
+          label="Clouds"
+        />
+        {onToggleWind && (
+          <LayerSwitch
+            checked={showWind}
+            onChange={onToggleWind}
+            label="Wind"
+            status={windStatus}
+          />
+        )}
         {/* Both Himawari (cloud-top IR) and this tile depict cloud/weather
             cover over the same area — layering them at full strength makes
             them hard to tell apart. OpenWeather's tile opacity is lowered
@@ -209,9 +204,6 @@ export function SkySegmentContent({
           <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.62rem', lineHeight: 1.4 }}>
             Opacity automatically reduced while Himawari is active
           </Typography>
-        )}
-        {onToggleWind && (
-          <LayerSwitch checked={showWind} onChange={onToggleWind} label="Wind (particles)" status={windStatus} />
         )}
         {onToggleWind && showWind && (
           <>
@@ -239,9 +231,6 @@ export function SkySegmentContent({
             </Box>
           </>
         )}
-        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.62rem', lineHeight: 1.4 }}>
-          Data refreshes automatically every ~10 minutes.
-        </Typography>
         <Typography
           variant="caption"
           component="a"
@@ -273,7 +262,7 @@ export function GroundSegmentContent({
   // `false`. Undefined/null (manifest not loaded yet, or flag absent) keeps
   // it visible — same rule MetricLayerSelector used.
   const canViewSensor = permissions?.can_view_sensor !== false;
-  const showSensorToggles = activeLayer === 'rain' || activeLayer === 'himawari';
+  const showSensorToggles = activeLayer === 'rain' || activeLayer === 'himawari' || activeLayer === 'bmkg';
 
   return (
     <SegmentGroup title="Ground Segment" hideTitle={hideTitle}>
@@ -292,7 +281,19 @@ export function GroundSegmentContent({
         )}
       </VendorCard>
 
-      <VendorCard title="BMKG" accent="var(--status-active, #34d399)" active={false} />
+      {/* Single-item card — same pattern as "JMA Himawari-9" above (one
+          LayerSwitch, not a ModeButton): unlike "Nirmala Data", which
+          groups multiple mutually-exclusive modes, BMKG's card has only
+          one thing to turn on/off, so a boolean switch fits better than a
+          mode-select button. */}
+      <VendorCard title="BMKG" accent="var(--status-active, #34d399)">
+        <LayerSwitch
+          checked={activeLayer === 'bmkg'}
+          onChange={(checked) => onLayerChange(checked ? 'bmkg' : 'rain')}
+          label={METRICS.bmkg.label}
+          info={METRICS.bmkg.legendNote}
+        />
+      </VendorCard>
       <VendorCard title="Maxar" accent="var(--status-active, #34d399)" active={false} />
     </SegmentGroup>
   );
@@ -326,12 +327,7 @@ function CollapsiblePanel({ icon, title, titleContent, children, resetActive, on
       sx={{
         zIndex: 'var(--z-overlay, 100)',
         overflow: 'hidden',
-        // display:flex + minHeight:0 here (not just on the scrollable child)
-        // is what lets this panel actually shrink when the sidebar column
-        // runs out of room — without it, overflow:hidden alone gives this
-        // box an implicit min-height of 0 that the flex PARENT can shrink
-        // past, silently clipping content instead of letting the child's
-        // own overflowY:auto take over.
+        maxHeight: '100%',
         display: 'flex',
         flexDirection: 'column',
         minHeight: 0,
@@ -343,54 +339,62 @@ function CollapsiblePanel({ icon, title, titleContent, children, resetActive, on
     >
       <Box
         onClick={(e) => { if (open) { e.stopPropagation(); setOpen(false); } }}
-        sx={{
-          display: 'flex', alignItems: 'center',
-          justifyContent: open ? 'space-between' : 'center',
-          gap: 1, height: COLLAPSED_SIZE, px: open ? 1.75 : 0,
-          cursor: 'pointer', flexShrink: 0,
-        }}
+        sx={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
-          {/* When titleContent (the tab switcher) is shown, its own per-tab
-              icon already identifies the segment — a second leading icon
-              here just stacked/cluttered against it. Only show this one
-              when collapsed (titleContent is unmounted then) or in plain
-              title mode. */}
-          {(!titleContent || !open) && (
-            <Icon icon={icon} width={20} style={{ color: 'var(--nirmala-cyan)', flexShrink: 0 }} />
-          )}
-          <AnimatePresence>
-            {open && (
-              <Box
-                component={motion.span}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                sx={titleContent ? { overflow: 'hidden' } : { ...eyebrowSx, whiteSpace: 'nowrap', overflow: 'hidden' }}
-              >
-                {titleContent ?? title}
-              </Box>
+        <Box
+          sx={{
+            display: 'flex', alignItems: 'center',
+            justifyContent: open ? 'space-between' : 'center',
+            gap: 1, height: COLLAPSED_SIZE, px: open ? 1.75 : 0,
+            cursor: 'pointer',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+            {(!titleContent || !open) && (
+              <Icon icon={icon} width={20} style={{ color: 'var(--nirmala-cyan)', flexShrink: 0 }} />
             )}
-          </AnimatePresence>
-        </Box>
-        {open && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, flexShrink: 0 }}>
-            {onResetToggle && (
-              <Tooltip title={resetActive ? 'Turn off all filters' : 'Turn on all filters'}>
-                <Switch
-                  checked={resetActive}
-                  onChange={(e) => { e.stopPropagation(); onResetToggle(e.target.checked); }}
-                  onClick={(e) => e.stopPropagation()}
-                  size="small"
-                  sx={switchSx}
-                />
-              </Tooltip>
-            )}
+            <AnimatePresence>
+              {open && (
+                <Box
+                  component={motion.span}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  sx={titleContent ? { overflow: 'hidden' } : { ...eyebrowSx, whiteSpace: 'nowrap', overflow: 'hidden' }}
+                >
+                  {titleContent ?? title}
+                </Box>
+              )}
+            </AnimatePresence>
+          </Box>
+          {open && (
             <Tooltip title="Hide panel">
               <IconButton size="small" disableRipple sx={{ p: 0.25, color: 'text.secondary', flexShrink: 0 }}>
                 <Icon icon="material-symbols:chevron-left-rounded" width={18} />
               </IconButton>
+            </Tooltip>
+          )}
+        </Box>
+
+        {open && onResetToggle && (
+          <Box
+            onClick={(e) => e.stopPropagation()}
+            sx={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              height: 32, px: 1.75, pb: 0.5, cursor: 'default',
+            }}
+          >
+            <Typography variant="caption" sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>
+              Show all layers
+            </Typography>
+            <Tooltip title={resetActive ? 'Turn off all layers' : 'Turn on all layers'}>
+              <Switch
+                checked={resetActive}
+                onChange={(e) => onResetToggle(e.target.checked)}
+                size="small"
+                sx={switchSx}
+              />
             </Tooltip>
           </Box>
         )}
@@ -406,7 +410,7 @@ function CollapsiblePanel({ icon, title, titleContent, children, resetActive, on
             transition={{ duration: 0.18 }}
             sx={{ width: EXPANDED_WIDTH, display: 'flex', flexDirection: 'column', flex: '1 1 auto', minHeight: 0 }}
           >
-            <Box sx={{ px: 1.75, pb: 1.75, maxHeight: 'min(320px, 38vh)', flex: '1 1 auto', minHeight: 0, overflowY: 'auto' }}>
+            <Box sx={{ px: 1.75, pb: 1.75, flex: '1 1 auto', minHeight: 0, overflowY: 'auto' }}>
               {children}
             </Box>
           </Box>
@@ -468,7 +472,11 @@ export function SegmentPanel({ skyFilterActive, onSkyFilterToggle, groundFilterA
 
   return (
     <CollapsiblePanel
-      icon={isSky ? 'material-symbols:satellite-alt-rounded' : 'material-symbols:sensors-rounded'}
+      // This icon only ever renders in the COLLAPSED state (CollapsiblePanel
+      // hides it once the tab switcher is visible) — kept as a constant
+      // "layers" glyph, matching MobileControlSheet's FAB icon, so the
+      // collapsed panel button reads the same on desktop and mobile.
+      icon="material-symbols:layers-rounded"
       title={isSky ? 'Space segment' : 'Ground Segment'}
       titleContent={<SegmentTabSwitcher activeTab={activeSegment} onChange={setActiveSegment} />}
       resetActive={isSky ? skyFilterActive : groundFilterActive}

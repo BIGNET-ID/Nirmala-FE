@@ -45,19 +45,19 @@ it appears.
 | Gagal memuat data. | Failed to load data. | status dot tooltip |
 | Menunggu integrasi Backend | Awaiting backend integration | disabled vendor card tooltip |
 | Segera | Coming soon | disabled vendor card badge |
-| Nonaktif | Off | OWM layer option |
+| Nonaktif | Off | OWM layer option — **superseded 2026-09-07**: the 2026-09-07 UI/UX update's Task 4 redesign turned Rain/Clouds/Wind into independent toggle buttons on the OpenWeather card and removed the separate "Off" button entirely, so this row no longer maps to any shipping UI string. |
 | Hujan | Rain | OWM layer option |
 | Awan | Clouds | OWM layer option |
-| Lapisan curah hujan dari penyedia data cuaca global OpenWeather. | Rainfall layer from the OpenWeather global weather data provider. | info tooltip |
+| Lapisan curah hujan dari penyedia data cuaca global OpenWeather. | Rain and cloud cover layers from the OpenWeather global weather data provider. | info tooltip — **superseded 2026-09-07**: originally translated as "Rainfall layer..." (rain-only); the 2026-09-07 UI/UX update's Task 4 added a Clouds toggle to the same OpenWeather card, so the tooltip text was updated in source to cover both layers. English now reads "Rain and cloud cover layers...". Found stale during Task 14's copy audit (fresh reader-testing pass); Indonesian source column left as the original pre-Task-4 wording since there is no live Indonesian copy for this tooltip to re-translate. |
 | Opacity diturunkan otomatis karena Himawari aktif | Opacity automatically reduced while Himawari is active | caption |
 | Data diperbarui otomatis setiap ±10 menit. | Data refreshes automatically every ~10 minutes. | caption |
 | Data cuaca oleh OpenWeather | Weather data by OpenWeather | attribution link |
-| Angin (partikel) | Wind (particles) | toggle label |
+| Angin (partikel) | Wind (particles) | toggle label — **superseded 2026-09-07**: the 2026-09-07 UI/UX update's Task 4 redesign renamed this control's visible label to just "Wind". The Indonesian source column is left as the original pre-Task-4 wording since there is no live Indonesian copy for this control to re-translate. |
 | Cakupan Sensor | Sensor Coverage | toggle label |
 | Titik Sensor | Sensor Points | toggle label |
 | Sembunyikan panel | Hide panel | collapse tooltip |
-| Matikan semua filter | Turn off all filters | master toggle tooltip |
-| Aktifkan semua filter | Turn on all filters | master toggle tooltip |
+| Matikan semua filter | Turn off all layers | master toggle tooltip — **superseded 2026-09-07**: the 2026-09-07 UI/UX update's Task 3 added "Show all layers" as this same control's visible label, so "filters" no longer matched its own UI (Task 14's copy audit caught the mismatch; see `docs/superpowers/specs/2026-09-07-uiux-copy-audit.md`). English now reads "Turn off all layers". The Indonesian source column is left as the original pre-translation wording ("filter") — there is no live Indonesian copy for this control to re-translate, so this row documents translation history, not a currently-shipping ID string. |
+| Aktifkan semua filter | Turn on all layers | master toggle tooltip — same terminology shift as above, English now reads "Turn on all layers". |
 
 ## SensorDetailDrawer.jsx
 

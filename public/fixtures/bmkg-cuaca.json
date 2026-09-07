@@ -1,0 +1,65 @@
+{
+  "source": "BMKG — Prakiraan Cuaca (resmi)",
+  "web": "https://www.bmkg.go.id",
+  "scope": "indonesia (per-kabupaten, presisi regional)",
+  "timezone": "WIB (UTC+7) di datetime_wib",
+  "note": "Kondisi TERKINI kabupaten dalam 1 panggilan (front-end tak perlu panggil per-sensor); tiap sensor pakai cuaca kabupatennya. Detail 3-hari per titik: /api/bmkg/cuaca?adm4= atau ?lat=&lon=.",
+  "building": false,
+  "progress": null,
+  "cache_age_s": 2850.3,
+  "cache_ttl_s": 7200,
+  "count": 511,
+  "kabupaten": [
+    {
+      "kab": "11.01",
+      "name": "Kabupaten Aceh Selatan",
+      "lat": 3.2548,
+      "lon": 97.1741,
+      "adm4": "11.01.01.2001",
+      "now": {
+        "datetime_wib": "2026-09-04T15:00:00+07:00",
+        "weather": "Cerah Berawan",
+        "weather_code": 2,
+        "precip_mm": 0.2,
+        "temp_c": 29,
+        "humidity_pct": 74,
+        "cloud_pct": 88,
+        "icon": "https://api-apps.bmkg.go.id/storage/icon/cuaca/cerah berawan-am.svg"
+      }
+    },
+    {
+      "kab": "11.02",
+      "name": "Kabupaten Aceh Tenggara",
+      "lat": 3.4734,
+      "lon": 97.8192,
+      "adm4": "11.02.01.2001",
+      "now": {
+        "datetime_wib": "2026-09-04T15:00:00+07:00",
+        "weather": "Cerah Berawan",
+        "weather_code": 2,
+        "precip_mm": 0.7,
+        "temp_c": 25,
+        "humidity_pct": 77,
+        "cloud_pct": 88,
+        "icon": "https://api-apps.bmkg.go.id/storage/icon/cuaca/cerah berawan-am.svg"
+      }
+    },
+    {
+      "kab": "11.03",
+      "name": "Kabupaten Aceh Timur",
+      "lat": 4.9327,
+      "lon": 97.7838,
+      "adm4": "11.03.01.2001",
+      "now": {
+        "datetime_wib": "2026-09-04T15:00:00+07:00",
+        "weather": "Cerah Berawan",
+        "weather_code": 2,
+        "precip_mm": 0,
+        "temp_c": 30,
+        "humidity_pct": 70,
+        "cloud_pct": 88,
+        "icon": "https://api-apps.bmkg.go.id/storage/icon/cuaca/cerah berawan-am.svg"
+      }
+    }
+  ]
+}
