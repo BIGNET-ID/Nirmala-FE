@@ -472,7 +472,11 @@ export function SegmentPanel({ skyFilterActive, onSkyFilterToggle, groundFilterA
 
   return (
     <CollapsiblePanel
-      icon={isSky ? 'material-symbols:satellite-alt-rounded' : 'material-symbols:sensors-rounded'}
+      // This icon only ever renders in the COLLAPSED state (CollapsiblePanel
+      // hides it once the tab switcher is visible) — kept as a constant
+      // "layers" glyph, matching MobileControlSheet's FAB icon, so the
+      // collapsed panel button reads the same on desktop and mobile.
+      icon="material-symbols:layers-rounded"
       title={isSky ? 'Space segment' : 'Ground Segment'}
       titleContent={<SegmentTabSwitcher activeTab={activeSegment} onChange={setActiveSegment} />}
       resetActive={isSky ? skyFilterActive : groundFilterActive}
