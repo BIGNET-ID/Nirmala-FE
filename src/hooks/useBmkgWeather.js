@@ -18,9 +18,13 @@ function extractLastSynced(kabupaten) {
 
 /**
  * Fetches BMKG's official per-kabupaten "now" weather snapshot
- * (nirmalaApiService.getBmkgCuaca()) only while `active` (the BMKG ground
- * mode is selected) — same "only fetch while the mode is on" pattern as
- * useJmaHimawariTicks. See
+ * (nirmalaApiService.getBmkgCuaca()) while `active` is true. Originally this
+ * only ran while the BMKG ground mode was selected (same "only fetch while
+ * the mode is on" pattern as useJmaHimawariTicks); page.jsx's sole caller
+ * now passes `true` unconditionally so SensorDetailDrawer can hydrate
+ * nearest-BMKG temp/humidity regardless of which ground mode is active —
+ * see bmkgHydration.js. The `active` param stays in case a future caller
+ * needs to gate it again. See
  * docs/superpowers/specs/2026-09-04-bmkg-cuaca-tile-design.md.
  */
 export function useBmkgWeather(active) {
