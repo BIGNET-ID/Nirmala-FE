@@ -252,39 +252,44 @@ const MAP_STYLE_DARK = [
     }
 ];
 
-// "Outline" map type — line/boundary-only, no fills/labels/POI clutter.
-// Stays on mapTypeId 'roadmap' (see below) and re-styles it; still follows
-// whichever light/dark theme is active, it's a map TYPE choice, not a
-// second place to change theme (that stays owned by ThemeToggleControl).
+// "Outline" map type — a stark binary silhouette (land vs. water only, no
+// labels/admin boundaries/roads/POI/terrain clutter), user-provided style
+// pair (a Maps Styling Wizard export). Stays on mapTypeId 'roadmap' (see
+// below) and re-styles it; still follows whichever light/dark theme is
+// active, it's a map TYPE choice, not a second place to change theme (that
+// stays owned by ThemeToggleControl).
+//
+// Earlier attempts tried to stroke the coastline itself via
+// `geometry.stroke` on 'landscape'/'water' — verified empirically that
+// this has NO visible effect on Google's tile renderer for area features
+// (only line-based features like 'administrative'/'road' render a
+// stroke; see project memory: overlayview-onadd-never-fired /
+// outline-map-coastline-overlay-deferred). This version leans into flat
+// fill contrast instead — administrative boundaries are turned off
+// entirely (rather than kept as a muted line), so the two fills alone
+// carry the whole image.
 const MAP_STYLE_OUTLINE_LIGHT = [
-  { elementType: 'geometry', stylers: [{ color: '#ffffff' }] },
-  { elementType: 'labels', stylers: [{ visibility: 'off' }] },
-  { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#94a3b8' }, { weight: 1 }] },
-  { featureType: 'administrative.country', elementType: 'geometry.stroke', stylers: [{ color: '#64748b' }, { weight: 1.4 }] },
-  // NOTE: `geometry.stroke` on 'landscape'/'water' has NO visible effect on
-  // this map (verified empirically — Google's tile renderer doesn't draw a
-  // border for these area features, only for genuinely line-based features
-  // like 'administrative'/'road'). A literal coastline stroke needs a real
-  // coastline vector overlay instead — see the comment on
-  // MAP_STYLE_OUTLINE_DARK below. Until then, land/water read as distinct
-  // shapes purely from fill-color contrast.
-  { featureType: 'landscape', elementType: 'geometry.fill', stylers: [{ color: '#ffffff' }] },
-  { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-  { featureType: 'road', stylers: [{ visibility: 'off' }] },
-  { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-  { featureType: 'water', elementType: 'geometry.fill', stylers: [{ color: '#dbeafe' }] },
+  { featureType: 'all', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+  { featureType: 'administrative', elementType: 'all', stylers: [{ visibility: 'off' }] },
+  { featureType: 'landscape', elementType: 'all', stylers: [{ color: '#000000' }] },
+  { featureType: 'landscape.man_made', elementType: 'all', stylers: [{ visibility: 'off' }] },
+  { featureType: 'landscape.natural.terrain', elementType: 'all', stylers: [{ visibility: 'off' }] },
+  { featureType: 'poi', elementType: 'all', stylers: [{ visibility: 'off' }] },
+  { featureType: 'road', elementType: 'all', stylers: [{ visibility: 'off' }] },
+  { featureType: 'transit', elementType: 'all', stylers: [{ visibility: 'off' }] },
+  { featureType: 'water', elementType: 'all', stylers: [{ color: '#ffffff' }] },
 ];
 
 const MAP_STYLE_OUTLINE_DARK = [
-  { elementType: 'geometry', stylers: [{ color: '#050811' }] },
-  { elementType: 'labels', stylers: [{ visibility: 'off' }] },
-  { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#3b4a63' }, { weight: 1 }] },
-  { featureType: 'administrative.country', elementType: 'geometry.stroke', stylers: [{ color: '#5b6b82' }, { weight: 1.4 }] },
-  { featureType: 'landscape', elementType: 'geometry.fill', stylers: [{ color: '#050811' }] },
-  { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-  { featureType: 'road', stylers: [{ visibility: 'off' }] },
-  { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-  { featureType: 'water', elementType: 'geometry.fill', stylers: [{ color: '#0b1220' }] },
+  { featureType: 'all', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+  { featureType: 'administrative', elementType: 'all', stylers: [{ visibility: 'off' }] },
+  { featureType: 'landscape', elementType: 'all', stylers: [{ color: '#ffffff' }] },
+  { featureType: 'landscape.man_made', elementType: 'all', stylers: [{ visibility: 'off' }] },
+  { featureType: 'landscape.natural.terrain', elementType: 'all', stylers: [{ visibility: 'off' }] },
+  { featureType: 'poi', elementType: 'all', stylers: [{ visibility: 'off' }] },
+  { featureType: 'road', elementType: 'all', stylers: [{ visibility: 'off' }] },
+  { featureType: 'transit', elementType: 'all', stylers: [{ visibility: 'off' }] },
+  { featureType: 'water', elementType: 'all', stylers: [{ color: '#000000' }] },
 ];
 
 export default function GoogleMapWrapper({ children, onMapLoad, mapType = 'roadmap' }) {

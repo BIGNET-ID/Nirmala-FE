@@ -7,16 +7,11 @@ import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 // Each swatch's colors are pulled from (or stylized after) this app's own
 // map styling — GoogleMapWrapper.jsx's MAP_STYLE_LIGHT land/water tones for
 // Default, a stylized dark green/navy pairing standing in for real
-// satellite imagery (which can't be reproduced in CSS) for Satellite. The
-// hard 2-tone split (not a soft blend) reads as a tiny map preview — land +
-// water — rather than a decorative gradient.
-//
-// "Outline" mode's button is hidden here (not removed from
-// GoogleMapWrapper.jsx, which still supports mapType='outline') — its
-// coastlines can't be stroked via Google's declarative styling (see
-// project memory: overlayview-onadd-never-fired / the coastline-overlay
-// deferral), so land/water were only distinguishable by flat fill
-// contrast, and the user asked to hide the button until that's revisited.
+// satellite imagery (which can't be reproduced in CSS) for Satellite, and
+// a stark black/white split for Outline, matching that mode's own binary
+// land/water silhouette style (MAP_STYLE_OUTLINE_LIGHT/DARK). The hard
+// 2-tone split (not a soft blend) reads as a tiny map preview rather than
+// a decorative gradient.
 const SEGMENTS = [
   {
     id: 'roadmap', label: 'Default map', icon: 'material-symbols:map-rounded',
@@ -26,16 +21,19 @@ const SEGMENTS = [
     id: 'satellite', label: 'Satellite', icon: 'material-symbols:satellite-alt-rounded',
     swatch: 'linear-gradient(135deg, #1b2e1f 55%, #0c1b2e 55%)', iconColor: '#eef2f7',
   },
+  {
+    id: 'outline', label: 'Outline', icon: 'material-symbols:map-outline-rounded',
+    swatch: 'linear-gradient(135deg, #000000 50%, #ffffff 50%)', iconColor: '#9ca3af',
+  },
 ];
 
 /**
- * Bottom-left map-type switcher — Default (roadmap) / Satellite (Outline
- * hidden for now, see comment on SEGMENTS above). Horizontal row of themed
- * swatch chips (each tinted toward what that map type actually looks like,
- * per the comment above), following whichever light/dark theme is active
- * for the chrome around them. Deliberately separate from
- * ThemeToggleControl (top-left): this control only switches map TYPE, it
- * is not a second place to change light/dark theme.
+ * Bottom-left map-type switcher — Default (roadmap) / Satellite / Outline.
+ * Horizontal row of themed swatch chips (each tinted toward what that map
+ * type actually looks like, per the comment above), following whichever
+ * light/dark theme is active for the chrome around them. Deliberately
+ * separate from ThemeToggleControl (top-left): this control only switches
+ * map TYPE, it is not a second place to change light/dark theme.
  *
  * Kept deliberately short (a single row, not the earlier 3-segment vertical
  * stack) — its height feeds directly into how much vertical room the
