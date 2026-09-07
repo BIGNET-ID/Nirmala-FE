@@ -140,11 +140,18 @@ function SegmentGroup({ title, hideTitle, children }) {
   );
 }
 
-const OWM_LAYERS = [
-  { id: null, label: 'Off' },
-  { id: 'precipitation_new', label: 'Rain' },
-  { id: 'clouds_new', label: 'Clouds' },
-];
+function owmChipSx(active) {
+  return {
+    flex: 1, minWidth: 0, px: 0.5, py: 0.5, fontSize: '0.68rem', fontWeight: 700,
+    borderRadius: 'var(--radius-sm, 4px)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.4,
+    color: active ? 'var(--nirmala-cyan)' : 'text.secondary',
+    border: `1px solid ${active ? 'var(--nirmala-cyan-dim)' : 'transparent'}`,
+    background: active ? 'var(--nirmala-cyan-dim)' : 'rgba(255,255,255,0.03)',
+    transition: 'background var(--duration-fast, 150ms) var(--ease-standard), color var(--duration-fast, 150ms) var(--ease-standard), border-color var(--duration-fast, 150ms) var(--ease-standard)',
+    '&:hover': { background: 'var(--nirmala-cyan-dim)' },
+  };
+}
 
 /**
  * Bare Space segment content — every sky-side control, no positioning/chrome.
@@ -177,27 +184,46 @@ export function SkySegmentContent({
         info="Rain and cloud cover layers from the OpenWeather global weather data provider."
       >
         <Box sx={{ display: 'flex', gap: 0.5 }}>
-          {OWM_LAYERS.map((o) => {
-            const active = owmLayer === o.id;
-            return (
-              <Button
-                key={o.label}
-                onClick={() => onOwmChange(o.id)}
-                disableRipple
-                sx={{
-                  flex: 1, minWidth: 0, px: 0.5, py: 0.5, fontSize: '0.68rem', fontWeight: 700,
-                  borderRadius: 'var(--radius-sm, 4px)',
-                  color: active ? 'var(--nirmala-cyan)' : 'text.secondary',
-                  border: `1px solid ${active ? 'var(--nirmala-cyan-dim)' : 'transparent'}`,
-                  background: active ? 'var(--nirmala-cyan-dim)' : 'rgba(255,255,255,0.03)',
-                  '&:hover': { background: 'var(--nirmala-cyan-dim)' },
-                }}
-              >
-                {o.label}
-              </Button>
-            );
-          })}
+          <Button
+            onClick={() => onOwmChange(owmLayer === 'precipitation_new' ? null : 'precipitation_new')}
+            disableRipple
+            aria-pressed={owmLayer === 'precipitation_new'}
+            aria-label="Toggle OpenWeather rain overlay"
+            sx={owmChipSx(owmLayer === 'precipitation_new')}
+          >
+            <Icon icon="material-symbols:rainy-rounded" width={14} />
+            Rain
+          </Button>
+          <Button
+            onClick={() => onOwmChange(owmLayer === 'clouds_new' ? null : 'clouds_new')}
+            disableRipple
+            aria-pressed={owmLayer === 'clouds_new'}
+            aria-label="Toggle OpenWeather cloud overlay"
+            sx={owmChipSx(owmLayer === 'clouds_new')}
+          >
+            <Icon icon="material-symbols:cloud-outline-rounded" width={14} />
+            Clouds
+          </Button>
         </Box>
+        {onToggleWind && (
+          <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
+            <Button
+              onClick={() => onToggleWind(!showWind)}
+              disableRipple
+              aria-pressed={showWind}
+              aria-label="Toggle wind particles"
+              sx={owmChipSx(showWind)}
+            >
+              <Icon icon="material-symbols:air-rounded" width={14} />
+              Wind
+              {STATUS_DOT[windStatus] && (
+                <Tooltip title={STATUS_DOT[windStatus].title}>
+                  <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: STATUS_DOT[windStatus].color, flexShrink: 0 }} />
+                </Tooltip>
+              )}
+            </Button>
+          </Box>
+        )}
         {/* Both Himawari (cloud-top IR) and this tile depict cloud/weather
             cover over the same area — layering them at full strength makes
             them hard to tell apart. OpenWeather's tile opacity is lowered
@@ -209,9 +235,6 @@ export function SkySegmentContent({
           <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.62rem', lineHeight: 1.4 }}>
             Opacity automatically reduced while Himawari is active
           </Typography>
-        )}
-        {onToggleWind && (
-          <LayerSwitch checked={showWind} onChange={onToggleWind} label="Wind (particles)" status={windStatus} />
         )}
         {onToggleWind && showWind && (
           <>
