@@ -175,7 +175,7 @@ export default function SensorDetailDrawer({ station, open, onClose, bmkgKabupat
           </Box>
           {nearestKabupaten?.now && (
             <>
-              <Meta label="Nearest BMKG region" value={nearestKabupaten.name} />
+              <Meta label="Nearest BMKG Region" value={nearestKabupaten.name} />
               <Box sx={{ display: 'flex', gap: 3 }}>
                 <Meta label="Temperature (BMKG)" value={nearestKabupaten.now.temp_c != null ? `${nearestKabupaten.now.temp_c}°C` : '—'} />
                 <Meta label="Humidity (BMKG)" value={nearestKabupaten.now.humidity_pct != null ? `${nearestKabupaten.now.humidity_pct}%` : '—'} />
