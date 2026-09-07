@@ -36,6 +36,8 @@ export default function MapTypeControl({ mapType, onChange }) {
 
   return (
     <Box
+      role="group"
+      aria-label="Map type"
       sx={{
         position: 'absolute', left: 16, bottom: 16, zIndex: 'var(--z-overlay, 100)',
         display: 'flex', flexDirection: 'column', gap: 0.25, p: 0.25,
