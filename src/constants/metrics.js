@@ -22,7 +22,7 @@ export const METRICS = {
     // `regionView` branch) — that layer paints kecamatan polygons by
     // categorical sensor status, not this ramp, so the legend must switch
     // with it rather than describe a gradient that isn't on screen.
-    regionLegendNote: "Kecamatan colored by its nearest sensor's status (within 25km) — gray means no sensor close enough to represent this area honestly.",
+    regionLegendNote: "Kecamatan colored by its nearest sensor's status (within 9km) — kecamatan with no sensor that close simply aren't shown, rather than guessing.",
   },
   node: {
     key: 'node',
