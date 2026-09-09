@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeRegions, maxAllowableOffsetForZoom } from './boundaryRegions.js';
+import { normalizeRegions } from './boundaryRegions.js';
 
 const SAMPLE_GEOJSON = {
   type: 'FeatureCollection',
@@ -43,17 +43,6 @@ test('normalizeRegions: centroid is the average of the polygon vertices', () => 
 test('normalizeRegions: empty/missing features returns an empty array', () => {
   assert.deepEqual(normalizeRegions({ type: 'FeatureCollection', features: [] }), []);
   assert.deepEqual(normalizeRegions({}), []);
-});
-
-test('maxAllowableOffsetForZoom: smaller offset (more detail) at higher zoom', () => {
-  assert.ok(maxAllowableOffsetForZoom(16) < maxAllowableOffsetForZoom(12));
-  assert.ok(maxAllowableOffsetForZoom(12) < maxAllowableOffsetForZoom(10));
-});
-
-test('maxAllowableOffsetForZoom: never returns 0 or a negative number', () => {
-  for (const z of [10, 11, 12, 13, 14, 15, 16, 17]) {
-    assert.ok(maxAllowableOffsetForZoom(z) > 0);
-  }
 });
 
 const MULTIPOLYGON_SAMPLE = {

@@ -49,17 +49,3 @@ export function normalizeRegions(geojson) {
     };
   });
 }
-
-// Server-side geometry generalization (BIG's `maxAllowableOffset` query
-// param, in degrees) — verified empirically: 0.001 (~111m at the equator)
-// shrank one city-sized viewport's response from ~7MB to ~35KB with no
-// visible loss of shape. Estimates below REGION_LAYER_MIN_ZOOM (wider
-// viewport, more polygons, needs more aggressive simplification) and above
-// 14 (tight zoom, few polygons, can afford more detail) are NOT yet
-// empirically verified against real payload sizes — tune after checking
-// the Network tab at those zoom levels.
-export function maxAllowableOffsetForZoom(zoom) {
-  if (zoom >= 14) return 0.0005;
-  if (zoom >= 12) return 0.001;
-  return 0.003;
-}
