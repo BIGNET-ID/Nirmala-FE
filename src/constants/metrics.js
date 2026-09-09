@@ -17,6 +17,12 @@ export const METRICS = {
     colorRamp: 'linear-gradient(to right, #3b82f6, #22d3ee, #22c55e, #eab308, #f97316, #dc2626)',
     tickLabels: ['Low', 'Moderate', 'High', 'Extreme'],
     legendNote: 'Density of sensors reporting rain — a relative category, not a per-point mm/hour measurement.',
+    // Shown instead of the gradient above once the map switches from the
+    // KDE blob to AdminRegionLayer (see ColorRampLegendContent's
+    // `regionView` branch) — that layer paints kecamatan polygons by
+    // categorical sensor status, not this ramp, so the legend must switch
+    // with it rather than describe a gradient that isn't on screen.
+    regionLegendNote: "Kecamatan colored by its nearest sensor's status (within 25km) — gray means no sensor close enough to represent this area honestly.",
   },
   node: {
     key: 'node',
