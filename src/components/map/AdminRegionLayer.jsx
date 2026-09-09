@@ -50,9 +50,14 @@ export default function AdminRegionLayer({ regions, stations }) {
 
       for (const region of regionsRef.current) {
         const bucket = resolveRegionBucket(region, stationsRef.current);
-        // No-data regions reuse the "inactive" status color/tone — same
-        // token as an inactive sensor dot, not a new color.
-        const color = bucketColor(bucket || 'inactive');
+        // No sensor within MAX_DISTANCE_KM (9km, see regionNearestSensor.js)
+        // — skip entirely rather than drawing a gray "no-data" fill. This
+        // dataset is now nationwide, and most of rural Indonesia will never
+        // be near a Nirmala sensor; graying every such kecamatan would
+        // flood the screen with meaningless fill. Only draw kecamatan the
+        // sensor network actually has something to say about.
+        if (!bucket) continue;
+        const color = bucketColor(bucket);
 
         ctx.beginPath();
         region.polygon.forEach(({ lat, lng }, i) => {
@@ -64,7 +69,7 @@ export default function AdminRegionLayer({ regions, stations }) {
 
         // Region fill is more transparent than a sensor dot — dots stay
         // the primary focus, regions are supporting context.
-        ctx.globalAlpha = bucket ? 0.32 : 0.10;
+        ctx.globalAlpha = 0.32;
         ctx.fillStyle = color;
         ctx.fill();
         ctx.globalAlpha = 1;
