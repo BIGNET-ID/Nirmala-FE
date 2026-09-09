@@ -13,10 +13,14 @@ import { statusColor } from '@/lib/sensorColor';
  * static highlight ring in the brand accent color (no pulse/glow — see
  * AGENTS.md design guardrails on decorative looping animation and neon).
  * Clicks are hit-tested against the last rendered points and open the drawer.
+ *
+ * `focus` (Sensor Spot mode): dots render larger — in that mode the dots
+ * ARE the view, not an optional overlay on top of something else.
  */
 
 const DOT_R = 2.6;
 const DOT_R_RAIN = 3.2;
+const FOCUS_SCALE = 1.8;
 // A mouse cursor lands pixel-precisely on a ~3px dot; a fingertip generally
 // can't — 11px was mouse-sized and made tapping a sensor on mobile
 // effectively unreliable (confirmed: works via precise pointer input,
@@ -34,7 +38,7 @@ function resolveAccentColor() {
   return v || NIRMALA_ACCENT_FALLBACK;
 }
 
-export default function SensorDotLayer({ stations, showMarkers = true, selectedId = null, onSelect }) {
+export default function SensorDotLayer({ stations, showMarkers = true, selectedId = null, onSelect, focus = false }) {
   const map = useMap();
   const overlayRef = useRef(null);
   const canvasRef = useRef(null);
@@ -42,12 +46,14 @@ export default function SensorDotLayer({ stations, showMarkers = true, selectedI
   const renderedRef = useRef([]);   // [{ st, x, y }] in canvas coords
   const stationsRef = useRef(stations);
   const showRef = useRef(showMarkers);
+  const focusRef = useRef(focus);
   const selectedRef = useRef(selectedId);
   const onSelectRef = useRef(onSelect);
 
   useEffect(() => { stationsRef.current = stations; }, [stations]);
   useEffect(() => { showRef.current = showMarkers; }, [showMarkers]);
   useEffect(() => { onSelectRef.current = onSelect; }, [onSelect]);
+  useEffect(() => { focusRef.current = focus; overlayRef.current?._repaint?.(); }, [focus]);
 
   useEffect(() => {
     if (!map || !window.google) return;
@@ -74,13 +80,20 @@ export default function SensorDotLayer({ stations, showMarkers = true, selectedI
 
       const drawDot = (st, x, y) => {
         const color = statusColor(st);
-        const r = st.isRaining ? DOT_R_RAIN : DOT_R;
+        const r = (st.isRaining ? DOT_R_RAIN : DOT_R) * (focusRef.current ? FOCUS_SCALE : 1);
         ctx.beginPath();
         ctx.arc(x, y, r, 0, Math.PI * 2);
         ctx.fillStyle = color;
         ctx.globalAlpha = 0.95;
         ctx.fill();
+        // Rim stroke — makes each dot read as a crisp discrete point-marker
+        // rather than just a color, so it stays visually distinct from the
+        // soft, edge-less rain/BMKG heatmap ramp even where a status color
+        // shares a hue family with the ramp (see sensorColor.js).
         ctx.globalAlpha = 1;
+        ctx.lineWidth = 0.75;
+        ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+        ctx.stroke();
       };
 
       for (const st of stationsRef.current) {

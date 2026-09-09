@@ -209,7 +209,7 @@ export default function SensorDetailDrawer({ station, open, onClose, bmkgKabupat
               <Sparkline data={rainData} labels={rainWindow.labels} variant="area" color="var(--rain-3)" height={58}
                 rangeStart={rainRangeStart} rangeEnd={rainRangeEnd} buckets={rainBuckets}
                 ariaLabel={`Rainfall over the last hour, peak ${rainMax ?? 0} mm`} />
-              <SeriesStatsRow data={rainData} unit="mm" />
+              <SeriesStatsRow data={rainData} showAccumulated />
             </Box>
 
             {/* Signal */}

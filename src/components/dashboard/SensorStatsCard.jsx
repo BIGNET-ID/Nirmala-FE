@@ -43,11 +43,11 @@ function Row({ icon, color, label, value, bucket, hidden, onToggle }) {
 }
 
 /** Bare stats content — shared by the desktop floating card and the mobile bottom sheet. */
-export function SensorStatsCardContent({ stats, hiddenStatuses, onToggleStatus }) {
+export function SensorStatsCardContent({ stats, hiddenStatuses, onToggleStatus, scrapedAt, hideTitle }) {
   const isHidden = (bucket) => hiddenStatuses?.has(bucket) ?? false;
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      <Typography sx={{ ...eyebrowSx, mb: 0.25 }}>Sensor Statistics</Typography>
+      {!hideTitle && <Typography sx={{ ...eyebrowSx, mb: 0.25 }}>Sensor Statistics</Typography>}
       <Row icon="material-symbols:sensors-rounded" color="var(--color-text)" label="Total" value={stats.total} />
       <Row icon="material-symbols:check-circle-rounded" color="var(--status-active)" label="Active" value={stats.active}
         bucket="active" hidden={isHidden('active')} onToggle={onToggleStatus} />
@@ -59,6 +59,11 @@ export function SensorStatsCardContent({ stats, hiddenStatuses, onToggleStatus }
         bucket="inactive" hidden={isHidden('inactive')} onToggle={onToggleStatus} />
       <Row icon="material-symbols:block-rounded" color="var(--status-blacklisted)" label="Blacklist" value={stats.blacklist}
         bucket="blacklisted" hidden={isHidden('blacklisted')} onToggle={onToggleStatus} />
+      {scrapedAt && (
+        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.68rem', mt: 0.25 }}>
+          Updated <b>{scrapedAt.toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit' })}</b> WIB
+        </Typography>
+      )}
     </Box>
   );
 }
@@ -66,7 +71,7 @@ export function SensorStatsCardContent({ stats, hiddenStatuses, onToggleStatus }
 const statsCollapseTransition = { duration: 0.28, ease: [0.2, 0, 0, 1] }; // matches --ease-standard
 
 /** Desktop/tablet-landscape floating card (no self-positioning — the parent controls placement). */
-export default function SensorStatsCard({ stats, hiddenStatuses, onToggleStatus }) {
+export default function SensorStatsCard({ stats, hiddenStatuses, onToggleStatus, scrapedAt }) {
   const [open, setOpen] = useState(true);
 
   return (
@@ -86,12 +91,13 @@ export default function SensorStatsCard({ stats, hiddenStatuses, onToggleStatus 
       <Box
         onClick={(e) => { if (open) { e.stopPropagation(); setOpen(false); } }}
         sx={{
-          display: 'flex', alignItems: 'center', justifyContent: open ? 'flex-end' : 'center',
-          height: 32, px: open ? 0.5 : 0, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: open ? 'space-between' : 'center',
+          height: 32, px: open ? 1.75 : 0, cursor: 'pointer',
         }}
       >
+        {open && <Typography sx={eyebrowSx}>Sensor Statistics</Typography>}
         <Tooltip title={open ? 'Hide statistics' : 'Show statistics'}>
-          <IconButton size="small" disableRipple sx={{ p: 0.25, color: 'text.secondary' }}>
+          <IconButton size="small" disableRipple sx={{ p: 0.25, color: 'text.secondary', flexShrink: 0 }}>
             <Icon icon={open ? 'material-symbols:chevron-right-rounded' : 'material-symbols:sensors-rounded'} width={18} style={!open ? { color: 'var(--nirmala-cyan)' } : undefined} />
           </IconButton>
         </Tooltip>
@@ -107,7 +113,7 @@ export default function SensorStatsCard({ stats, hiddenStatuses, onToggleStatus 
             transition={{ duration: 0.18 }}
             sx={{ width: 218, px: 1.75, pb: 1.75 }}
           >
-            <SensorStatsCardContent stats={stats} hiddenStatuses={hiddenStatuses} onToggleStatus={onToggleStatus} />
+            <SensorStatsCardContent stats={stats} hiddenStatuses={hiddenStatuses} onToggleStatus={onToggleStatus} scrapedAt={scrapedAt} hideTitle />
           </Box>
         )}
       </AnimatePresence>

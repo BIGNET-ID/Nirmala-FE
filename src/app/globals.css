@@ -162,12 +162,16 @@
   /* Sensor status — severity order active < raining < unavailable(2h,
      unreachable) < inactive(24h, no data at all) < blacklisted. Must stay
      in sync with SENSOR_STATUS_COLOR in src/lib/sensorColor.js (see comment
-     there for why: canvas fillStyle can't resolve CSS vars). */
-  --status-active: #3cba54;
-  --status-raining: #3b82f6;
-  --status-unavailable: #f59e0b;
+     there for why: canvas fillStyle can't resolve CSS vars). Deliberately
+     shifted away from --rain-1..6 above — these used to share exact hex
+     values with the rain ramp's endpoints (raining=--rain-1, blacklisted=
+     --rain-6), which read as one ambiguous color language wherever sensor
+     dots and an active rain/BMKG heatmap share the screen. */
+  --status-active: #15803d;
+  --status-raining: #4338ca;
+  --status-unavailable: #b45309;
   --status-inactive: #4b5563;
-  --status-blacklisted: #dc2626;
+  --status-blacklisted: #991b1b;
 }
 
 /* ── Nirmala Command-Center Tokens — DARK override ── */
@@ -183,12 +187,18 @@
   --nirmala-cyan-dim: rgba(91, 141, 239, 0.16);
   --nirmala-focus-glow: 0 0 0 3px rgba(91, 141, 239, 0.20);
 
-  /* --status-inactive's light value (#4b5563) all but disappears against
-     this theme's near-black map bg — reuse --dm-300, the existing
-     dark-mode muted-gray token, for enough contrast. Must stay in sync
-     with SENSOR_STATUS_COLOR_DARK in src/lib/sensorColor.js (canvas
-     fillStyle can't resolve CSS vars, see comment there). */
+  /* Several --status-* light values all but disappear against this theme's
+     near-black map bg — brightened here for contrast (--status-inactive
+     reuses --dm-300, the existing dark-mode muted-gray token; the others
+     are brightened variants of their light-mode hue, deliberately NOT
+     equal to any --rain-1..6 stop — see the comment on SENSOR_STATUS_COLOR
+     above for why). Must stay in sync with SENSOR_STATUS_COLOR_DARK in
+     src/lib/sensorColor.js (canvas fillStyle can't resolve CSS vars, see
+     comment there). */
   --status-inactive: var(--dm-300);
+  --status-blacklisted: #e11d48;
+  --status-raining: #818cf8;
+  --status-active: #10b981;
 }
 
 /* ── Global Reset & Base ── */

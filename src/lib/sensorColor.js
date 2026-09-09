@@ -8,23 +8,38 @@
 // because canvas 2D context (ctx.fillStyle) cannot resolve CSS custom
 // properties — update both places by hand if either changes.
 
+// Deliberately shifted away from the Rain Density/BMKG rainbow ramp's own
+// stops (--rain-1..6 in globals.css: #3b82f6/#22d3ee/#22c55e/#eab308/
+// #f97316/#dc2626) — the previous palette had two EXACT hex collisions
+// (raining was the ramp's own low-end blue, blacklisted was the ramp's own
+// extreme-red), which read as one ambiguous color language when sensor
+// dots and an active rain/BMKG heatmap share the screen. Each status here
+// keeps its conventional meaning (green=healthy, red=blacklisted,
+// amber=unavailable, gray=inactive) but at a more muted/shifted tone than
+// the ramp's bright, fully-saturated spectrum, so the two systems read as
+// visually distinct even when they share a hue family.
 export const SENSOR_STATUS_COLOR = {
-  blacklisted: '#dc2626',  // --status-blacklisted
-  inactive: '#4b5563',     // --status-inactive
-  unavailable: '#f59e0b',  // --status-unavailable
-  raining: '#3b82f6',      // --status-raining
-  active: '#3cba54',       // --status-active (dry)
+  blacklisted: '#991b1b',  // deep brick-red — was #dc2626 (identical to ramp's extreme-red stop)
+  inactive: '#4b5563',     // unchanged — no collision with the ramp
+  unavailable: '#b45309',  // muted amber-brown — was #f59e0b (close to ramp's orange stop)
+  raining: '#4338ca',      // indigo — was #3b82f6 (identical to ramp's low-end blue stop)
+  active: '#15803d',       // forest green — was #3cba54 (close to ramp's mid green stop)
 };
 
-// Dark-mode-only overrides — the rest of SENSOR_STATUS_COLOR is saturated
-// enough to read on both the light (#e9eef5) and dark (#050811) map
-// backgrounds, but the muted slate used for "inactive" was tuned for the
-// light bg only and all but disappears against dark's near-black one.
-// Reuses --dm-300, the app's existing dark-mode muted-gray token, rather
-// than inventing a new color. Kept as hardcoded hex (not var(...)) for the
-// same canvas-fillStyle reason as SENSOR_STATUS_COLOR above.
+// Dark-mode-only overrides — the light-mode hex above reads fine on the
+// light (#e9eef5) map bg, but several of the more muted/dark tones above
+// lose contrast against dark mode's near-black (#050811) map bg. Kept as
+// hardcoded hex (not var(...)) for the same canvas-fillStyle reason as
+// SENSOR_STATUS_COLOR above.
+// NOTE: none of these dark-mode brightened values may equal a ramp stop
+// (#3b82f6/#22d3ee/#22c55e/#eab308/#f97316/#dc2626) — that would silently
+// reintroduce the exact collision this palette exists to remove, just in
+// dark mode only.
 const SENSOR_STATUS_COLOR_DARK = {
   inactive: '#a0a0a0',     // --dm-300
+  blacklisted: '#e11d48',  // brighter rose-red — was going to be #dc2626, but that IS the ramp's red stop
+  raining: '#818cf8',      // brighter indigo — the deeper indigo loses punch on near-black
+  active: '#10b981',       // brighter emerald — was going to be #22c55e, but that IS the ramp's green stop
 };
 
 // Mutually-exclusive display bucket, precedence manualBlacklisted > category

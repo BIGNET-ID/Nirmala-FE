@@ -75,7 +75,13 @@ const FEATHER_FLOOR = 0.7;
 // Light mode's minimum output alpha for any nonzero rain pixel (0-255) — a
 // faint reading would otherwise round-trip through OWM_OPACITY's ~0.9
 // canvas-level opacity and still be nearly invisible against a white basemap.
-const LIGHT_ALPHA_FLOOR = 110;
+const LIGHT_ALPHA_FLOOR = 170;
+// Dark mode's equivalent floor — previously absent (dark mode passed the
+// raw OpenWeather alpha straight through), so a light/faint rain pixel
+// could read as nearly invisible in dark mode too, especially over the
+// busier Satellite basemap. Lower than the light floor since dark
+// basemaps are already low-contrast enough for a fainter signal to read.
+const DARK_ALPHA_FLOOR = 90;
 
 /**
  * Recolors a precipitation tile's RGB via RAIN_LUT (keyed by the pixel's own
@@ -85,8 +91,8 @@ const LIGHT_ALPHA_FLOOR = 110;
  * ways — color always reflects the real raw intensity, unaffected by either
  * adjustment below, so hue means the same thing regardless of theme or
  * position in the tile:
- *  - theme floor: dark mode keeps the real alpha; light mode raises a
- *    minimum so faint rain doesn't vanish against the white basemap.
+ *  - theme floor: both themes raise a minimum output alpha (light higher
+ *    than dark) so faint rain doesn't vanish against either basemap.
  *  - edge feather: fades toward transparent within FEATHER_PX of any tile
  *    edge, softening the real (small) alpha discontinuity between
  *    independently-rendered OpenWeather tiles into a gradual tile-to-tile
@@ -103,7 +109,7 @@ function processPixels(imageData, dark) {
     d[idx + 2] = RAIN_LUT[rawAlpha * 3 + 2];
 
     let outAlpha = dark
-      ? rawAlpha
+      ? Math.round(DARK_ALPHA_FLOOR + (255 - DARK_ALPHA_FLOOR) * (rawAlpha / 255))
       : Math.round(LIGHT_ALPHA_FLOOR + (255 - LIGHT_ALPHA_FLOOR) * (rawAlpha / 255));
 
     const pixelIndex = idx / 4;

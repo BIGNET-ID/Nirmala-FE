@@ -3,6 +3,7 @@
 import { IconButton, Tooltip } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
+import { MAP_CONTROLS_HEIGHT } from '@/components/map/MapControls';
 
 /**
  * Standalone volcano-layer toggle — top-right, stacked directly below
@@ -22,10 +23,11 @@ import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 export default function VolcanoToggleControl({ active, onChange }) {
   const { isCompact, isWallTV } = useResponsiveLayout();
   const size = isCompact ? 44 : isWallTV ? 44 : 38;
-  // Mirrors MapControls.jsx's own math: MapExtrasCluster's row (top:16,
-  // height `size`) + its own top gap, then MapControls' 3-button column
-  // (3*size + 2*8px gaps), then one more gap before this button.
-  const top = 16 + size + 16 + (3 * size + 2 * 8) + 16;
+  // MapExtrasCluster's row (top:16, height `size`) + its own top gap, then
+  // MapControls' own stack height (imported so this never drifts out of
+  // sync with that component's internal layout), then one more gap before
+  // this button.
+  const top = 16 + size + 16 + MAP_CONTROLS_HEIGHT(isCompact, isWallTV) + 16;
 
   return (
     <Tooltip title={active ? 'Hide volcanoes' : 'Show volcanoes'} placement="left">

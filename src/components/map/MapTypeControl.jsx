@@ -7,11 +7,9 @@ import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 // Each swatch's colors are pulled from (or stylized after) this app's own
 // map styling — GoogleMapWrapper.jsx's MAP_STYLE_LIGHT land/water tones for
 // Default, a stylized dark green/navy pairing standing in for real
-// satellite imagery (which can't be reproduced in CSS) for Satellite, and
-// a stark black/white split for Outline, matching that mode's own binary
-// land/water silhouette style (MAP_STYLE_OUTLINE_LIGHT/DARK). The hard
-// 2-tone split (not a soft blend) reads as a tiny map preview rather than
-// a decorative gradient.
+// satellite imagery (which can't be reproduced in CSS) for Satellite. The
+// hard 2-tone split (not a soft blend) reads as a tiny map preview rather
+// than a decorative gradient.
 const SEGMENTS = [
   {
     id: 'roadmap', label: 'Default map', icon: 'material-symbols:map-rounded',
@@ -21,14 +19,10 @@ const SEGMENTS = [
     id: 'satellite', label: 'Satellite', icon: 'material-symbols:satellite-alt-rounded',
     swatch: 'linear-gradient(135deg, #1b2e1f 55%, #0c1b2e 55%)', iconColor: '#eef2f7',
   },
-  {
-    id: 'outline', label: 'Outline', icon: 'material-symbols:map-outline-rounded',
-    swatch: 'linear-gradient(135deg, #000000 50%, #ffffff 50%)', iconColor: '#9ca3af',
-  },
 ];
 
 /**
- * Bottom-left map-type switcher — Default (roadmap) / Satellite / Outline.
+ * Bottom-left map-type switcher — Default (roadmap) / Satellite.
  * Horizontal row of themed swatch chips (each tinted toward what that map
  * type actually looks like, per the comment above), following whichever
  * light/dark theme is active for the chrome around them. Deliberately
@@ -72,8 +66,6 @@ export default function MapTypeControl({ mapType, onChange }) {
       sx={{
         position: 'absolute', left: 16, bottom: 16, zIndex: 'var(--z-overlay, 100)',
         display: 'flex', flexDirection: 'row', gap: 0.5, p: 0.25,
-        border: '1px solid var(--nirmala-glass-border)', borderRadius: 'var(--radius-lg, 12px)',
-        bgcolor: 'var(--nirmala-glass-bg)',
       }}
     >
       {SEGMENTS.map((seg) => {

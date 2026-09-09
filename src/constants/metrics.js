@@ -18,6 +18,16 @@ export const METRICS = {
     tickLabels: ['Low', 'Moderate', 'High', 'Extreme'],
     legendNote: 'Density of sensors reporting rain — a relative category, not a per-point mm/hour measurement.',
   },
+  node: {
+    key: 'node',
+    label: 'Sensor Spot',
+    icon: 'material-symbols:sensors-rounded',
+    // No colorRamp/tickLabels — this mode has no gradient legend, just
+    // enlarged sensor dots as the primary content (see SensorDotLayer's
+    // `focus` prop). ColorRampLegendContent already falls back to showing
+    // just the title + legendNote when colorRamp is absent.
+    legendNote: 'Click a sensor point to see its rainfall chart.',
+  },
   mesh: {
     key: 'mesh',
     label: 'Mesh Map',

@@ -8,13 +8,14 @@ import { buildLUT, metersPerPixel, drawKernels, colourizeInto } from '@/lib/heat
 /**
  * Rain-density heatmap with a coverage base (BIGNET DS v19). "Titik Sensor"
  * (SensorDotLayer) is a fully independent dot layer with no heatmap
- * involvement. The whole heatmap (both layers below) is currently hidden —
- * see HEATMAP_ENABLED below.
+ * involvement.
  *
  * The live feed is BINARY (is_raining) — no numeric intensity to interpolate.
  * Two honest density layers, each one hue = one meaning:
  *  - COVERAGE (subtle teal): every ACTIVE, non-raining sensor emits a faint
  *    kernel → shows the live sensor network even when it isn't raining.
+ *    Still hidden — see SHOW_COVERAGE_LAYER below (separate, unrelated
+ *    revalidation, out of scope for the rain-density re-enable).
  *  - RAIN (dominant, cool→hot): every RAINING sensor emits a stronger kernel;
  *    overlaps accumulate → isolated rain = modest, clustered rain = hot core.
  * Coverage is drawn first, rain composited on top so rain always reads clearly.
@@ -23,18 +24,20 @@ import { buildLUT, metersPerPixel, drawKernels, colourizeInto } from '@/lib/heat
  * src/lib/heatmapKernel.js, shared with BmkgRainLayer.jsx.
  */
 
-// Whole heatmap (coverage teal base AND rain-density blobs) hidden for
-// now — the underlying density-kernel theory hasn't been validated yet
-// ("secara teori masih belum benar"). This is a blanket hide of everything
-// CanvasHeatmapOverlay draws, not just the coverage sub-layer: the two
-// layers read as one visual to users (they share the same blob shapes,
-// coverage is just the low end of the same gradient), so a partial hide
-// still looked like leftover coverage. Flip back on once validated.
-const HEATMAP_ENABLED = false;
+// Re-enabled with a tighter, more locally-honest 9km rain radius (was 35km)
+// — a regional 35km blur implied more spatial coverage than binary
+// is_raining data can actually support ("secara teori masih belum benar");
+// 9km reads as "immediate vicinity of this sensor" instead, which the
+// binary signal does support. Coverage sub-layer stays disabled
+// (SHOW_COVERAGE_LAYER) — that's a separate, still-unvalidated concern.
+const HEATMAP_ENABLED = true;
 const SHOW_COVERAGE_LAYER = false;
 
-const RAIN_KM = 35;
-const RAIN_MIN = 14, RAIN_MAX = 90;
+const RAIN_KM = 9;
+// Proportional to the old 35km→[14,90]px clamp (9/35 ≈ 0.257×) — verify
+// visually across zoom levels: too low a floor makes the blob barely
+// distinguishable from the sensor dot already drawn on top of it.
+const RAIN_MIN = 6, RAIN_MAX = 30;
 const COVER_KM = 22;
 const COVER_MIN = 8, COVER_MAX = 42;
 const POINT_ALPHA = 0.5;

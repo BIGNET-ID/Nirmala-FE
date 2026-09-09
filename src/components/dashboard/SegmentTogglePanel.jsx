@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import { Box, Button, Typography, FormControlLabel, Switch, Slider, Tooltip, Chip, IconButton } from '@mui/material';
 import { motion, AnimatePresence } from 'motion/react';
 import { Icon } from '@iconify/react';
 import { METRICS } from '@/constants/metrics';
 import { LAYER_STATUS } from '@/constants/layerStatus';
+import { useLocalStorageState } from '@/hooks/useLocalStorageState';
 
 /**
  * Sky/Ground Segment vendor panel (PRD §4.2). Groups every layer control by
@@ -35,31 +35,43 @@ const switchSx = {
   '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: 'var(--nirmala-cyan)', opacity: 0.6 },
 };
 
-function LayerSwitch({ checked, onChange, label, count, status, info, sx }) {
+// `caption`: an optional small line shown under the row while `checked` —
+// e.g. "As of 14:32 WIB" for layers with a real/estimated data
+// timestamp. Kept on the switch itself (not the vendor card) so it's clear
+// which specific toggle the time belongs to when several are active at
+// once — see the per-toggle timestamp usages below for what each shows.
+function LayerSwitch({ checked, onChange, label, count, status, info, sx, caption }) {
   const dot = STATUS_DOT[status];
   return (
-    <FormControlLabel
-      sx={{ ml: 0, mr: 0, justifyContent: 'space-between', width: '100%', ...sx }}
-      labelPlacement="start"
-      control={<Switch checked={checked} onChange={(e) => onChange(e.target.checked)} size="small" sx={switchSx} />}
-      label={
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
-          <Typography variant="body2" sx={{ fontSize: '0.82rem', color: 'text.primary' }}>
-            {label}{typeof count === 'number' ? <Box component="span" sx={{ color: 'text.secondary', ml: 0.5 }}>· {count}</Box> : null}
-          </Typography>
-          {info && (
-            <Tooltip title={info} placement="top">
-              <Icon icon="material-symbols:info-outline-rounded" width={13} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
-            </Tooltip>
-          )}
-          {dot && (
-            <Tooltip title={dot.title} placement="top">
-              <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: dot.color, flexShrink: 0 }} />
-            </Tooltip>
-          )}
-        </Box>
-      }
-    />
+    <Box>
+      <FormControlLabel
+        sx={{ ml: 0, mr: 0, justifyContent: 'space-between', width: '100%', ...sx }}
+        labelPlacement="start"
+        control={<Switch checked={checked} onChange={(e) => onChange(e.target.checked)} size="small" sx={switchSx} />}
+        label={
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+            <Typography variant="body2" sx={{ fontSize: '0.82rem', color: 'text.primary' }}>
+              {label}{typeof count === 'number' ? <Box component="span" sx={{ color: 'text.secondary', ml: 0.5 }}>· {count}</Box> : null}
+            </Typography>
+            {info && (
+              <Tooltip title={info} placement="top">
+                <Icon icon="material-symbols:info-outline-rounded" width={13} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+              </Tooltip>
+            )}
+            {dot && (
+              <Tooltip title={dot.title} placement="top">
+                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: dot.color, flexShrink: 0 }} />
+              </Tooltip>
+            )}
+          </Box>
+        }
+      />
+      {checked && caption && (
+        <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', fontSize: '0.66rem', mt: -0.25 }}>
+          {caption}
+        </Typography>
+      )}
+    </Box>
   );
 }
 
@@ -149,7 +161,8 @@ export function SkySegmentContent({
   activeLayer, onToggleHimawari,
   showWind, onToggleWind, windStatus,
   avgWindSpeedKmh, windSpeedMultiplier, onWindSpeedMultiplierChange,
-  owmLayer, onOwmChange,
+  owmLayers, onOwmLayerToggle,
+  himawariCaption, owmCaption, windCaption,
   hideTitle,
 }) {
   const himawariActive = activeLayer === 'himawari';
@@ -162,6 +175,7 @@ export function SkySegmentContent({
           onChange={onToggleHimawari}
           label={METRICS.himawari.label}
           info={METRICS.himawari.legendNote}
+          caption={himawariCaption}
         />
       </VendorCard>
 
@@ -170,20 +184,28 @@ export function SkySegmentContent({
         accent="var(--nirmala-cyan)"
         info="Rain and cloud cover layers from the OpenWeather global weather data provider."
       >
-        {/* Rain/Clouds share the same simple switch presentation as
-            Himawari's LayerSwitch above ("independent" toggles, styled
-            identically) — but stay mutually exclusive underneath: turning
-            one on turns the other off, since OpenWeatherLayer.jsx only
-            renders one tile layer at a time. */}
+        {/* Rain and Clouds are independent toggles — page.jsx mounts one
+            OpenWeatherLayer per active layer, so both can be on at once
+            (each is its own tile overlay, not a single shared slot). They
+            share the same `owmCaption` (an estimated synoptic-cycle time,
+            see src/lib/synopticTime.js) since both come from the same
+            OpenWeather Weather Maps 1.0 refresh cadence.
+            Temperature/Pressure toggles are temporarily hidden (state and
+            page.jsx wiring left intact — owmLayers.temperature/pressure
+            just never get toggled on with the UI hidden) — re-add the two
+            LayerSwitch rows below (same pattern as Rain/Clouds) to bring
+            them back. */}
         <LayerSwitch
-          checked={owmLayer === 'precipitation_new'}
-          onChange={(checked) => onOwmChange(checked ? 'precipitation_new' : null)}
+          checked={owmLayers.rain}
+          onChange={(checked) => onOwmLayerToggle('rain', checked)}
           label="Rain"
+          caption={owmCaption}
         />
         <LayerSwitch
-          checked={owmLayer === 'clouds_new'}
-          onChange={(checked) => onOwmChange(checked ? 'clouds_new' : null)}
+          checked={owmLayers.clouds}
+          onChange={(checked) => onOwmLayerToggle('clouds', checked)}
           label="Clouds"
+          caption={owmCaption}
         />
         {onToggleWind && (
           <LayerSwitch
@@ -191,6 +213,7 @@ export function SkySegmentContent({
             onChange={onToggleWind}
             label="Wind"
             status={windStatus}
+            caption={windCaption}
           />
         )}
         {/* Both Himawari (cloud-top IR) and this tile depict cloud/weather
@@ -200,7 +223,7 @@ export function SkySegmentContent({
             is the only way the user learns why the overlay looks fainter,
             since color alone can't communicate it (OpenWeather's tile
             colors are fixed server-side, not something we can restyle). */}
-        {himawariActive && owmLayer && (
+        {himawariActive && (owmLayers.rain || owmLayers.clouds) && (
           <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.62rem', lineHeight: 1.4 }}>
             Opacity automatically reduced while Himawari is active
           </Typography>
@@ -255,7 +278,7 @@ export function SkySegmentContent({
  */
 export function GroundSegmentContent({
   activeLayer, onLayerChange, showMarkers, onToggleMarkers, showCoverage, onToggleCoverage,
-  permissions,
+  permissions, bmkgCaption,
   hideTitle,
 }) {
   // Fail-open: a control is only hidden when the manifest explicitly says
@@ -269,6 +292,7 @@ export function GroundSegmentContent({
       <VendorCard title="Nirmala Data" accent="var(--status-active, #34d399)">
         <ModeButton active={activeLayer === 'rain'} icon={METRICS.rain.icon} label={METRICS.rain.label} onClick={() => onLayerChange('rain')} />
         <ModeButton active={activeLayer === 'mesh'} icon={METRICS.mesh.icon} label={METRICS.mesh.label} onClick={() => onLayerChange('mesh')} info={METRICS.mesh.legendNote} />
+        <ModeButton active={activeLayer === 'node'} icon={METRICS.node.icon} label={METRICS.node.label} onClick={() => onLayerChange('node')} info={METRICS.node.legendNote} />
 
         {canViewSensor && showSensorToggles && (
           <>
@@ -292,6 +316,7 @@ export function GroundSegmentContent({
           onChange={(checked) => onLayerChange(checked ? 'bmkg' : 'rain')}
           label={METRICS.bmkg.label}
           info={METRICS.bmkg.legendNote}
+          caption={bmkgCaption}
         />
       </VendorCard>
       <VendorCard title="Maxar" accent="var(--status-active, #34d399)" active={false} />
@@ -314,9 +339,13 @@ const collapseTransition = { duration: 0.28, ease: [0.2, 0, 0, 1] }; // matches 
  * `resetActive`/`onResetToggle` (optional): a master switch next to the
  * title that turns every boolean control in this panel on/off at once —
  * see handleResetFilters in page.jsx for what "default" means per segment.
+ *
+ * `open`/`onOpenChange` are controlled by the caller (SegmentPanel persists
+ * this to localStorage) rather than owned internally, so the collapsed/
+ * expanded state survives a reload.
  */
-function CollapsiblePanel({ icon, title, titleContent, children, resetActive, onResetToggle }) {
-  const [open, setOpen] = useState(true);
+function CollapsiblePanel({ icon, title, titleContent, children, resetActive, onResetToggle, open, onOpenChange }) {
+  const setOpen = (next) => onOpenChange(typeof next === 'function' ? next(open) : next);
 
   return (
     <Box
@@ -349,7 +378,7 @@ function CollapsiblePanel({ icon, title, titleContent, children, resetActive, on
             cursor: 'pointer',
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0, flex: titleContent && open ? 1 : '0 1 auto' }}>
             {(!titleContent || !open) && (
               <Icon icon={icon} width={20} style={{ color: 'var(--nirmala-cyan)', flexShrink: 0 }} />
             )}
@@ -361,7 +390,9 @@ function CollapsiblePanel({ icon, title, titleContent, children, resetActive, on
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.15 }}
-                  sx={titleContent ? { overflow: 'hidden' } : { ...eyebrowSx, whiteSpace: 'nowrap', overflow: 'hidden' }}
+                  sx={titleContent
+                    ? { overflow: 'hidden', display: 'flex', width: '100%' }
+                    : { ...eyebrowSx, whiteSpace: 'nowrap', overflow: 'hidden' }}
                 >
                   {titleContent ?? title}
                 </Box>
@@ -421,8 +452,8 @@ function CollapsiblePanel({ icon, title, titleContent, children, resetActive, on
 }
 
 const SEGMENT_TABS = [
-  { key: 'sky', label: 'Space', icon: 'material-symbols:satellite-alt-rounded' },
   { key: 'ground', label: 'Ground', icon: 'material-symbols:sensors-rounded' },
+  { key: 'sky', label: 'Space', icon: 'material-symbols:satellite-alt-rounded' },
 ];
 
 // Pill switcher filling CollapsiblePanel's 44px-tall header row — same
@@ -431,7 +462,7 @@ const SEGMENT_TABS = [
 // CollapsiblePanel above), so it reads as the header's main content.
 function SegmentTabSwitcher({ activeTab, onChange }) {
   return (
-    <Box sx={{ display: 'flex', gap: 0.25, p: 0.25, borderRadius: 'var(--radius-full, 9999px)', background: 'rgba(255,255,255,0.03)' }}>
+    <Box sx={{ display: 'flex', width: '100%', gap: 0.25, p: 0.25, borderRadius: 'var(--radius-full, 9999px)', background: 'rgba(255,255,255,0.03)' }}>
       {SEGMENT_TABS.map((tab) => {
         const active = activeTab === tab.key;
         return (
@@ -441,7 +472,7 @@ function SegmentTabSwitcher({ activeTab, onChange }) {
             disableRipple
             startIcon={<Icon icon={tab.icon} width={17} />}
             sx={{
-              px: 1.5, height: 36, gap: 0.75, minWidth: 0,
+              flex: 1, px: 1.5, height: 36, gap: 0.75, minWidth: 0,
               fontSize: '0.8rem', fontWeight: 700, textTransform: 'none',
               borderRadius: 'var(--radius-full, 9999px)',
               color: active ? 'var(--nirmala-cyan)' : 'var(--color-text-muted)',
@@ -467,7 +498,10 @@ function SegmentTabSwitcher({ activeTab, onChange }) {
  * control is lost by merging the chrome.
  */
 export function SegmentPanel({ skyFilterActive, onSkyFilterToggle, groundFilterActive, onGroundFilterToggle, ...contentProps }) {
-  const [activeSegment, setActiveSegment] = useState('sky');
+  // Persisted (see useLocalStorageState) — the panel stays open/collapsed
+  // and on whichever tab the user last left it on, across reloads.
+  const [activeSegment, setActiveSegment] = useLocalStorageState('nirmala-segment-tab', 'sky');
+  const [open, setOpen] = useLocalStorageState('nirmala-segment-panel-open', true);
   const isSky = activeSegment === 'sky';
 
   return (
@@ -481,6 +515,8 @@ export function SegmentPanel({ skyFilterActive, onSkyFilterToggle, groundFilterA
       titleContent={<SegmentTabSwitcher activeTab={activeSegment} onChange={setActiveSegment} />}
       resetActive={isSky ? skyFilterActive : groundFilterActive}
       onResetToggle={isSky ? onSkyFilterToggle : onGroundFilterToggle}
+      open={open}
+      onOpenChange={setOpen}
     >
       {isSky ? <SkySegmentContent {...contentProps} hideTitle /> : <GroundSegmentContent {...contentProps} hideTitle />}
     </CollapsiblePanel>

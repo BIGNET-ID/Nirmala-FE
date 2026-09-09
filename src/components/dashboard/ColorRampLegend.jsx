@@ -10,7 +10,7 @@ const eyebrowSx = {
 };
 
 /** Bare legend content — shared by the desktop floating card and the mobile bottom sheet. */
-export function ColorRampLegendContent({ activeLayer, showCoverage = false, meshDistanceRange = null }) {
+export function ColorRampLegendContent({ activeLayer, showCoverage = false, meshDistanceRange = null, hideTitle }) {
   const metric = METRICS[activeLayer];
   if (!metric) return null;
 
@@ -26,16 +26,18 @@ export function ColorRampLegendContent({ activeLayer, showCoverage = false, mesh
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
-        <Typography sx={{ ...eyebrowSx, display: 'block' }}>
-          {metric.label}
-        </Typography>
-        {metric.legendNote && (
-          <Tooltip title={metric.legendNote}>
-            <Icon icon="material-symbols:info-outline-rounded" width={13} style={{ color: 'var(--nirmala-cyan)', flexShrink: 0 }} />
-          </Tooltip>
-        )}
-      </Box>
+      {!hideTitle && (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+          <Typography sx={{ ...eyebrowSx, display: 'block' }}>
+            {metric.label}
+          </Typography>
+          {metric.legendNote && (
+            <Tooltip title={metric.legendNote}>
+              <Icon icon="material-symbols:info-outline-rounded" width={13} style={{ color: 'var(--nirmala-cyan)', flexShrink: 0 }} />
+            </Tooltip>
+          )}
+        </Box>
+      )}
 
       {metric.colorRamp && metric.tickLabels ? (
         // Windy/BMKG-style tick-marked bar: N evenly-spaced qualitative
@@ -130,12 +132,24 @@ export default function ColorRampLegend(props) {
       <Box
         onClick={(e) => { if (open) { e.stopPropagation(); setOpen(false); } }}
         sx={{
-          display: 'flex', alignItems: 'center', justifyContent: open ? 'flex-end' : 'center',
-          height: 32, px: open ? 0.5 : 0, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: open ? 'space-between' : 'center',
+          height: 32, px: open ? 1.75 : 0, cursor: 'pointer', gap: 0.5,
         }}
       >
+        {open && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+            <Typography sx={{ ...eyebrowSx, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {metric.label}
+            </Typography>
+            {metric.legendNote && (
+              <Tooltip title={metric.legendNote}>
+                <Icon icon="material-symbols:info-outline-rounded" width={13} style={{ color: 'var(--nirmala-cyan)', flexShrink: 0 }} />
+              </Tooltip>
+            )}
+          </Box>
+        )}
         <Tooltip title={open ? 'Hide legend' : 'Show legend'}>
-          <IconButton size="small" disableRipple sx={{ p: 0.25, color: 'text.secondary' }}>
+          <IconButton size="small" disableRipple sx={{ p: 0.25, color: 'text.secondary', flexShrink: 0 }}>
             <Icon icon={open ? 'material-symbols:chevron-right-rounded' : metric.icon} width={18} style={!open ? { color: 'var(--nirmala-cyan)' } : undefined} />
           </IconButton>
         </Tooltip>
@@ -151,7 +165,7 @@ export default function ColorRampLegend(props) {
             transition={{ duration: 0.18 }}
             sx={{ width: 218, px: 1.75, pb: 1.75 }}
           >
-            <ColorRampLegendContent {...props} />
+            <ColorRampLegendContent {...props} hideTitle />
           </Box>
         )}
       </AnimatePresence>

@@ -33,6 +33,7 @@ import { useBmkgWeather } from '@/hooks/useBmkgWeather';
 import { useVolcanoes } from '@/hooks/useVolcanoes';
 import { useAuth } from '@/hooks/useAuth';
 import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
+import { useLocalStorageState } from '@/hooks/useLocalStorageState';
 import { useThemeMode } from '@/context/ThemeModeContext';
 import { METRICS } from '@/constants/metrics';
 import { MAP_CENTER, MAP_ZOOM_DEFAULT, MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@/constants/mapConfig';
@@ -41,6 +42,7 @@ import { filterStationsInBounds, summarizeStations } from '@/lib/provinceFilter'
 import { statusBucket } from '@/lib/sensorColor';
 import { averageSpeed } from '@/lib/windStats';
 import { smoothZoomTo } from '@/lib/smoothZoom';
+import { lastSynopticTime } from '@/lib/synopticTime';
 
 // OpenWeather's precipitation tiles are pale, semi-transparent PNGs — the
 // same fixed alpha reads much dimmer against the near-black dark basemap
@@ -98,7 +100,10 @@ export default function NirmalaDashboard() {
     setShowWind(checked);
     if (!checked) setWindSpeedMultiplier(1);
   };
-  const [owmLayer, setOwmLayer] = useState(null); // OpenWeather tile layer id or null
+  // OpenWeather Rain/Clouds/Temperature/Pressure are all independent —
+  // each rendered as its own OpenWeatherLayer tile overlay below.
+  const [owmLayers, setOwmLayers] = useState({ rain: false, clouds: false, temperature: false, pressure: false });
+  const handleOwmLayerToggle = (key, checked) => setOwmLayers((prev) => ({ ...prev, [key]: checked }));
   // Which sensor-status rows (from Statistik Sensor) are hidden from the map
   // dots. Stats counts themselves stay unfiltered — this only trims what
   // SensorDotLayer draws. Buckets match statusBucket() precedence.
@@ -116,12 +121,17 @@ export default function NirmalaDashboard() {
   // two competing recursive listeners on the same map.
   const cancelZoomTweenRef = useRef(null);
   const [map, setMap] = useState(null);
-  const [mapType, setMapType] = useState('roadmap');
+  // Persisted across reloads (see useLocalStorageState) — map type, the
+  // last zoom level, and the controls-visibility toggle all stay however
+  // the user last left them instead of resetting to hardcoded defaults on
+  // every mount.
+  const [mapType, setMapType] = useLocalStorageState('nirmala-map-type', 'roadmap');
+  const [storedZoom, setStoredZoom] = useLocalStorageState('nirmala-map-zoom', MAP_ZOOM_DEFAULT);
   const mapContainerRef = useRef(null);
   // Master show/hide for MapControls, the merged Space/Ground panel,
   // SensorStatsCard, and ColorRampLegend — toggled from MapExtrasCluster,
   // which itself always stays visible so there's always a way back.
-  const [controlsVisible, setControlsVisible] = useState(true);
+  const [controlsVisible, setControlsVisible] = useLocalStorageState('nirmala-controls-visible', true);
   const [activeTab, setActiveTab] = useState('current'); // 'current' | 'timeline' — PRD §4.1 Dual-Tab
   const [selectedProvinceCode, setSelectedProvinceCode] = useState(null);
   // Reported by MeshLayer once it computes the Mesh Map MST, so
@@ -191,6 +201,20 @@ export default function NirmalaDashboard() {
       ? bmkgLastSynced
       : rainvisionLastSynced;
 
+  // Sensor Statistics' own "as of" time — when Nirmala's backend last
+  // scraped the sensor network (per-station `scrapedAt`, normalized from
+  // the raw `_scraped_at` field), distinct from `rainvisionLastSynced`
+  // above (each sensor's own self-reported `lastUpdate`). Same
+  // max-across-stations pattern.
+  const sensorsScrapedAt = useMemo(() => {
+    if (!SENSOR_STATIONS.length) return null;
+    const times = SENSOR_STATIONS
+      .map((s) => new Date(s.scrapedAt))
+      .filter((d) => !Number.isNaN(d.getTime()));
+    if (!times.length) return null;
+    return new Date(Math.max(...times.map((d) => d.getTime())));
+  }, [SENSOR_STATIONS]);
+
   // Notification bell content (DashboardHeader) — live status, not a
   // discrete message log, since all three of these continuously re-derive
   // from the sensor stream/Himawari state rather than firing one-off events.
@@ -209,6 +233,20 @@ export default function NirmalaDashboard() {
     if (METRICS[defaultLayer]) handleLayerChange(defaultLayer);
     appliedDefaultLayerRef.current = true;
   }, [defaultLayer]);
+
+  // Restore the last zoom level the user left the map at (see storedZoom /
+  // useLocalStorageState above). Applied imperatively once `map` is ready —
+  // the same "apply once" pattern as appliedDefaultLayerRef/
+  // appliedDefaultMapRef below — rather than relying solely on
+  // GoogleMapWrapper's `defaultZoom` prop, since that prop only sets the
+  // *initial* zoom at Map construction time and can't pick up a value that
+  // finishes hydrating from localStorage after the Map has already mounted.
+  const appliedStoredZoomRef = useRef(false);
+  useEffect(() => {
+    if (appliedStoredZoomRef.current || !map) return;
+    map.setZoom(storedZoom);
+    appliedStoredZoomRef.current = true;
+  }, [map, storedZoom]);
 
   const appliedDefaultMapRef = useRef(false);
   useEffect(() => {
@@ -231,7 +269,9 @@ export default function NirmalaDashboard() {
   // over wherever the user is actually looking (see route.js/useWindField.js
   // for why: a fixed world-sized bbox would spread the same 54 OpenWeather
   // points too thin to look like anything). Debounced on `idle` (fires once
-  // pan/zoom settles) rather than on every drag frame.
+  // pan/zoom settles) rather than on every drag frame. Also persists the
+  // settled zoom level (see useLocalStorageState/storedZoom above) so a
+  // reload restores wherever the user last left the map.
   const [mapBounds, setMapBounds] = useState(null);
   useEffect(() => {
     if (!map) return;
@@ -240,13 +280,28 @@ export default function NirmalaDashboard() {
       clearTimeout(timer);
       timer = setTimeout(() => {
         const b = map.getBounds();
-        if (!b) return;
-        const ne = b.getNorthEast();
-        const sw = b.getSouthWest();
-        setMapBounds({ north: ne.lat(), south: sw.lat(), east: ne.lng(), west: sw.lng() });
+        if (b) {
+          const ne = b.getNorthEast();
+          const sw = b.getSouthWest();
+          setMapBounds({ north: ne.lat(), south: sw.lat(), east: ne.lng(), west: sw.lng() });
+        }
+        setStoredZoom(map.getZoom());
       }, 800);
     });
     return () => { clearTimeout(timer); listener.remove(); };
+  }, [map, setStoredZoom]);
+
+  // Live zoom-level readout (shown between MapControls' +/- buttons) — a
+  // separate, un-debounced value from storedZoom above: that one persists
+  // to localStorage on a deliberate 800ms delay (idle), which would read as
+  // laggy for a number sitting right between the buttons the user just
+  // clicked. `zoom_changed` fires immediately on every zoom step.
+  const [currentZoom, setCurrentZoom] = useState(MAP_ZOOM_DEFAULT);
+  useEffect(() => {
+    if (!map) return;
+    setCurrentZoom(map.getZoom());
+    const listener = map.addListener('zoom_changed', () => setCurrentZoom(map.getZoom()));
+    return () => listener.remove();
   }, [map]);
 
   const { field: windField, ambientField: windAmbientField, status: windFieldStatus } = useWindField(mapBounds);
@@ -258,6 +313,18 @@ export default function NirmalaDashboard() {
     const avg = averageSpeed(source);
     return avg == null ? null : avg * 3.6; // m/s -> km/h
   }, [windField, windAmbientField]);
+
+  // Activation/data-timestamp captions shown under each active toggle (see
+  // LayerSwitch's `caption` prop in SegmentTogglePanel.jsx). Himawari/BMKG/
+  // Wind have a genuinely real timestamp available; the OpenWeather tile
+  // toggles (Rain/Clouds/Temperature/Pressure) don't (see synopticTime.js
+  // for why), so that one is explicitly labeled as an estimate.
+  const formatWib = (d) => d.toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+  const himawariCaption = himawariLastSynced ? `As of ${formatWib(himawariLastSynced)}` : null;
+  const bmkgCaption = bmkgLastSynced ? `As of ${formatWib(bmkgLastSynced)}` : null;
+  const windFetchedAt = (windField?.speed?.length ? windField : windAmbientField)?.fetchedAt;
+  const windCaption = windFetchedAt ? `As of ${formatWib(new Date(windFetchedAt))}` : null;
+  const owmCaption = `Refreshes ~every 3h, around ${formatWib(lastSynopticTime())}`;
 
   // active/raining/unavailable/inactive come straight from the backend's own
   // `categories` tally (see /api/stream/sensors) — it already classifies
@@ -293,7 +360,7 @@ export default function NirmalaDashboard() {
   const handleSkyFilterToggle = (checked) => {
     handleHimawariToggle(checked);
     handleToggleWind(checked);
-    if (!checked) setOwmLayer(null);
+    if (!checked) setOwmLayers({ rain: false, clouds: false, temperature: false, pressure: false });
   };
   const groundFilterActive = showCoverage && showMarkers;
   const handleGroundFilterToggle = (checked) => {
@@ -380,15 +447,42 @@ export default function NirmalaDashboard() {
         {/* Map container */}
         <Box ref={mapContainerRef} sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           <Box sx={{ position: 'absolute', inset: 0, display: activeTab === 'current' ? 'block' : 'none' }}>
-            <GoogleMapWrapper onMapLoad={setMap} mapType={mapType}>
-              {/* Himawari (cloud-top IR) and this tile both depict cloud/weather
-                  cover over the same area — lower this one's opacity while
-                  Himawari is active so the two don't visually fight (see the
-                  matching note in SegmentTogglePanel). */}
-              <OpenWeatherLayer
-                layer={owmLayer}
-                opacity={OWM_OPACITY[mode][activeLayer === 'himawari' ? 'himawari' : 'normal']}
-              />
+            <GoogleMapWrapper onMapLoad={setMap} mapType={mapType} defaultZoom={storedZoom}>
+              {/* Himawari (cloud-top IR) and these tiles both depict cloud/
+                  weather cover over the same area — lower their opacity
+                  while Himawari is active so they don't visually fight (see
+                  the matching note in SegmentTogglePanel). All four OWM
+                  toggles are independent, so any combination may render at
+                  once — each is its own tile overlay instance. Mount order
+                  is deliberate: map.overlayMapTypes paints later-pushed
+                  entries on top, and Rain (the primary precipitation
+                  signal) must always stay visually above Clouds, which
+                  stays above the less time-critical Pressure/Temperature
+                  layers. */}
+              {owmLayers.pressure && (
+                <OpenWeatherLayer
+                  layer="pressure_new"
+                  opacity={OWM_OPACITY[mode][activeLayer === 'himawari' ? 'himawari' : 'normal']}
+                />
+              )}
+              {owmLayers.temperature && (
+                <OpenWeatherLayer
+                  layer="temp_new"
+                  opacity={OWM_OPACITY[mode][activeLayer === 'himawari' ? 'himawari' : 'normal']}
+                />
+              )}
+              {owmLayers.clouds && (
+                <OpenWeatherLayer
+                  layer="clouds_new"
+                  opacity={OWM_OPACITY[mode][activeLayer === 'himawari' ? 'himawari' : 'normal']}
+                />
+              )}
+              {owmLayers.rain && (
+                <OpenWeatherLayer
+                  layer="precipitation_new"
+                  opacity={OWM_OPACITY[mode][activeLayer === 'himawari' ? 'himawari' : 'normal']}
+                />
+              )}
               {(activeLayer === 'rain' || activeLayer === 'himawari') && (
                 <CanvasHeatmapOverlay stations={SENSOR_STATIONS} showCoverage={showCoverage} />
               )}
@@ -417,10 +511,11 @@ export default function NirmalaDashboard() {
               <SensorDotLayer
                 stations={visibleStations}
                 // Mesh Map is about inspecting gaps/coverage between
-                // sensors — hiding dots by default there would defeat the
-                // point, so it always shows them regardless of the user's
-                // toggle.
-                showMarkers={activeLayer === 'mesh' ? true : showMarkers}
+                // sensors, and Sensor Spot's dots ARE the view — hiding
+                // dots by default in either would defeat the point, so
+                // both always show them regardless of the user's toggle.
+                showMarkers={activeLayer === 'mesh' || activeLayer === 'node' ? true : showMarkers}
+                focus={activeLayer === 'node'}
                 selectedId={selectedStation?.id ?? null}
                 onSelect={setSelectedStation}
               />
@@ -448,10 +543,11 @@ export default function NirmalaDashboard() {
                 showMarkers, onToggleMarkers: setShowMarkers, showCoverage, onToggleCoverage: setShowCoverage,
                 showWind, onToggleWind: handleToggleWind, windStatus: windFieldStatus,
                 avgWindSpeedKmh, windSpeedMultiplier, onWindSpeedMultiplierChange: setWindSpeedMultiplier,
-                owmLayer, onOwmChange: setOwmLayer, permissions,
+                owmLayers, onOwmLayerToggle: handleOwmLayerToggle, permissions,
+                himawariCaption, owmCaption, windCaption, bmkgCaption,
               };
               const legendProps = { activeLayer, showCoverage, meshDistanceRange };
-              const statsProps = { stats, hiddenStatuses, onToggleStatus: toggleStatusVisibility };
+              const statsProps = { stats, hiddenStatuses, onToggleStatus: toggleStatusVisibility, scrapedAt: sensorsScrapedAt };
 
               if (isCompact) {
                 return (
@@ -500,13 +596,14 @@ export default function NirmalaDashboard() {
                 onZoomIn={() => handleZoom(1)}
                 onZoomOut={() => handleZoom(-1)}
                 onReset={handleReset}
+                zoom={currentZoom}
               />
             )}
 
             {/* Theme toggle — top-left, standalone */}
             <ThemeToggleControl />
 
-            {/* Map type (Default/Satellite/Outline) — bottom-left, standalone */}
+            {/* Map type (Default/Satellite) — bottom-left, standalone */}
             <MapTypeControl mapType={mapType} onChange={setMapType} />
 
             {/* Volcanoes — bottom-right, standalone, independent of Sky/Ground state */}

@@ -146,7 +146,7 @@ export default function DashboardHeader({ health, streamStatus, activeTab, onTab
           component="img"
           src={mode === 'dark' ? '/nirmala-brand-dark.png' : '/nirmala-brand.png'}
           alt="Nirmala"
-          sx={{ height: 32 * scale, width: 'auto', display: 'block', flexShrink: 0 }}
+          sx={{ height: 48 * scale, width: 'auto', display: 'block', flexShrink: 0 }}
         />
       </Box>
 

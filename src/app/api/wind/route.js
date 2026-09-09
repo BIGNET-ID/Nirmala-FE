@@ -110,6 +110,10 @@ async function sampleGrid(bounds, nx, ny) {
     u: cells.map((c) => +c.u.toFixed(3)),
     v: cells.map((c) => +c.v.toFixed(3)),
     speed: cells.map((c) => +c.speed.toFixed(2)),
+    // Real fetch time (not a fabricated/estimated one) — when THIS server
+    // actually pulled the batch from OpenWeather, so the client can show a
+    // genuine "as of" timestamp for the Wind toggle.
+    fetchedAt: Date.now(),
   };
 }
 

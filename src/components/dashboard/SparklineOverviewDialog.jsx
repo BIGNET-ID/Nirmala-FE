@@ -50,7 +50,7 @@ export default function SparklineOverviewDialog({ open, onClose, stationId, rain
             <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.75 }}>Rainfall · mm (5 min)</Typography>
             <Sparkline data={rain?.data || []} labels={rain?.labels} variant="area" color="var(--rain-3)" height={220}
               rangeStart={rainRangeStart} rangeEnd={rainRangeEnd} buckets={rainBuckets} />
-            <SeriesStatsRow data={rain?.data} unit="mm" />
+            <SeriesStatsRow data={rain?.data} showAccumulated />
           </Box>
 
           <Box>

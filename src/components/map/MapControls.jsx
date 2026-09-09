@@ -17,7 +17,24 @@ function makeBtnSx(size) {
   };
 }
 
-export default function MapControls({ onZoomIn, onZoomOut, onReset }) {
+// Height of the zoom-level readout row sitting between Zoom in/out — plain
+// text, not a button, so it's shorter than the square icon buttons.
+const ZOOM_TEXT_HEIGHT = 20;
+const GAP_PX = 8; // matches the Box's gap:1 (MUI spacing unit)
+
+/**
+ * Total on-screen height of this control stack (Zoom in, zoom-level text,
+ * Zoom out, Reset) — exported so sibling controls stacked below it
+ * (VolcanoToggleControl) can compute their own offset without hardcoding
+ * this component's internal layout, the same pattern MapTypeControl.jsx
+ * already uses (MAP_TYPE_CONTROL_HEIGHT).
+ */
+export function MAP_CONTROLS_HEIGHT(isCompact, isWallTV) {
+  const size = isCompact ? 44 : isWallTV ? 44 : 38;
+  return size + GAP_PX + ZOOM_TEXT_HEIGHT + GAP_PX + size + GAP_PX + size;
+}
+
+export default function MapControls({ onZoomIn, onZoomOut, onReset, zoom }) {
   const { isCompact, isWallTV } = useResponsiveLayout();
   const size = isCompact ? 44 : isWallTV ? 44 : 38;
   const btnSx = makeBtnSx(size);
@@ -34,6 +51,7 @@ export default function MapControls({ onZoomIn, onZoomOut, onReset }) {
         zIndex: 'var(--z-overlay, 100)',
         display: 'flex',
         flexDirection: 'column',
+        alignItems: 'center',
         gap: 1,
       }}
     >
@@ -42,6 +60,20 @@ export default function MapControls({ onZoomIn, onZoomOut, onReset }) {
           <Icon icon="material-symbols:add-rounded" width={isWallTV ? 22 : undefined} />
         </IconButton>
       </Tooltip>
+      <Box
+        sx={{
+          height: ZOOM_TEXT_HEIGHT,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: size,
+          fontSize: isWallTV ? '0.72rem' : '0.66rem',
+          fontWeight: 700,
+          color: 'text.secondary',
+          userSelect: 'none',
+        }}
+        aria-label={zoom != null ? `Zoom level ${Math.round(zoom)}` : undefined}
+      >
+        {zoom != null ? Math.round(zoom) : '—'}
+      </Box>
       <Tooltip title="Zoom out" placement="left">
         <IconButton onClick={onZoomOut} sx={btnSx} aria-label="Zoom out">
           <Icon icon="material-symbols:remove-rounded" width={isWallTV ? 22 : undefined} />

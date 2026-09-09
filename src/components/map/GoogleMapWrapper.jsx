@@ -3,7 +3,7 @@
 import React from 'react';
 import { APIProvider, Map } from '@vis.gl/react-google-maps';
 import {
-  MAP_CENTER, MAP_ZOOM_DEFAULT, MAP_BOUNDS_ASIA, MAP_MIN_ZOOM, MAP_MAX_ZOOM,
+  MAP_CENTER, MAP_ZOOM_DEFAULT, MAP_BOUNDS_INDONESIA, MAP_MIN_ZOOM, MAP_MAX_ZOOM,
 } from '@/constants/mapConfig';
 import { useThemeMode } from '@/context/ThemeModeContext';
 
@@ -252,53 +252,11 @@ const MAP_STYLE_DARK = [
     }
 ];
 
-// "Outline" map type — a stark binary silhouette (land vs. water only, no
-// labels/admin boundaries/roads/POI/terrain clutter), user-provided style
-// pair (a Maps Styling Wizard export). Stays on mapTypeId 'roadmap' (see
-// below) and re-styles it; still follows whichever light/dark theme is
-// active, it's a map TYPE choice, not a second place to change theme (that
-// stays owned by ThemeToggleControl).
-//
-// Earlier attempts tried to stroke the coastline itself via
-// `geometry.stroke` on 'landscape'/'water' — verified empirically that
-// this has NO visible effect on Google's tile renderer for area features
-// (only line-based features like 'administrative'/'road' render a
-// stroke; see project memory: overlayview-onadd-never-fired /
-// outline-map-coastline-overlay-deferred). This version leans into flat
-// fill contrast instead — administrative boundaries are turned off
-// entirely (rather than kept as a muted line), so the two fills alone
-// carry the whole image.
-const MAP_STYLE_OUTLINE_LIGHT = [
-  { featureType: 'all', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-  { featureType: 'administrative', elementType: 'all', stylers: [{ visibility: 'off' }] },
-  { featureType: 'landscape', elementType: 'all', stylers: [{ color: '#000000' }] },
-  { featureType: 'landscape.man_made', elementType: 'all', stylers: [{ visibility: 'off' }] },
-  { featureType: 'landscape.natural.terrain', elementType: 'all', stylers: [{ visibility: 'off' }] },
-  { featureType: 'poi', elementType: 'all', stylers: [{ visibility: 'off' }] },
-  { featureType: 'road', elementType: 'all', stylers: [{ visibility: 'off' }] },
-  { featureType: 'transit', elementType: 'all', stylers: [{ visibility: 'off' }] },
-  { featureType: 'water', elementType: 'all', stylers: [{ color: '#ffffff' }] },
-];
-
-const MAP_STYLE_OUTLINE_DARK = [
-  { featureType: 'all', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-  { featureType: 'administrative', elementType: 'all', stylers: [{ visibility: 'off' }] },
-  { featureType: 'landscape', elementType: 'all', stylers: [{ color: '#ffffff' }] },
-  { featureType: 'landscape.man_made', elementType: 'all', stylers: [{ visibility: 'off' }] },
-  { featureType: 'landscape.natural.terrain', elementType: 'all', stylers: [{ visibility: 'off' }] },
-  { featureType: 'poi', elementType: 'all', stylers: [{ visibility: 'off' }] },
-  { featureType: 'road', elementType: 'all', stylers: [{ visibility: 'off' }] },
-  { featureType: 'transit', elementType: 'all', stylers: [{ visibility: 'off' }] },
-  { featureType: 'water', elementType: 'all', stylers: [{ color: '#000000' }] },
-];
-
-export default function GoogleMapWrapper({ children, onMapLoad, mapType = 'roadmap' }) {
+export default function GoogleMapWrapper({ children, onMapLoad, mapType = 'roadmap', defaultZoom = MAP_ZOOM_DEFAULT }) {
   const { mode } = useThemeMode();
   // Satellite ignores `styles` entirely — Google's own platform behavior,
-  // imagery can't be recolored — so this only matters for roadmap/outline.
-  const styles = mapType === 'outline'
-    ? (mode === 'dark' ? MAP_STYLE_OUTLINE_DARK : MAP_STYLE_OUTLINE_LIGHT)
-    : (mode === 'dark' ? MAP_STYLE_DARK : MAP_STYLE_LIGHT);
+  // imagery can't be recolored — so this only matters for roadmap.
+  const styles = mode === 'dark' ? MAP_STYLE_DARK : MAP_STYLE_LIGHT;
   const mapTypeId = mapType === 'satellite' ? 'satellite' : 'roadmap';
 
   return (
@@ -309,7 +267,7 @@ export default function GoogleMapWrapper({ children, onMapLoad, mapType = 'roadm
       <div className="nirmala-gmap" style={{ width: '100%', height: '100%' }}>
         <Map
           defaultCenter={MAP_CENTER}
-          defaultZoom={MAP_ZOOM_DEFAULT}
+          defaultZoom={defaultZoom}
           minZoom={MAP_MIN_ZOOM}
           maxZoom={MAP_MAX_ZOOM}
           mapTypeId={mapTypeId}
@@ -317,10 +275,10 @@ export default function GoogleMapWrapper({ children, onMapLoad, mapType = 'roadm
           disableDefaultUI={true}
           gestureHandling="greedy"
           onIdle={(e) => onMapLoad?.(e.map)}
-          // Regional restriction (Indonesia + wider Asia) — also keeps the
+          // Regional restriction (Indonesia's own extent) — also keeps the
           // world from wrapping into repeated copies at low zoom.
           restriction={{
-            latLngBounds: MAP_BOUNDS_ASIA,
+            latLngBounds: MAP_BOUNDS_INDONESIA,
             strictBounds: true,
           }}
           style={{ width: '100%', height: '100%' }}

@@ -8,8 +8,8 @@ import { ColorRampLegendContent } from '@/components/dashboard/ColorRampLegend';
 import { SensorStatsCardContent } from '@/components/dashboard/SensorStatsCard';
 
 const SUB_TABS = [
-  { key: 'sky', label: 'Sky', icon: 'material-symbols:satellite-alt-rounded' },
   { key: 'ground', label: 'Ground', icon: 'material-symbols:sensors-rounded' },
+  { key: 'sky', label: 'Sky', icon: 'material-symbols:satellite-alt-rounded' },
   { key: 'stats', label: 'Stats', icon: 'material-symbols:bar-chart-rounded' },
   { key: 'legend', label: 'Legend', icon: 'material-symbols:palette-rounded' },
 ];
