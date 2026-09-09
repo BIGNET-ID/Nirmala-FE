@@ -48,7 +48,8 @@ export async function GET(request) {
     return Response.json({ error: 'missing_bbox' }, { status: 400 });
   }
 
-  const key = roundBbox({ north, south, east, west });
+  const offset = maxAllowableOffsetForZoom(Number.isFinite(zoom) ? zoom : 10);
+  const key = `${roundBbox({ north, south, east, west })},${offset}`;
   const cached = boundsCache.get(key);
   if (cached && Date.now() - cached.t < CACHE_TTL_MS) {
     return Response.json(cached.data, { headers: { 'x-cache': 'hit' } });
@@ -58,7 +59,6 @@ export async function GET(request) {
     xmin: west, ymin: south, xmax: east, ymax: north,
     spatialReference: { wkid: 4326 },
   });
-  const offset = maxAllowableOffsetForZoom(Number.isFinite(zoom) ? zoom : 10);
   const url = `${BIG_ENDPOINT}?geometry=${encodeURIComponent(geometry)}` +
     `&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects` +
     `&outFields=namobj,wadmkc,wadmkk,wadmpr&maxAllowableOffset=${offset}&f=geojson`;

@@ -314,8 +314,8 @@ export default function NirmalaDashboard() {
   // MapControls' zoom readout already track, no new viewport-tracking state.
   const { regions: adminRegions } = useAdminBoundaries(
     mapBounds,
-    currentZoom,
-    activeLayer === 'rain' && currentZoom >= REGION_LAYER_MIN_ZOOM,
+    storedZoom,
+    activeLayer === 'rain' && storedZoom >= REGION_LAYER_MIN_ZOOM,
   );
 
   // Dense field preferred, ambient as fallback — same precedence

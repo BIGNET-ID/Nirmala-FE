@@ -46,6 +46,8 @@ export default function AdminRegionLayer({ regions, stations }) {
       const projection = overlayRef.current?.getProjection();
       if (!projection) return;
 
+      const isDark = document.documentElement.dataset.theme === 'dark';
+
       for (const region of regionsRef.current) {
         const bucket = resolveRegionBucket(region, stationsRef.current);
         // No-data regions reuse the "inactive" status color/tone — same
@@ -66,7 +68,11 @@ export default function AdminRegionLayer({ regions, stations }) {
         ctx.fillStyle = color;
         ctx.fill();
         ctx.globalAlpha = 1;
-        ctx.strokeStyle = 'rgba(255,255,255,0.25)'; // real kecamatan border, kept subtle
+        // Theme-aware border — a white 25%-alpha stroke reads too faintly
+        // against the light basemap (same fix pattern as BmkgRainLayer.jsx's
+        // DARK_ALPHA_FLOOR/LIGHT_ALPHA_FLOOR: light mode needs a higher
+        // visibility floor than dark).
+        ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.25)' : 'rgba(15,23,42,0.35)'; // real kecamatan border, kept subtle
         ctx.lineWidth = 1;
         ctx.stroke();
       }
@@ -107,7 +113,14 @@ export default function AdminRegionLayer({ regions, stations }) {
     overlayRef.current = overlay;
     overlayRef.current._repaint = scheduleDraw;
 
+    // Theme toggling doesn't pan/zoom the map or change regions/stations,
+    // so nothing else would trigger a repaint — watch the <html> theme
+    // attribute directly (same pattern as BmkgRainLayer.jsx).
+    const themeObserver = new MutationObserver(() => overlayRef.current?.draw());
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
     return () => {
+      themeObserver.disconnect();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       rafRef.current = 0;
       overlay.setMap(null);

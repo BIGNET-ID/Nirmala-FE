@@ -17,6 +17,7 @@ export function useAdminBoundaries(bounds, zoom, active) {
   useEffect(() => {
     if (!active || !bounds) {
       setStatus(LAYER_STATUS.IDLE);
+      setRegions([]);
       return;
     }
     let alive = true;
