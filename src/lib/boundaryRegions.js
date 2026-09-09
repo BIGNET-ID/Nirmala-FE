@@ -1,6 +1,10 @@
 /**
- * Maps BIG's ArcGIS REST GeoJSON response (see route.js) into the compact
- * shape this app actually uses. Two things this deliberately does:
+ * Maps a GeoJSON FeatureCollection (in BIG's original field-naming
+ * convention — namobj/wadmkc/wadmkk/wadmpr — which route.js's bundled
+ * static file, produced from HDX by scripts/build-kecamatan-dataset.mjs,
+ * is remapped into; historically this GeoJSON came from BIG's own live
+ * ArcGIS REST API instead) into the compact shape this app actually uses.
+ * Two things this deliberately does:
  *  - Flips coordinate order: GeoJSON polygons are [lng, lat] per spec; this
  *    app's own convention everywhere else (station.lat/lng, MAP_CENTER,
  *    haversineKm) is {lat, lng}. Getting this backwards silently breaks

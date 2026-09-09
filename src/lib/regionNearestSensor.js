@@ -13,8 +13,9 @@ export const MAX_DISTANCE_KM = 9;
 /**
  * Resolves which sensor-status bucket a kecamatan region should be colored
  * with — the bucket of its nearest sensor, or `null` if no sensor is
- * within MAX_DISTANCE_KM (render as no-data instead of a misleadingly
- * distant status).
+ * within MAX_DISTANCE_KM (the caller, AdminRegionLayer.jsx, skips
+ * rendering the region entirely in that case, rather than showing a
+ * misleadingly distant status or a no-data color).
  */
 export function resolveRegionBucket(region, stations) {
   let best = null;

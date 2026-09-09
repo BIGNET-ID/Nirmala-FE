@@ -12,14 +12,20 @@
 //     Prints the property keys of the first feature, so you can confirm
 //     (or correct) FIELD_MAP/ADM3_LEVEL_FIELD below before converting.
 //
-//   node scripts/build-kecamatan-dataset.mjs <path-to-hdx-file.geojson>
+//   node scripts/build-kecamatan-dataset.mjs <path-to-hdx-file.geojson> [--force]
 //     Filters to ADM3 (kecamatan) features, remaps their properties to
 //     BIG's field names, simplifies each polygon ring, and writes
 //     src/data/kecamatan-indonesia.json.
 //
+//     Safety check: if src/data/kecamatan-indonesia.json already exists
+//     and holds far more features than this run would produce (e.g. the
+//     bundled real national dataset vs. a small smoke-test fixture like
+//     scripts/fixtures/sample-hdx-input.geojson), the script refuses to
+//     overwrite it — pass --force to override.
+//
 // See docs/superpowers/specs/2026-09-09-rain-density-national-kecamatan-data-source-design.md
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { simplifyRing } from '../src/lib/simplifyPolygon.js';
@@ -91,12 +97,13 @@ function remapFeature(feature) {
 }
 
 function main() {
-  const args = process.argv.slice(2);
+  const args = process.argv.slice(2).filter((a) => a !== '--force');
+  const force = process.argv.includes('--force');
   const inspectMode = args[0] === '--inspect';
   const inputPath = inspectMode ? args[1] : args[0];
 
   if (!inputPath) {
-    console.error('Usage: node scripts/build-kecamatan-dataset.mjs [--inspect] <path-to-hdx-file.geojson>');
+    console.error('Usage: node scripts/build-kecamatan-dataset.mjs [--inspect] <path-to-hdx-file.geojson> [--force]');
     process.exit(1);
   }
 
@@ -117,6 +124,20 @@ function main() {
     type: 'FeatureCollection',
     features: adm3Features.map(remapFeature),
   };
+
+  if (!force && existsSync(OUTPUT_PATH)) {
+    const existing = JSON.parse(readFileSync(OUTPUT_PATH, 'utf-8'));
+    const existingCount = existing.features?.length || 0;
+    const newCount = output.features.length;
+    if (existingCount > newCount * 10) {
+      console.error(
+        `Refusing to overwrite ${OUTPUT_PATH} (${existingCount} existing kecamatan) with only ` +
+        `${newCount} new ones — this looks like a smoke-test run against a small fixture, not a ` +
+        `real conversion. Pass --force to overwrite anyway.`
+      );
+      process.exit(1);
+    }
+  }
 
   writeFileSync(OUTPUT_PATH, JSON.stringify(output));
   console.log(`Wrote ${adm3Features.length} kecamatan to ${OUTPUT_PATH}`);

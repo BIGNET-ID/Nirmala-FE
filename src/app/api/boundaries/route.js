@@ -17,12 +17,19 @@ import kecamatanGeoJSON from '@/data/kecamatan-indonesia.json';
 
 export const dynamic = 'force-dynamic';
 
+// This layer only ever activates at REGION_LAYER_MIN_ZOOM (10) or above on
+// the client, where a viewport spans at most a few degrees — a request for
+// a much wider span is not a legitimate use of this route (the client
+// never asks for one), so reject it rather than serializing the whole
+// national dataset. Estimate, not yet tuned against a real device's
+// largest reasonable viewport at zoom 10 — generous on purpose.
+const MAX_BBOX_SPAN_DEG = 5;
+
 // Normalized once per Worker instance (module scope), not per-request —
 // the whole dataset is a few MB at most, filtering it in-memory per
 // request is effectively instant, so unlike the old BIG-proxy version
 // there is no need for a TTL cache here.
-const ALL_REGIONS = normalizeRegions(kecamatanGeoJSON);
-
+//
 // Rectangle-overlap test between the query bbox and each region's own
 // bounding box (min/max lat/lng across its polygon). A vertex-only check
 // misses two real cases: the query bbox fully contained inside a large
@@ -32,6 +39,10 @@ const ALL_REGIONS = normalizeRegions(kecamatanGeoJSON);
 // one is entirely to one side of the other on either axis — this is a
 // strict superset of the old vertex check, so it can only add previously
 // missed regions, never drop a correctly-included one.
+//
+// Each region's bounding box is computed once here, at module scope,
+// alongside ALL_REGIONS itself — not recomputed on every request (that
+// cost ~12.3ms CPU/request at national scale, 500,903 total vertices).
 function regionBounds(region) {
   let north = -Infinity, south = Infinity, east = -Infinity, west = Infinity;
   for (const point of region.polygon) {
@@ -43,8 +54,13 @@ function regionBounds(region) {
   return { north, south, east, west };
 }
 
+const ALL_REGIONS = normalizeRegions(kecamatanGeoJSON).map((region) => ({
+  ...region,
+  _bounds: regionBounds(region),
+}));
+
 function regionIntersectsBbox(region, bbox) {
-  const r = regionBounds(region);
+  const r = region._bounds;
   return r.south <= bbox.north && r.north >= bbox.south
     && r.west <= bbox.east && r.east >= bbox.west;
 }
@@ -61,6 +77,10 @@ export async function GET(request) {
 
   if (![north, south, east, west].every(Number.isFinite)) {
     return Response.json({ error: 'missing_bbox' }, { status: 400 });
+  }
+
+  if (north - south > MAX_BBOX_SPAN_DEG || east - west > MAX_BBOX_SPAN_DEG) {
+    return Response.json({ error: 'bbox_too_large' }, { status: 400 });
   }
 
   const bbox = { north, south, east, west };

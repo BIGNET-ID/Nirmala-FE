@@ -7,7 +7,8 @@ import { bucketColor } from '@/lib/sensorColor';
 
 /**
  * Rain Density's admin-region view — colors each kecamatan polygon (from
- * useAdminBoundaries, ultimately BIG's public API) by its nearest sensor's
+ * useAdminBoundaries, ultimately a preprocessed national dataset from HDX,
+ * bundled as a static file — no longer BIG's live API) by its nearest sensor's
  * status. Alternative to the KDE blob (CanvasOverlay.jsx) at higher zoom —
  * see page.jsx for the zoom-gated swap and
  * docs/superpowers/specs/2026-09-09-rain-density-admin-region-layer-design.md

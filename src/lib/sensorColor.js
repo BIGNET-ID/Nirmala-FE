@@ -69,11 +69,12 @@ export function statusBucket(st) {
   return 'active';
 }
 
-// Resolves a bucket name (including a synthetic 'inactive' used by
-// AdminRegionLayer.jsx for "no data") directly to its light/dark-mode hex —
-// same lookup statusColor() uses internally, but usable without a station
-// object (AdminRegionLayer resolves its bucket itself, via
-// resolveRegionBucket, not from a single station's fields).
+// Resolves a bucket name directly to its light/dark-mode hex — same lookup
+// statusColor() uses internally, but usable without a station object
+// (AdminRegionLayer resolves its bucket itself, via resolveRegionBucket,
+// not from a single station's fields). AdminRegionLayer.jsx no longer uses
+// a synthetic 'inactive' bucket for "no data" regions — those are skipped
+// entirely rather than colored.
 export function bucketColor(bucket) {
   const isDark = typeof document !== 'undefined' && document.documentElement.dataset.theme === 'dark';
   return (isDark && SENSOR_STATUS_COLOR_DARK[bucket]) || SENSOR_STATUS_COLOR[bucket];
