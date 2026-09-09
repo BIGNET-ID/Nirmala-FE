@@ -5,6 +5,10 @@
 /.next
 /out
 
+# cloudflare (opennextjs-cloudflare build output, wrangler local dev cache)
+/.open-next
+/.wrangler
+
 # env
 .env*.local
 
