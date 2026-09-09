@@ -23,14 +23,30 @@ export const dynamic = 'force-dynamic';
 // there is no need for a TTL cache here.
 const ALL_REGIONS = normalizeRegions(kecamatanGeoJSON);
 
-function regionIntersectsBbox(region, bbox) {
+// Rectangle-overlap test between the query bbox and each region's own
+// bounding box (min/max lat/lng across its polygon). A vertex-only check
+// misses two real cases: the query bbox fully contained inside a large
+// region's polygon with no vertex of its own inside the (smaller) query
+// bbox, and a polygon edge crossing through the bbox without either
+// endpoint landing inside it. Two axis-aligned rectangles overlap unless
+// one is entirely to one side of the other on either axis — this is a
+// strict superset of the old vertex check, so it can only add previously
+// missed regions, never drop a correctly-included one.
+function regionBounds(region) {
+  let north = -Infinity, south = Infinity, east = -Infinity, west = Infinity;
   for (const point of region.polygon) {
-    if (point.lat >= bbox.south && point.lat <= bbox.north
-      && point.lng >= bbox.west && point.lng <= bbox.east) {
-      return true;
-    }
+    if (point.lat > north) north = point.lat;
+    if (point.lat < south) south = point.lat;
+    if (point.lng > east) east = point.lng;
+    if (point.lng < west) west = point.lng;
   }
-  return false;
+  return { north, south, east, west };
+}
+
+function regionIntersectsBbox(region, bbox) {
+  const r = regionBounds(region);
+  return r.south <= bbox.north && r.north >= bbox.south
+    && r.west <= bbox.east && r.east >= bbox.west;
 }
 
 export async function GET(request) {
