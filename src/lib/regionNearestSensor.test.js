@@ -13,8 +13,12 @@ test('resolveRegionBucket: picks the nearest station\'s status', () => {
   assert.equal(bucket, 'raining');
 });
 
-test('resolveRegionBucket: station beyond MAX_DISTANCE_KM returns null (no-data)', () => {
-  const stations = [{ id: 'faraway', lat: 3.5, lng: 98.6, isRaining: true }]; // Medan, >1000km from Jakarta
+test('resolveRegionBucket: station just beyond MAX_DISTANCE_KM (9km) returns null (no-data)', () => {
+  // 0.1 degrees latitude is ~11.1km at this latitude — comfortably beyond
+  // a 9km cutoff (unlike the old 25km cutoff, where 11.1km would have
+  // resolved to a real bucket instead of null), so this test is actually
+  // tied to the specific threshold value, not just "very far away".
+  const stations = [{ id: 'just-too-far', lat: -6.3, lng: 106.8, isRaining: true }];
   const bucket = resolveRegionBucket(region(-6.2, 106.8), stations);
   assert.equal(bucket, null);
 });

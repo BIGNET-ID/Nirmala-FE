@@ -3,10 +3,12 @@ import { statusBucket } from './sensorColor.js';
 
 // Same filosofi dengan RAIN_KM/clamp di CanvasOverlay.jsx: di luar radius
 // ini, sensor "terdekat" tetap terlalu jauh untuk jujur mewakili kecamatan
-// tsb — render netral (null), bukan warna yang menyesatkan. Estimate, not
-// yet visually verified — tune after seeing it rendered against real
-// sensor density.
-export const MAX_DISTANCE_KM = 25;
+// tsb — dikecualikan sepenuhnya, bukan diwarnai netral (lihat
+// AdminRegionLayer.jsx). Disamakan dengan RAIN_KM = 9 di CanvasOverlay.jsx
+// supaya kedua mode Rain Density (blob & region) punya bahasa "seberapa
+// jauh sensor bisa jujur mewakili suatu area" yang konsisten — bukan lagi
+// estimasi terpisah seperti nilai 25 sebelumnya.
+export const MAX_DISTANCE_KM = 9;
 
 /**
  * Resolves which sensor-status bucket a kecamatan region should be colored
