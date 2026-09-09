@@ -310,8 +310,11 @@ export default function NirmalaDashboard() {
 
   // Rain Density's admin-region layer — only fetches while that mode is
   // active AND zoomed in past REGION_LAYER_MIN_ZOOM (see the render swap
-  // below); reuses the same mapBounds/currentZoom state useWindField and
-  // MapControls' zoom readout already track, no new viewport-tracking state.
+  // below); reuses the existing mapBounds state, no new viewport-tracking
+  // state. Uses storedZoom (not the live currentZoom readout below) since
+  // it's set in the same debounced `idle` callback as mapBounds — pairing
+  // them avoids fetching a stale, too-wide bbox mid-zoom (see final-review
+  // fix commit 226cf5f for the bug this avoids).
   const { regions: adminRegions } = useAdminBoundaries(
     mapBounds,
     storedZoom,
