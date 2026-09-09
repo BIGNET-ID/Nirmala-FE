@@ -27,20 +27,22 @@ import { simplifyRing } from '../src/lib/simplifyPolygon.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUTPUT_PATH = join(__dirname, '..', 'src', 'data', 'kecamatan-indonesia.json');
 
-// Standard OCHA/HDX COD-AB field-naming convention — CONFIRM against the
-// real downloaded file with --inspect before trusting this for a real run
-// (see Task 7, Step 1 in the implementation plan).
+// Confirmed against the real downloaded file (idn_admin3.geojson from
+// HDX's cod-ab-idn dataset, `--inspect` run 2026-09-09): actual field names
+// are lowercase, NOT the OCHA "ADM3_EN" style originally assumed here —
+// e.g. `adm3_name`, `adm3_pcode`, `adm2_name`, `adm1_name`. Updated to
+// match the real file (see Task 7, Step 2 in the implementation plan).
 const FIELD_MAP = {
-  namobj: 'ADM3_EN',
-  wadmkc: 'ADM3_EN',
-  wadmkk: 'ADM2_EN',
-  wadmpr: 'ADM1_EN',
+  namobj: 'adm3_name',
+  wadmkc: 'adm3_name',
+  wadmkk: 'adm2_name',
+  wadmpr: 'adm1_name',
 };
 // A feature is an ADM3 (kecamatan) record if it has a non-empty value for
 // this field — HDX COD-AB files commonly bundle every admin level (0-4)
 // in one FeatureCollection, distinguished by which ADM*_PCODE/EN fields
 // are populated. CONFIRM against the real file with --inspect.
-const ADM3_LEVEL_FIELD = 'ADM3_PCODE';
+const ADM3_LEVEL_FIELD = 'adm3_pcode';
 
 // Degrees, not meters — same unit simplifyRing() expects. Chosen to land
 // in the same visual ballpark as BIG's own maxAllowableOffset=0.001

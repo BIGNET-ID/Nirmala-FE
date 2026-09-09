@@ -4,8 +4,8 @@
     {
       "type": "Feature",
       "properties": {
-        "ADM3_EN": "Menteng", "ADM3_PCODE": "ID3171040",
-        "ADM2_EN": "Jakarta Pusat", "ADM1_EN": "DKI Jakarta"
+        "adm3_name": "Menteng", "adm3_pcode": "ID3171040",
+        "adm2_name": "Jakarta Pusat", "adm1_name": "DKI Jakarta"
       },
       "geometry": {
         "type": "Polygon",
@@ -17,7 +17,7 @@
     {
       "type": "Feature",
       "properties": {
-        "ADM2_EN": "Jakarta Pusat", "ADM2_PCODE": "ID3171", "ADM1_EN": "DKI Jakarta"
+        "adm2_name": "Jakarta Pusat", "adm2_pcode": "ID3171", "adm1_name": "DKI Jakarta"
       },
       "geometry": {
         "type": "Polygon",
@@ -27,8 +27,8 @@
     {
       "type": "Feature",
       "properties": {
-        "ADM3_EN": "Kendari Barat", "ADM3_PCODE": "ID7471040",
-        "ADM2_EN": "Kota Kendari", "ADM1_EN": "Sulawesi Tenggara"
+        "adm3_name": "Kendari Barat", "adm3_pcode": "ID7471040",
+        "adm2_name": "Kota Kendari", "adm1_name": "Sulawesi Tenggara"
       },
       "geometry": {
         "type": "MultiPolygon",
