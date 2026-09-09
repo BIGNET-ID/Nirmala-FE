@@ -1,39 +1,36 @@
-import { normalizeRegions, maxAllowableOffsetForZoom } from '@/lib/boundaryRegions';
+import { normalizeRegions } from '@/lib/boundaryRegions';
+import kecamatanGeoJSON from '@/data/kecamatan-indonesia.json';
 
 /**
- * Proxies Badan Informasi Geospasial's (BIG) public ArcGIS REST service for
- * kecamatan (district) administrative boundaries, scoped to the map's
- * current viewport — never downloads a nationwide dataset (the full
- * kelurahan-level dataset from other public sources runs >2GB; querying
- * BIG per-bbox with server-side geometry simplification keeps a
- * city-sized viewport around 35KB, verified empirically).
- *
- * See docs/superpowers/specs/2026-09-09-rain-density-admin-region-layer-design.md
+ * Serves kecamatan (district) administrative boundaries for the map's
+ * current viewport, from a static national dataset bundled at build time
+ * — not a live external proxy (see
+ * docs/superpowers/specs/2026-09-09-rain-density-national-kecamatan-data-source-design.md
+ * for why: BIG's public live API, used by the previous version of this
+ * route, turned out to only cover Sulawesi Tenggara — 66 kecamatan total,
+ * verified by querying it with a whole-Indonesia bounding box). The
+ * bundled file (src/data/kecamatan-indonesia.json) is produced once by
+ * scripts/build-kecamatan-dataset.mjs from HDX's national dataset, already
+ * simplified and already shaped to match normalizeRegions()'s expected
+ * input — no per-request simplification or external fetch needed anymore.
  */
 
 export const dynamic = 'force-dynamic';
 
-const BIG_ENDPOINT = 'https://geoservices.big.go.id/rbi/rest/services/BATASWILAYAH/BATAS_WILAYAH/MapServer/14/query';
-// Administrative boundaries basically never change — cache far longer
-// than weather data (compare VIEWPORT_TTL_MS = 20 minutes in
-// src/app/api/wind/route.js).
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-const MAX_CACHE_ENTRIES = 30;
-const boundsCache = new Map(); // key -> { t, data }
+// Normalized once per Worker instance (module scope), not per-request —
+// the whole dataset is a few MB at most, filtering it in-memory per
+// request is effectively instant, so unlike the old BIG-proxy version
+// there is no need for a TTL cache here.
+const ALL_REGIONS = normalizeRegions(kecamatanGeoJSON);
 
-function roundBbox(b) {
-  // ~0.05° (~5.5km at the equator) — fine enough that a small pan doesn't
-  // silently return a stale-but-wrong-area cached response, coarse enough
-  // that repeated small pans/zooms within the same neighborhood still hit
-  // the cache.
-  const r = (n) => Math.round(n / 0.05) * 0.05;
-  return `${r(b.north)},${r(b.south)},${r(b.east)},${r(b.west)}`;
-}
-
-function evictOldest() {
-  if (boundsCache.size < MAX_CACHE_ENTRIES) return;
-  const oldestKey = [...boundsCache.entries()].sort((a, b) => a[1].t - b[1].t)[0]?.[0];
-  if (oldestKey) boundsCache.delete(oldestKey);
+function regionIntersectsBbox(region, bbox) {
+  for (const point of region.polygon) {
+    if (point.lat >= bbox.south && point.lat <= bbox.north
+      && point.lng >= bbox.west && point.lng <= bbox.east) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export async function GET(request) {
@@ -42,37 +39,15 @@ export async function GET(request) {
   const south = parseFloat(searchParams.get('south'));
   const east = parseFloat(searchParams.get('east'));
   const west = parseFloat(searchParams.get('west'));
-  const zoom = parseFloat(searchParams.get('zoom'));
+  // `zoom` is still accepted for call-site compatibility with
+  // useAdminBoundaries.js, but no longer used — the bundled dataset is
+  // already simplified once, not re-simplified per request/zoom level.
 
   if (![north, south, east, west].every(Number.isFinite)) {
     return Response.json({ error: 'missing_bbox' }, { status: 400 });
   }
 
-  const offset = maxAllowableOffsetForZoom(Number.isFinite(zoom) ? zoom : 10);
-  const key = `${roundBbox({ north, south, east, west })},${offset}`;
-  const cached = boundsCache.get(key);
-  if (cached && Date.now() - cached.t < CACHE_TTL_MS) {
-    return Response.json(cached.data, { headers: { 'x-cache': 'hit' } });
-  }
-
-  const geometry = JSON.stringify({
-    xmin: west, ymin: south, xmax: east, ymax: north,
-    spatialReference: { wkid: 4326 },
-  });
-  const url = `${BIG_ENDPOINT}?geometry=${encodeURIComponent(geometry)}` +
-    `&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects` +
-    `&outFields=namobj,wadmkc,wadmkk,wadmpr&maxAllowableOffset=${offset}&f=geojson`;
-
-  try {
-    const r = await fetch(url, { cache: 'no-store' });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const geojson = await r.json();
-    const data = normalizeRegions(geojson);
-    boundsCache.set(key, { t: Date.now(), data });
-    evictOldest();
-    return Response.json(data, { headers: { 'x-cache': 'miss' } });
-  } catch (error) {
-    console.warn('[api/boundaries] BIG fetch failed:', error.message);
-    return Response.json({ error: 'upstream_unavailable' }, { status: 502 });
-  }
+  const bbox = { north, south, east, west };
+  const data = ALL_REGIONS.filter((region) => regionIntersectsBbox(region, bbox));
+  return Response.json(data);
 }
