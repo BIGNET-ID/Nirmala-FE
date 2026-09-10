@@ -5,7 +5,6 @@ import { Box } from '@mui/material';
 import { motion } from 'motion/react';
 import GoogleMapWrapper from '@/components/map/GoogleMapWrapper';
 import CanvasHeatmapOverlay from '@/components/map/CanvasOverlay';
-import AdminRegionLayer from '@/components/map/AdminRegionLayer';
 import SensorDotLayer from '@/components/map/SensorDotLayer';
 import MeshLayer from '@/components/map/MeshLayer';
 import OpenWeatherLayer from '@/components/map/OpenWeatherLayer';
@@ -29,7 +28,6 @@ import TimelineComingSoon from '@/components/dashboard/TimelineComingSoon';
 import { usePlatformData } from '@/hooks/usePlatformData';
 import { useSensorStream } from '@/hooks/useSensorStream';
 import { useWindField } from '@/hooks/useWindField';
-import { useAdminBoundaries } from '@/hooks/useAdminBoundaries';
 import { useJmaHimawariTicks } from '@/hooks/useJmaHimawariTicks';
 import { useBmkgWeather } from '@/hooks/useBmkgWeather';
 import { useVolcanoes } from '@/hooks/useVolcanoes';
@@ -38,7 +36,7 @@ import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 import { useLocalStorageState } from '@/hooks/useLocalStorageState';
 import { useThemeMode } from '@/context/ThemeModeContext';
 import { METRICS } from '@/constants/metrics';
-import { MAP_CENTER, MAP_ZOOM_DEFAULT, MAP_MIN_ZOOM, MAP_MAX_ZOOM, REGION_LAYER_MIN_ZOOM } from '@/constants/mapConfig';
+import { MAP_CENTER, MAP_ZOOM_DEFAULT, MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@/constants/mapConfig';
 import { PROVINCES } from '@/constants/provinces';
 import { filterStationsInBounds, summarizeStations } from '@/lib/provinceFilter';
 import { statusBucket } from '@/lib/sensorColor';
@@ -308,18 +306,6 @@ export default function NirmalaDashboard() {
 
   const { field: windField, ambientField: windAmbientField, status: windFieldStatus } = useWindField(mapBounds);
 
-  // Rain Density's admin-region layer — only fetches while that mode is
-  // active AND zoomed in past REGION_LAYER_MIN_ZOOM (see the render swap
-  // below); reuses the existing mapBounds state, no new viewport-tracking
-  // state. Uses storedZoom (not the live currentZoom readout below) since
-  // it's set in the same debounced `idle` callback as mapBounds — pairing
-  // them avoids fetching a stale, too-wide bbox mid-zoom (see final-review
-  // fix commit 226cf5f for the bug this avoids).
-  const { regions: adminRegions } = useAdminBoundaries(
-    mapBounds,
-    storedZoom,
-    activeLayer === 'rain' && storedZoom >= REGION_LAYER_MIN_ZOOM,
-  );
 
   // Dense field preferred, ambient as fallback — same precedence
   // WindParticleLayer already uses when sampling per-particle velocity.
@@ -502,9 +488,7 @@ export default function NirmalaDashboard() {
                 <CanvasHeatmapOverlay stations={SENSOR_STATIONS} showCoverage={showCoverage} />
               )}
               {activeLayer === 'rain' && (
-                currentZoom >= REGION_LAYER_MIN_ZOOM
-                  ? <AdminRegionLayer regions={adminRegions} stations={SENSOR_STATIONS} />
-                  : <CanvasHeatmapOverlay stations={SENSOR_STATIONS} showCoverage={showCoverage} />
+                <CanvasHeatmapOverlay stations={SENSOR_STATIONS} showCoverage={showCoverage} />
               )}
               {activeLayer === 'mesh' && (
                 <MeshLayer stations={SENSOR_STATIONS} onDistanceRangeChange={setMeshDistanceRange} />
