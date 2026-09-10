@@ -3,35 +3,17 @@ import { Box, Typography, IconButton, Tooltip } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { motion, AnimatePresence } from 'motion/react';
 import { METRICS } from '@/constants/metrics';
-import { bucketColor } from '@/lib/sensorColor';
 
 const eyebrowSx = {
   fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
   letterSpacing: '0.1em', color: 'text.secondary',
 };
 
-// Same order/labels as SensorStatsCard's status rows, so a viewer already
-// familiar with that panel recognizes the same vocabulary here — no new
-// copy invented for this legend.
-const STATUS_SWATCHES = [
-  { bucket: 'active', label: 'Active' },
-  { bucket: 'raining', label: 'Raining' },
-  { bucket: 'unavailable', label: 'Unavailable' },
-  { bucket: 'inactive', label: 'Inactive' },
-  { bucket: 'blacklisted', label: 'Blacklist' },
-];
-
 /** Bare legend content — shared by the desktop floating card and the mobile bottom sheet. */
-export function ColorRampLegendContent({ activeLayer, showCoverage = false, meshDistanceRange = null, regionView = false, hideTitle }) {
+export function ColorRampLegendContent({ activeLayer, showCoverage = false, meshDistanceRange = null, hideTitle }) {
   const metric = METRICS[activeLayer];
   if (!metric) return null;
-
-  // Rain Density's admin-region view (AdminRegionLayer, active once zoomed
-  // in past REGION_LAYER_MIN_ZOOM) paints kecamatan by categorical sensor
-  // status, not the KDE blob's blue->red gradient below — so the legend
-  // must switch with it, or it describes a gradient that isn't on screen.
-  const isRegionView = activeLayer === 'rain' && regionView;
-  const legendNote = isRegionView ? metric.regionLegendNote : metric.legendNote;
+  const legendNote = metric.legendNote;
 
   // Mesh Map's min/max depend on the actual national sensor layout, so
   // they're computed by MeshLayer and passed down here rather than a fixed
@@ -58,18 +40,7 @@ export function ColorRampLegendContent({ activeLayer, showCoverage = false, mesh
         </Box>
       )}
 
-      {isRegionView ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          {STATUS_SWATCHES.map(({ bucket, label }) => (
-            <Box key={bucket} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-              <Box sx={{ width: 12, height: 12, borderRadius: '3px', background: bucketColor(bucket), flexShrink: 0 }} />
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
-                {label}
-              </Typography>
-            </Box>
-          ))}
-        </Box>
-      ) : metric.colorRamp && metric.tickLabels ? (
+      {metric.colorRamp && metric.tickLabels ? (
         // Windy/BMKG-style tick-marked bar: N evenly-spaced qualitative
         // labels instead of two end labels — see AGENTS.md design
         // guardrails for why a full spectrum is used here (not "AI rainbow").
@@ -144,12 +115,7 @@ export default function ColorRampLegend(props) {
   const [open, setOpen] = useState(true);
   const metric = METRICS[props.activeLayer];
   if (!metric) return null;
-  // Mirrors ColorRampLegendContent's own region-view swap below — this
-  // collapsed-header tooltip must describe the same thing the expanded
-  // content does.
-  const legendNote = props.activeLayer === 'rain' && props.regionView
-    ? metric.regionLegendNote
-    : metric.legendNote;
+  const legendNote = metric.legendNote;
 
   return (
     <Box

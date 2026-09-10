@@ -566,12 +566,7 @@ export default function NirmalaDashboard() {
                 owmLayers, onOwmLayerToggle: handleOwmLayerToggle, permissions,
                 himawariCaption, owmCaption, windCaption, bmkgCaption,
               };
-              // Rain Density's legend switches from the KDE-blob gradient
-              // to a categorical sensor-status legend once the map itself
-              // switches to AdminRegionLayer — same live currentZoom check
-              // as the render ternary below, so the legend always matches
-              // what's actually drawn (see ColorRampLegendContent).
-              const legendProps = { activeLayer, showCoverage, meshDistanceRange, regionView: currentZoom >= REGION_LAYER_MIN_ZOOM };
+              const legendProps = { activeLayer, showCoverage, meshDistanceRange };
               const statsProps = { stats, hiddenStatuses, onToggleStatus: toggleStatusVisibility, scrapedAt: sensorsScrapedAt };
 
               if (isCompact) {
