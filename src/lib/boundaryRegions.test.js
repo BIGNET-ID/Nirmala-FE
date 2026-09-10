@@ -44,30 +44,3 @@ test('normalizeRegions: empty/missing features returns an empty array', () => {
   assert.deepEqual(normalizeRegions({ type: 'FeatureCollection', features: [] }), []);
   assert.deepEqual(normalizeRegions({}), []);
 });
-
-const MULTIPOLYGON_SAMPLE = {
-  type: 'FeatureCollection',
-  features: [
-    {
-      type: 'Feature',
-      properties: { namobj: 'Tipulu', wadmkc: 'Kendari Barat', wadmkk: 'Kota Kendari', wadmpr: 'Sulawesi Tenggara' },
-      geometry: {
-        type: 'MultiPolygon',
-        // Real GeoJSON MultiPolygon shape: coordinates = [ [ring1_of_polygon1], [ring1_of_polygon2], ... ]
-        // — one level deeper than a plain Polygon's coordinates = [ring].
-        coordinates: [[[
-          [122.56, -3.93], [122.57, -3.93], [122.57, -3.92], [122.56, -3.92], [122.56, -3.93],
-        ]]],
-      },
-    },
-  ],
-};
-
-test('normalizeRegions: handles MultiPolygon geometry (real BIG data shape) by using the first polygon exterior ring', () => {
-  const [region] = normalizeRegions(MULTIPOLYGON_SAMPLE);
-  assert.equal(region.name, 'Tipulu');
-  assert.equal(region.polygon.length, 5);
-  assert.deepEqual(region.polygon[0], { lat: -3.93, lng: 122.56 });
-  assert.ok(Number.isFinite(region.centroid.lat));
-  assert.ok(Number.isFinite(region.centroid.lng));
-});

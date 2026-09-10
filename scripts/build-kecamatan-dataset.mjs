@@ -13,9 +13,10 @@
 //     (or correct) FIELD_MAP/ADM3_LEVEL_FIELD below before converting.
 //
 //   node scripts/build-kecamatan-dataset.mjs <path-to-hdx-file.geojson> [--force]
-//     Filters to ADM3 (kecamatan) features, remaps their properties to
-//     BIG's field names, simplifies each polygon ring, and writes
-//     src/data/kecamatan-indonesia.json.
+//     Filters to ADM3 (kecamatan) Polygon features (MultiPolygon kecamatan
+//     are skipped — unsupported, see boundaryRegions.js), remaps their
+//     properties to BIG's field names, simplifies each polygon ring, and
+//     writes src/data/kecamatan-indonesia.json.
 //
 //     Safety check: if src/data/kecamatan-indonesia.json already exists
 //     and holds far more features than this run would produce (e.g. the
@@ -57,29 +58,17 @@ const ADM3_LEVEL_FIELD = 'adm3_pcode';
 // rather than trusting this in isolation.
 const SIMPLIFY_TOLERANCE_DEG = 0.001;
 
-function exteriorRings(geometry) {
-  if (!geometry) return [];
-  if (geometry.type === 'MultiPolygon') {
-    return geometry.coordinates.map((polygon) => polygon[0]);
-  }
-  if (geometry.type === 'Polygon') {
-    return [geometry.coordinates[0]];
-  }
-  return [];
-}
-
+// Only plain Polygon geometry is supported — MultiPolygon features (some
+// real kecamatan with disjoint parts, e.g. small offshore islands) are
+// filtered out entirely before reaching this function (see the `Polygon`
+// type-check in main()'s adm3Features filter below), rather than attempting
+// to normalize their multi-part shape.
 function simplifyGeometry(geometry) {
-  const rings = exteriorRings(geometry);
-  if (rings.length === 0) return geometry;
-  const simplifiedRings = rings.map((ring) => {
-    const points = ring.map(([lng, lat]) => ({ lat, lng }));
-    const simplified = simplifyRing(points, SIMPLIFY_TOLERANCE_DEG);
-    return simplified.map((p) => [p.lng, p.lat]);
-  });
-  if (geometry.type === 'MultiPolygon') {
-    return { type: 'MultiPolygon', coordinates: simplifiedRings.map((ring) => [ring]) };
-  }
-  return { type: 'Polygon', coordinates: [simplifiedRings[0]] };
+  const ring = geometry?.coordinates?.[0];
+  if (!ring) return geometry;
+  const points = ring.map(([lng, lat]) => ({ lat, lng }));
+  const simplified = simplifyRing(points, SIMPLIFY_TOLERANCE_DEG);
+  return { type: 'Polygon', coordinates: [simplified.map((p) => [p.lng, p.lat])] };
 }
 
 function remapFeature(feature) {
@@ -117,8 +106,12 @@ function main() {
     return;
   }
 
-  const adm3Features = features.filter((f) => Boolean(f.properties?.[ADM3_LEVEL_FIELD]));
-  console.log(`Found ${adm3Features.length} ADM3 (kecamatan) features out of ${features.length} total.`);
+  const adm3Features = features.filter((f) =>
+    Boolean(f.properties?.[ADM3_LEVEL_FIELD]) && f.geometry?.type === 'Polygon');
+  const skippedMultiPolygon = features.filter((f) =>
+    Boolean(f.properties?.[ADM3_LEVEL_FIELD]) && f.geometry?.type === 'MultiPolygon').length;
+  console.log(`Found ${adm3Features.length} ADM3 (kecamatan) Polygon features out of ${features.length} total ` +
+    `(skipped ${skippedMultiPolygon} MultiPolygon kecamatan — unsupported, see boundaryRegions.js).`);
 
   const output = {
     type: 'FeatureCollection',

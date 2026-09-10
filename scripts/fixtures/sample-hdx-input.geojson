@@ -31,9 +31,22 @@
         "adm2_name": "Kota Kendari", "adm1_name": "Sulawesi Tenggara"
       },
       "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [122.55, -3.99], [122.56, -3.99], [122.56, -3.98], [122.55, -3.98], [122.55, -3.99]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "adm3_name": "Tipulu", "adm3_pcode": "ID7471041",
+        "adm2_name": "Kota Kendari", "adm1_name": "Sulawesi Tenggara"
+      },
+      "geometry": {
         "type": "MultiPolygon",
         "coordinates": [[[
-          [122.55, -3.99], [122.56, -3.99], [122.56, -3.98], [122.55, -3.98], [122.55, -3.99]
+          [122.56, -3.93], [122.57, -3.93], [122.57, -3.92], [122.56, -3.92], [122.56, -3.93]
         ]]]
       }
     }

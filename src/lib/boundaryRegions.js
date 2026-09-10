@@ -15,26 +15,16 @@
  *  - Uses only the exterior ring (coordinates[0]) — kecamatan polygons
  *    with holes (an enclave village, say) are rare enough at this zoom
  *    range that rendering the hole isn't worth the extra complexity;
- *    YAGNI for this iteration. Same rationale extends to MultiPolygon
- *    geometries (BIG's live API returns these for some real kecamatan,
- *    e.g. Tipulu/Purirano in Kendari): only the FIRST polygon's exterior
- *    ring (coordinates[0][0]) is used — a truly multi-part region won't
- *    render its other disjoint parts, same simplification as not
- *    rendering holes.
+ *    YAGNI for this iteration. Only plain Polygon geometry is supported —
+ *    MultiPolygon features are filtered out upstream (see
+ *    scripts/build-kecamatan-dataset.mjs) before reaching this function,
+ *    so this deliberately does not special-case them.
  */
-function exteriorRing(geometry) {
-  if (!geometry) return [];
-  if (geometry.type === 'MultiPolygon') {
-    return geometry.coordinates?.[0]?.[0] || [];
-  }
-  return geometry.coordinates?.[0] || [];
-}
-
 export function normalizeRegions(geojson) {
   const features = geojson?.features || [];
   return features.map((feature, i) => {
     const props = feature?.properties || {};
-    const ring = exteriorRing(feature?.geometry);
+    const ring = feature?.geometry?.coordinates?.[0] || [];
     const polygon = ring.map(([lng, lat]) => ({ lat, lng }));
     const centroid = polygon.length
       ? {
